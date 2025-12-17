@@ -1,0 +1,32 @@
+plugins {
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.0.14'
+}
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17) // Java 11+ ok; 17 is a great default
+    }
+}
+
+javafx {
+    version = "21.0.5"   // you can change later; keep it consistent
+    modules = [ 'javafx.controls', 'javafx.fxml' ]
+}
+
+dependencies {
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.2'
+
+    // logging (optional but recommended)
+    implementation 'org.slf4j:slf4j-api:2.0.16'
+    runtimeOnly 'ch.qos.logback:logback-classic:1.5.8'
+}
+
+application {
+    mainClass = 'com.nodes.chatclient.AppLauncher'
+}
+
