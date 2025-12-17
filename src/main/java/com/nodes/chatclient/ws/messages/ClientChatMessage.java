@@ -10,7 +10,7 @@ public class ClientChatMessage implements ClientMessage {
             String clientId,
             String replyingTo
     ) {
-        this.payload = new ClientAuthMessage.Payload(toUserId, text, clientId, replyingTo);
+        this.payload = new ClientChatMessage.Payload(toUserId, text, clientId, replyingTo);
     }
 
     @Override
