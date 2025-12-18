@@ -76,7 +76,6 @@ public final class WsService {
     }
 
     private void handleAuthOk(ServerAuthOk.Payload p) {
-        System.out.println("WsService → AUTH_OK");
         state = State.AUTHENTICATED;
     }
 

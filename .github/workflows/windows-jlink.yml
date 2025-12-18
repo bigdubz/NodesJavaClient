@@ -1,0 +1,26 @@
+name: Windows JLink
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Build runtime image
+        run: ./gradlew jlink --no-daemon
+
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ChatClient-windows-image
+          path: build/image
