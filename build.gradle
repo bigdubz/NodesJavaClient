@@ -10,7 +10,7 @@ repositories {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17) // Java 11+ ok; 17 is a great default
+        languageVersion = JavaLanguageVersion.of(21) // Java 11+ ok; 17 is a great default
     }
 }
 
