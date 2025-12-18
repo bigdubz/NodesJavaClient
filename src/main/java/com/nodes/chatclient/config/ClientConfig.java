@@ -78,15 +78,15 @@ public final class ClientConfig {
 
     public static ClientConfig localDev() {
         return builder()
-                .httpBaseUri(URI.create("http://localhost:3000"))
-                .wsUri(URI.create("ws://localhost:3000"))
+                .httpBaseUri(URI.create("https://api.nodesya.website"))
+                .wsUri(URI.create("wss://api.nodesya.website"))
                 .httpConnectTimeout(Duration.ofSeconds(5))
                 .httpRequestTimeout(Duration.ofSeconds(10))
                 .wsConnectTimeout(Duration.ofSeconds(10))
-                .heartbeatInterval(Duration.ofSeconds(20))
-                .heartbeatTimeout(Duration.ofSeconds(10))
+                .heartbeatInterval(Duration.ofSeconds(25))
+                .heartbeatTimeout(Duration.ofSeconds(75))
                 .reconnectInitialDelay(Duration.ofMillis(500))
-                .reconnectMaxDelay(Duration.ofSeconds(30))
+                .reconnectMaxDelay(Duration.ofSeconds(20))
                 .build();
     }
 

@@ -8,6 +8,7 @@ import com.nodes.chatclient.ws.messages.*;
 import com.nodes.chatclient.store.model.*;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -20,6 +21,7 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
     private final String selfUserId;
 
     private final Map<String, Conversation> conversations = new HashMap<>();
+    private final Map<String, List<ChatMessage>> messages = new ConcurrentHashMap<>();
     private final Map<String, Presence> presence = new HashMap<>();
     private volatile String activeConversationPeerId;
 
@@ -33,10 +35,12 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
         listeners.add(listener);
     }
 
-    private void notifyListeners() {
-        for (StoreListener l : listeners) {
-            l.onStoreChanged();
-        }
+    private void notifyConversationsUpdated() {
+        listeners.forEach(StoreListener::onConversationsUpdated);
+    }
+
+    private void notifyMessageListUpdated(String peerId) {
+        listeners.forEach(l -> l.onMessageListUpdated(peerId));
     }
 
     public void setActiveConversation(String peerId) {
@@ -67,7 +71,7 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
                 pr.online = row.isOnline;
             }
 
-            notifyListeners();
+            notifyConversationsUpdated();
         });
     }
 
@@ -107,13 +111,27 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
                 }
             }
 
-            notifyListeners();
+            notifyMessageListUpdated(peerId);
         });
+    }
+
+    public List<Conversation> getConversationsSnapshot() {
+        return List.copyOf(conversations.values());
+    }
+
+    public List<ChatMessage> getMessagesSnapshot(String peerId) {
+        List<ChatMessage> list = messages.get(peerId);
+
+        if (list == null || list.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return List.copyOf(list);
     }
 
     @Override
     public void onAuthOk(ServerAuthOk.Payload payload) {
-
+        System.out.println("WS AUTH OK");
     }
 
     @Override
@@ -130,6 +148,7 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
                     peerId, Conversation::new
             );
 
+
             if (convo.messages.containsKey(p.messageId)) {
                 return;
             }
@@ -143,6 +162,7 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
                     p.replyingTo
             );
 
+            messages.computeIfAbsent(peerId, k -> new ArrayList<>()).add(msg);
             convo.messages.put(msg.messageId, msg);
             convo.lastTimestamp = msg.createdAt;
             convo.lastMessage = msg.text;
@@ -153,7 +173,8 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
                 convo.unreadCount++;
             }
 
-            notifyListeners();
+            notifyConversationsUpdated();
+            notifyMessageListUpdated(peerId);
         });
     }
 
@@ -163,7 +184,7 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
             findMessage(p.messageId).ifPresent(msg -> {
                 if (!msg.delivered) {
                     msg.delivered = true;
-                    notifyListeners();
+                    notifyMessageListUpdated(p.clientId);
                 }
             });
         });
@@ -175,7 +196,6 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
             findMessage(p.messageId).ifPresent(msg -> {
                 if (!msg.read) {
                     msg.read = true;
-                    notifyListeners();
                 }
             });
         });
@@ -188,7 +208,7 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
                     p.fromUserId, Presence::new
             );
             pr.isTyping = p.isTyping;
-            notifyListeners();
+            notifyMessageListUpdated(p.fromUserId);
         });
     }
 
@@ -200,7 +220,8 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
             );
             pr.online = true;
             pr.lastSeen = null;
-            notifyListeners();
+            notifyConversationsUpdated();
+            notifyMessageListUpdated(p.userId);
         });
     }
 
@@ -212,7 +233,8 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
             );
             pr.online = false;
             pr.lastSeen = p.lastSeen;
-            notifyListeners();
+            notifyConversationsUpdated();
+            notifyMessageListUpdated(p.userId);
         });
     }
 
@@ -221,7 +243,7 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
         storeExecutor.execute(() -> {
             findMessage(p.messageId).ifPresent(msg -> {
                 msg.reactions.put(p.userId, p.reaction);
-                notifyListeners();
+                notifyMessageListUpdated(p.userId);
             });
         });
     }
@@ -231,7 +253,7 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
         storeExecutor.execute(() -> {
             findMessage(p.messageId).ifPresent(msg -> {
                 msg.reactions.remove(p.userId);
-                notifyListeners();
+                notifyMessageListUpdated(p.userId);
             });
         });
     }

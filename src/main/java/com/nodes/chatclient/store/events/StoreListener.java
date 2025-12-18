@@ -1,5 +1,7 @@
 package com.nodes.chatclient.store.events;
 
 public interface StoreListener {
-    void onStoreChanged();
+
+    default void onConversationsUpdated() {}
+    default void onMessageListUpdated(String peerId) {}
 }

@@ -4,14 +4,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nodes.chatclient.ws.messages.*;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
 
 public final class WsMessageRouter {
     private final ObjectMapper mapper;
-    private final Map<String, Consumer<JsonNode>> handlers = new HashMap<>();
+    private final Map<String, List<Consumer<JsonNode>>> handlers = new HashMap<>();
     private Consumer<WsEnvelope> fallbackHandler = env -> {};
 
     public WsMessageRouter(ObjectMapper mapper) {
@@ -23,16 +21,17 @@ public final class WsMessageRouter {
             Class<T> payloadClass,
             Consumer<T> handler
     ) {
-        handlers.put(type, payload -> {
-            try {
-                T msg = mapper.treeToValue(payload, payloadClass);
-                handler.accept(msg);
-            } catch (Exception e) {
-                throw new RuntimeException(
-                        "Failed to deserialize payload for type " + type, e
-                );
-            }
-        });
+        handlers
+                .computeIfAbsent(type, k -> new ArrayList<>())
+                .add(payload -> {
+                    try {
+                        T msg = mapper.treeToValue(payload, payloadClass);
+                        handler.accept(msg);
+                    } catch (Exception e) {
+                        throw new RuntimeException("Failed to deserialize payload for type " + type, e
+                        );
+                    }
+                });
     }
 
     public void setFallbackHandler(Consumer<WsEnvelope> fallbackHandler) {
@@ -42,9 +41,11 @@ public final class WsMessageRouter {
     public void route (WsEnvelope env) {
         if (env == null || env.type == null) return;
 
-        Consumer<JsonNode> handler = handlers.get(env.type);
-        if (handler != null) {
-            handler.accept(env.payload);
+        List<Consumer<JsonNode>> list = handlers.get(env.type);
+        if (list != null) {
+            for (Consumer<JsonNode> handler : list) {
+                handler.accept(env.payload);
+            }
         } else {
             fallbackHandler.accept(env);
         }

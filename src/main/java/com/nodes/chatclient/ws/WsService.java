@@ -85,11 +85,10 @@ public final class WsService {
     }
 
     public void send(Object message) {
-        WebSocket ws = this.webSocket;
-        if (ws == null || state != State.AUTHENTICATED) return;
+        if (state != State.AUTHENTICATED) return;
 
         try {
-            ws.sendText(mapper.writeValueAsString(message), true);
+            webSocket.sendText(mapper.writeValueAsString(message), true);
         } catch (Exception ignored) {}
     }
 
@@ -117,7 +116,9 @@ public final class WsService {
 
                         startHeartbeat(gen);
                         sendAuth();
-                    });
+                    })
+                    .join();
+
         }, delay.toMillis(), TimeUnit.MILLISECONDS);
     }
 
@@ -137,7 +138,10 @@ public final class WsService {
     private void sendAuth() {
         if (jwt == null || userId == null) return;
 
-        send(new ClientAuthMessage(userId, jwt));
+        try {
+            ClientAuthMessage msg = new ClientAuthMessage(userId, jwt);
+            webSocket.sendText(mapper.writeValueAsString(msg), true).join();
+        } catch (Exception ignored) {}
     }
 
     public void markAuthenticated() {
@@ -183,12 +187,8 @@ public final class WsService {
         }
 
         @Override
-        public void onOpen(WebSocket websocket) {
-            webSocket.request(1);
-        }
-
-        @Override
         public CompletionStage<?> onText(WebSocket ws, CharSequence data, boolean last) {
+            System.out.println("WS TEXT: " + data);
             if (gen != generation.get()) return CompletableFuture.completedFuture(null);
 
             buffer.append(data);
@@ -200,6 +200,12 @@ public final class WsService {
                 } catch (Exception ignored) {}
             }
 
+            ws.request(1);
+            return CompletableFuture.completedFuture(null);
+        }
+
+        @Override
+        public CompletionStage<?> onPing(WebSocket ws, ByteBuffer message) {
             ws.request(1);
             return CompletableFuture.completedFuture(null);
         }
@@ -224,6 +230,7 @@ public final class WsService {
             if (gen == generation.get()) {
                 scheduleReconnect(gen);
             }
+            ws.request(1);
         }
     }
 }
