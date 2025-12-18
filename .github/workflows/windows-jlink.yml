@@ -24,7 +24,7 @@ jobs:
         run: ./gradlew clean jlink --no-daemon
 
       - name: Upload Image Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ChatClient-windows-image
           path: build/image
