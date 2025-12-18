@@ -25,26 +25,7 @@ public class App extends Application {
     @Override
     public void start(Stage stage) {
         ClientConfig config = ClientConfig.localDev();
-        ObjectMapper mapper = new ObjectMapper();
-
-        HttpClientFactory httpFactory = new HttpClientFactory(config);
-        HttpClient httpClient = httpFactory.create();
-
-        AuthApi authApi = new AuthApi(config, httpClient, mapper);
-        ChatApi chatApi = new ChatApi(config, httpClient, mapper);
-
-        ChatStore store = null;
-        WsMessageRouter router = new WsMessageRouter(mapper);
-        WsService wsService = new WsService(config, httpClient, mapper, router);
-
-        AppContext ctx = new AppContext(
-                config,
-                httpFactory,
-                authApi,
-                chatApi,
-                wsService,
-                router
-        );
+        AppContext ctx = getAppContext(config);
 
         LoginController login = new LoginController(ctx, (userId) -> showConversationScene(stage, ctx, userId));
 
@@ -53,6 +34,34 @@ public class App extends Application {
         stage.setScene(scene);
         stage.setTitle("Nodes");
         stage.show();
+        stage.setOnCloseRequest(event -> {
+            System.out.println("Closing application...");
+            ctx.wsService.disconnect();
+            Platform.exit();
+            System.exit(0);
+        });
+    }
+
+    private static AppContext getAppContext(ClientConfig config) {
+        ObjectMapper mapper = new ObjectMapper();
+
+        HttpClientFactory httpFactory = new HttpClientFactory(config);
+        HttpClient httpClient = httpFactory.create();
+
+        AuthApi authApi = new AuthApi(config, httpClient, mapper);
+        ChatApi chatApi = new ChatApi(config, httpClient, mapper);
+
+        WsMessageRouter router = new WsMessageRouter(mapper);
+        WsService wsService = new WsService(config, httpClient, mapper, router);
+
+        return new AppContext(
+                config,
+                httpFactory,
+                authApi,
+                chatApi,
+                wsService,
+                router
+        );
     }
 
     private void showConversationScene(Stage stage, AppContext ctx, String userId) {
@@ -85,6 +94,12 @@ public class App extends Application {
     ) {
         ChatViewModel vm = new ChatViewModel(store, peerId);
         ChatController controller = new ChatController(ctx, vm);
+        long cursor = store.getConversation(peerId)
+                .map(c -> c.lastTimestamp)
+                .orElse(Long.MAX_VALUE);
+
+        ctx.chatApi.getHistoryAsync(ctx.jwt, peerId, cursor, 50)
+                .thenAccept(rows -> store.mergeHistory(peerId, rows));
 
         Platform.runLater(() -> {
             Scene scene = new Scene(controller.getRoot(), 500, 700);

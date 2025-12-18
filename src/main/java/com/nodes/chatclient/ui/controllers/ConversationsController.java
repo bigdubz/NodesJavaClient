@@ -19,6 +19,27 @@ public final class ConversationsController {
             ConversationsViewModel vm,
             Consumer<String> onConversationSelected
     ) {
+        ListView<Conversation> list = getConversationListView(vm);
+
+        list.getSelectionModel()
+                .selectedItemProperty()
+                .addListener((obs, oldV, newV) -> {
+                    if (newV != null) {
+                        onConversationSelected.accept(newV.peerId);
+                    }
+                });
+
+        Label title = new Label("Conversations");
+        BorderPane.setMargin(title, new Insets(10));
+
+        BorderPane pane = new BorderPane();
+        pane.setTop(title);
+        pane.setCenter(list);
+
+        this.root = pane;
+    }
+
+    private static ListView<Conversation> getConversationListView(ConversationsViewModel vm) {
         ListView<Conversation> list = new ListView<>();
         list.setItems(vm.getConversations());
 
@@ -43,23 +64,7 @@ public final class ConversationsController {
                 );
             }
         });
-
-        list.getSelectionModel()
-                .selectedItemProperty()
-                .addListener((obs, oldV, newV) -> {
-                    if (newV != null) {
-                        onConversationSelected.accept(newV.peerId);
-                    }
-                });
-
-        Label title = new Label("Conversations");
-        BorderPane.setMargin(title, new Insets(10));
-
-        BorderPane pane = new BorderPane();
-        pane.setTop(title);
-        pane.setCenter(list);
-
-        this.root = pane;
+        return list;
     }
 
     public Parent getRoot() {

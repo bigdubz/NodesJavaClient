@@ -8,20 +8,22 @@ import com.nodes.chatclient.ws.messages.*;
 import com.nodes.chatclient.store.model.*;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public final class ChatStore implements WsMessageRouter.ServerHandlers {
 
     private final Executor storeExecutor = Executors.newSingleThreadExecutor(
-            r -> new Thread(r, "chat-store")
+            r -> {
+                Thread t = new Thread(r, "chat-store");
+                t.setDaemon(true);
+                return t;
+            }
     );
 
     private final String selfUserId;
 
     private final Map<String, Conversation> conversations = new HashMap<>();
-    private final Map<String, List<ChatMessage>> messages = new ConcurrentHashMap<>();
     private final Map<String, Presence> presence = new HashMap<>();
     private volatile String activeConversationPeerId;
 
@@ -97,7 +99,7 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
                 );
 
                 msg.delivered = row.delivered == 1;
-                msg.read = row.read == 1;
+                msg.read = row.seen == 1;
 
                 if (row.reactions != null) {
                     msg.reactions.putAll(row.reactions);
@@ -115,23 +117,35 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
         });
     }
 
+    public void addOutgoingMessage(String peerId, ChatMessage msg) {
+        storeExecutor.execute(() -> {
+            Conversation convo = conversations.computeIfAbsent(
+                    peerId,
+                    Conversation::new
+            );
+            convo.messages.put(msg.messageId, msg);
+            notifyMessageListUpdated(peerId);
+        });
+    }
+
     public List<Conversation> getConversationsSnapshot() {
         return List.copyOf(conversations.values());
     }
 
     public List<ChatMessage> getMessagesSnapshot(String peerId) {
-        List<ChatMessage> list = messages.get(peerId);
-
-        if (list == null || list.isEmpty()) {
+        Conversation convo = conversations.get(peerId);
+        if (convo == null || convo.messages.isEmpty()) {
             return Collections.emptyList();
         }
 
-        return List.copyOf(list);
+        return convo.messages.values()
+                .stream()
+                .sorted(Comparator.comparingLong(m -> m.createdAt))
+                .toList();
     }
 
     @Override
     public void onAuthOk(ServerAuthOk.Payload payload) {
-        System.out.println("WS AUTH OK");
     }
 
     @Override
@@ -162,7 +176,6 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
                     p.replyingTo
             );
 
-            messages.computeIfAbsent(peerId, k -> new ArrayList<>()).add(msg);
             convo.messages.put(msg.messageId, msg);
             convo.lastTimestamp = msg.createdAt;
             convo.lastMessage = msg.text;
@@ -180,25 +193,32 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
 
     @Override
     public void onMessageDelivered(ServerMessageDelivered.Payload p) {
-        storeExecutor.execute(() -> {
-            findMessage(p.messageId).ifPresent(msg -> {
-                if (!msg.delivered) {
-                    msg.delivered = true;
-                    notifyMessageListUpdated(p.clientId);
-                }
-            });
-        });
+        storeExecutor.execute(() -> findMessage(p.clientId).ifPresent(msg -> {
+            boolean changedId = !msg.messageId.equals(p.messageId);
+
+            Conversation convo = conversations.values().stream()
+                    .filter(c -> c.messages.containsKey(msg.messageId))
+                    .findFirst()
+                    .orElse(null);
+
+            if (convo != null && changedId) {
+                convo.messages.remove(msg.messageId);
+                msg.messageId = p.messageId;
+                convo.messages.put(msg.messageId, msg);
+            }
+
+            msg.delivered = true;
+            notifyMessageListUpdated(msg.toUserId);
+        }));
     }
 
     @Override
     public void onMessageSeen(ServerMessageSeen.Payload p) {
-        storeExecutor.execute(() -> {
-            findMessage(p.messageId).ifPresent(msg -> {
-                if (!msg.read) {
-                    msg.read = true;
-                }
-            });
-        });
+        storeExecutor.execute(() -> findMessage(p.messageId).ifPresent(msg -> {
+            if (!msg.read) {
+                msg.read = true;
+            }
+        }));
     }
 
     @Override
@@ -240,22 +260,18 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
 
     @Override
     public void onAddReaction(ServerAddReaction.Payload p) {
-        storeExecutor.execute(() -> {
-            findMessage(p.messageId).ifPresent(msg -> {
-                msg.reactions.put(p.userId, p.reaction);
-                notifyMessageListUpdated(p.userId);
-            });
-        });
+        storeExecutor.execute(() -> findMessage(p.messageId).ifPresent(msg -> {
+            msg.reactions.put(p.userId, p.reaction);
+            notifyMessageListUpdated(p.userId);
+        }));
     }
 
     @Override
     public void onRemoveReaction(ServerRemoveReaction.Payload p) {
-        storeExecutor.execute(() -> {
-            findMessage(p.messageId).ifPresent(msg -> {
-                msg.reactions.remove(p.userId);
-                notifyMessageListUpdated(p.userId);
-            });
-        });
+        storeExecutor.execute(() -> findMessage(p.messageId).ifPresent(msg -> {
+            msg.reactions.remove(p.userId);
+            notifyMessageListUpdated(p.userId);
+        }));
     }
 
     private Optional<ChatMessage> findMessage(String messageId) {

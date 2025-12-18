@@ -10,7 +10,7 @@ public final class MessageRowDto {
     public long createdAt;
 
     public int delivered; // 0 / 1
-    public int read;      // 0 / 1
+    public int seen;      // 0 / 1
 
     public String replyingTo;
 

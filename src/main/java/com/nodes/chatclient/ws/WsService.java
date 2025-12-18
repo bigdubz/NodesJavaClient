@@ -3,6 +3,9 @@ package com.nodes.chatclient.ws;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nodes.chatclient.config.ClientConfig;
 import com.nodes.chatclient.ws.messages.ClientAuthMessage;
+import com.nodes.chatclient.ws.messages.ClientChatMessage;
+import com.nodes.chatclient.ws.messages.ServerAuthError;
+import com.nodes.chatclient.ws.messages.ServerAuthOk;
 
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
@@ -27,7 +30,11 @@ public final class WsService {
     private final WsMessageRouter router;
 
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(
-            r -> new Thread(r, "ws-scheduler")
+            r -> {
+                Thread t = new Thread(r, "ws-scheduler");
+                t.setDaemon(true);
+                return t;
+            }
     );
 
     private volatile WebSocket webSocket;
@@ -54,6 +61,9 @@ public final class WsService {
         this.httpClient = Objects.requireNonNull(httpClient, "httpClient");
         this.mapper = Objects.requireNonNull(mapper, "mapper");
         this.router = Objects.requireNonNull(router, "router");
+
+        router.on("AUTH_OK", ServerAuthOk.Payload.class, this::handleAuthOk);
+        router.on("AUTH_ERROR", ServerAuthError.Payload.class, this::handleAuthError);
     }
 
     public void setAuth(String userId, String jwt) {
@@ -64,6 +74,17 @@ public final class WsService {
     public State getState() {
         return state;
     }
+
+    private void handleAuthOk(ServerAuthOk.Payload p) {
+        System.out.println("WsService → AUTH_OK");
+        state = State.AUTHENTICATED;
+    }
+
+    private void handleAuthError(ServerAuthError.Payload p) {
+        System.out.println("WsService → AUTH_ERROR");
+        // maybe logout? maybe reconnect?
+    }
+
 
     public void connect() {
         long gen = generation.incrementAndGet();
@@ -84,12 +105,38 @@ public final class WsService {
         }
     }
 
+    public void sendChatMessageAsync(
+            String toUserId,
+            String text,
+            String clientId,
+            String replyingTo
+    ) {
+        if (webSocket == null) return;
+
+        ClientChatMessage msg = new ClientChatMessage(
+                toUserId,
+                text,
+                clientId,
+                replyingTo
+        );
+
+        System.out.println(
+                "SEND MESSAGE:\n\t" +
+                    "To user:\t\t"+toUserId+
+                    "\n\tText:\t\t\t"+text+
+                    "\n\tTemp client ID:\t"+clientId+
+                    "\n\tReplying to:\t"+replyingTo
+        );
+
+        send(msg);
+    }
+
     public void send(Object message) {
         if (state != State.AUTHENTICATED) return;
-
         try {
             webSocket.sendText(mapper.writeValueAsString(message), true);
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
     }
 
     private void scheduleConnect(long gen, Duration delay) {
@@ -144,10 +191,6 @@ public final class WsService {
         } catch (Exception ignored) {}
     }
 
-    public void markAuthenticated() {
-        state = State.AUTHENTICATED;
-    }
-
     private void startHeartbeat(long gen) {
         stopHeartbeat();
 
@@ -188,7 +231,7 @@ public final class WsService {
 
         @Override
         public CompletionStage<?> onText(WebSocket ws, CharSequence data, boolean last) {
-            System.out.println("WS TEXT: " + data);
+            System.out.println("RECEIVED THROUGH WS: " + data);
             if (gen != generation.get()) return CompletableFuture.completedFuture(null);
 
             buffer.append(data);

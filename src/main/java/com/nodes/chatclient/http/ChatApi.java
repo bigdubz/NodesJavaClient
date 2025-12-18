@@ -100,7 +100,7 @@ public final class ChatApi {
 
     private URI historyUri(String peerId, Long before, int limit) {
         StringBuilder qs = new StringBuilder();
-        qs.append("?peerId=").append(url(peerId));
+        qs.append("?user=").append(url(peerId));
         qs.append("&limit=").append(limit);
 
         if (before != null) {
@@ -124,7 +124,7 @@ public final class ChatApi {
         try {
             return mapper.readValue(
                     response.body(),
-                    new TypeReference<List<ConversationRowDto>>() {}
+                    new TypeReference<>() {}
             );
         } catch (Exception e) {
             throw new RuntimeException("Invalid conversations response", e);
@@ -141,7 +141,7 @@ public final class ChatApi {
         try {
             return mapper.readValue(
                     response.body(),
-                    new TypeReference<List<MessageRowDto>>() {}
+                    new TypeReference<>() {}
             );
         } catch (Exception e) {
             throw new RuntimeException("Invalid history response", e);

@@ -5,15 +5,15 @@ import java.util.Map;
 
 public final class ChatMessage {
 
-    public final String messageId;
+    public String messageId;
     public final String fromUserId;
     public final String toUserId;
     public final String text;
     public final long createdAt;
     public final String replyingTo;
 
-    public boolean delivered;
-    public boolean read;
+    public boolean delivered = false;
+    public boolean read = false;
 
     public final Map<String, String> reactions = new HashMap<>();
 
@@ -34,6 +34,24 @@ public final class ChatMessage {
     }
 
     public static ChatMessage incoming(
+            String messageId,
+            String fromUserId,
+            String toUserId,
+            String text,
+            long createdAt,
+            String replyingTo
+    ) {
+        return new ChatMessage(
+                messageId,
+                fromUserId,
+                toUserId,
+                text,
+                createdAt,
+                replyingTo
+        );
+    }
+
+    public static ChatMessage outgoing(
             String messageId,
             String fromUserId,
             String toUserId,

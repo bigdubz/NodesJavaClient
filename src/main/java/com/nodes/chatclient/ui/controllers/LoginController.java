@@ -35,9 +35,7 @@ public final class LoginController {
                 ctx.userId = res.userId;
                 ctx.jwt = res.token;
 
-                Platform.runLater(() -> {
-                    onLoginSuccess.accept(res.userId);
-                });
+                Platform.runLater(() -> onLoginSuccess.accept(res.userId));
             }
         }));
 
