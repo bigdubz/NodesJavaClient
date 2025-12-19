@@ -95,7 +95,7 @@ public class App extends Application {
         ChatViewModel vm = new ChatViewModel(store, peerId);
         ChatController controller = new ChatController(ctx, vm);
         long cursor = store.getConversation(peerId)
-                .map(c -> c.lastTimestamp)
+                .map(c -> (c.lastTimestamp + 1)) // make sure to include last message because backend does < not <=
                 .orElse(Long.MAX_VALUE);
 
         ctx.chatApi.getHistoryAsync(ctx.jwt, peerId, cursor, 50)
