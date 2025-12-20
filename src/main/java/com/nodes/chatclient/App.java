@@ -23,6 +23,9 @@ import java.util.Objects;
 
 public class App extends Application {
 
+    private final int DEFAULT_SIZE_W = 1200;
+    private final int DEFAULT_SIZE_H = 1000;
+
     @Override
     public void start(Stage stage) {
         ClientConfig config = ClientConfig.localDev();
@@ -30,12 +33,15 @@ public class App extends Application {
 
         LoginController login = new LoginController(ctx, (userId) -> showConversationScene(stage, ctx, userId));
 
-        Scene scene = new Scene(login.getRoot());
+        Scene scene = new Scene(login.getRoot(), DEFAULT_SIZE_W, DEFAULT_SIZE_H);
 
         stage.setScene(scene);
-        scene.getStylesheets().add(
+        scene.getStylesheets().addAll(
                 Objects.requireNonNull(
-                        getClass().getResource("/styles/chat.css")
+                        getClass().getResource("/styles/global.css")
+                ).toExternalForm(),
+                Objects.requireNonNull(
+                        getClass().getResource("/styles/login.css")
                 ).toExternalForm()
         );
         stage.setTitle("Nodes");
@@ -86,11 +92,14 @@ public class App extends Application {
         );
 
         Platform.runLater(() -> {
-            Scene scene = new Scene(cc.getRoot(), 500, 700);
+            Scene scene = new Scene(cc.getRoot(), DEFAULT_SIZE_W, DEFAULT_SIZE_H);
             stage.setScene(scene);
-            scene.getStylesheets().add(
+            scene.getStylesheets().addAll(
                     Objects.requireNonNull(
-                            getClass().getResource("/styles/chat.css")
+                            getClass().getResource("/styles/global.css")
+                    ).toExternalForm(),
+                    Objects.requireNonNull(
+                            getClass().getResource("/styles/conversations.css")
                     ).toExternalForm()
             );
         });
@@ -112,9 +121,12 @@ public class App extends Application {
                 .thenAccept(rows -> store.mergeHistory(peerId, rows));
 
         Platform.runLater(() -> {
-            Scene scene = new Scene(controller.getRoot(), 500, 700);
+            Scene scene = new Scene(controller.getRoot(), DEFAULT_SIZE_W, DEFAULT_SIZE_H);
             stage.setScene(scene);
-            scene.getStylesheets().add(
+            scene.getStylesheets().addAll(
+                    Objects.requireNonNull(
+                            getClass().getResource("/styles/global.css")
+                    ).toExternalForm(),
                     Objects.requireNonNull(
                             getClass().getResource("/styles/chat.css")
                     ).toExternalForm()

@@ -32,16 +32,18 @@ public class ChatController {
             return cell;
         });
         messages.setStyle("-fx-background-insets: 0;");
-        vm.getMessages().addListener((ListChangeListener<ChatMessage>) c -> {
-            Platform.runLater(() -> messages.scrollTo(vm.getMessages().size() - 1));
-        });
+        vm.getMessages().addListener((ListChangeListener<ChatMessage>) c ->
+                Platform.runLater(() ->
+                        messages.scrollTo(vm.getMessages().size() - 1)
+                )
+        );
 
         TextField input = new TextField();
         input.setPromptText("Send a message...");
-        input.getStyleClass().add("chat-input");
+        input.getStyleClass().add("input-field");
 
         Button send = new Button("Send");
-        send.getStyleClass().add("chat-send");
+        send.getStyleClass().add("button");
 
         send.setOnAction(e -> {
             String text = input.getText().trim();

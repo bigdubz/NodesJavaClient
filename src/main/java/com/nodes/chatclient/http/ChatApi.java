@@ -139,7 +139,6 @@ public final class ChatApi {
         }
 
         try {
-            System.out.println(response.body());
             return mapper.readValue(
                     response.body(),
                     new TypeReference<>() {}

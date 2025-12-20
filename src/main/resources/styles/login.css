@@ -1,0 +1,12 @@
+/* ===== ROOT ===== */
+.login-root {
+    -fx-background-color: -fx-global-bg-color;
+    -fx-alignment: center;
+    -fx-spacing: 12;
+    -fx-font-family: "Segoe UI Emoji", "Segoe UI", "Inter", sans-serif;
+}
+
+/* ===== LOADING ===== */
+.login-loading {
+    -fx-progress-color: -fx-nodes-purple;
+}

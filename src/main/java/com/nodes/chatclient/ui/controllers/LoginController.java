@@ -17,12 +17,17 @@ public final class LoginController {
     public LoginController(AppContext ctx, Consumer<String> onLoginSuccess) {
         this.vm = new LoginViewModel(ctx);
 
+        Label usernameLabel = new Label("Username");
         TextField username = new TextField();
+
+        Label passwordLabel = new Label("Password");
         PasswordField password = new PasswordField();
+
         Button loginBtn = new Button("Login");
+
         Label error = new Label();
+
         ProgressIndicator loading = new ProgressIndicator();
-        loading.setVisible(false);
         loading.setPrefSize(16, 16);
 
         username.textProperty().bindBidirectional(vm.usernameProperty());
@@ -39,8 +44,28 @@ public final class LoginController {
             }
         }));
 
-        VBox box = new VBox(10, username, password, loginBtn, error, loading);
-        box.setPadding(new Insets(20));
+
+        usernameLabel.getStyleClass().add("label");
+        username.getStyleClass().add("input-field");
+        passwordLabel.getStyleClass().add("label");
+        password.getStyleClass().add("input-field");
+        loginBtn.getStyleClass().add("button");
+        error.getStyleClass().add("error");
+        loading.getStyleClass().add("login-loading");
+
+        username.disableProperty().bind(vm.loginInProgressProperty());
+        password.disableProperty().bind(vm.loginInProgressProperty());
+
+        error.textProperty().bind(vm.errorMessageProperty());
+        error.visibleProperty().bind(vm.errorMessageProperty().isNotNull());
+
+        loading.visibleProperty().bind(vm.loginInProgressProperty());
+        VBox usernameBox = new VBox(6, usernameLabel, username);
+        VBox passwordBox = new VBox(6, passwordLabel, password);
+
+        VBox box = new VBox(14, usernameBox, passwordBox, loginBtn, error, loading);
+        box.setPadding(new Insets(32));
+        box.getStyleClass().add("login-root");
 
         this.root = box;
     }

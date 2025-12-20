@@ -1,0 +1,114 @@
+.root {
+    -fx-background-color: #17131B;
+
+    -fx-global-bg-color: #17131B;
+    -fx-global-bg-light: #201B26;
+    -fx-global-bg-lighter: #2C2433;
+
+    -fx-nodes-purple: #38057D;
+    -fx-nodes-purple-light: #4D1F8A;
+    -fx-nodes-purple-dark: #2D0364;
+
+    -fx-nodes-green: #008E56;
+    -fx-nodes-green-light: #1B9866;
+    -fx-nodes-green-dark: #03663E;
+
+    -fx-nodes-red: #f23f42;
+
+    -fx-text: white;
+    -fx-text-muted: #b5bac1;
+    -fx-placeholder-text-color: #6f6977;
+}
+
+/* ===== LABELS ===== */
+.label {
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-letter-spacing: 1px;
+}
+
+/* ===== BUTTON ===== */
+.button {
+    -fx-background-color: -fx-nodes-purple;
+    -fx-background-radius: 6;
+
+    -fx-text-fill: -fx-text;
+    -fx-font-weight: bold;
+    -fx-font-size: 15px;
+
+    -fx-padding: 8 14;
+
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: -fx-nodes-purple-light;
+}
+
+.button:pressed {
+    -fx-background-color: -fx-nodes-purple-dark;
+}
+
+.button:disabled {
+    -fx-background-color: -fx-nodes-purple-dark;
+    -fx-text-fill: -fx-placeholder-text-color;
+}
+
+.input-field {
+    -fx-background-color: -fx-global-bg-light;
+
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: -fx-placeholder-text-color;
+
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-border-color: transparent;
+
+    -fx-padding: 8 14;
+
+    -fx-font-size: 14px;
+}
+
+.input-field:focused {
+    -fx-border-color: -fx-nodes-purple;
+    -fx-border-width: 1.5;
+}
+
+.scroll-bar:horizontal {
+    -fx-opacity: 0;
+    -fx-max-height: 0;
+}
+
+/* background track */
+.scroll-bar:vertical {
+    -fx-background-color: -fx-global-bg-color;
+}
+
+/* dark track */
+.scroll-bar:vertical .track {
+    -fx-background-color: -fx-global-bg-color;
+}
+
+/* thumb (the draggable part) */
+.scroll-bar:vertical .thumb {
+    -fx-background-color: -fx-global-bg-light;
+    -fx-background-radius: 6;
+}
+
+/* thumb hover */
+.scroll-bar:vertical .thumb:hover {
+    -fx-background-color: -fx-global-bg-lighter;
+}
+
+/* buttons (arrows) */
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-padding: 0;
+    -fx-opacity: 0;
+}
+
+.error {
+    -fx-text-fill: -fx-nodes-red;
+    -fx-font-size: 12px;
+}
