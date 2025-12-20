@@ -138,7 +138,10 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
             return Collections.emptyList();
         }
 
-        return new ArrayList<>(convo.messages.values()).reversed();
+        return convo.messages.values()
+                .stream()
+                .sorted(Comparator.comparingLong(m -> m.createdAt))
+                .toList();
     }
 
     @Override

@@ -19,6 +19,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import java.net.http.HttpClient;
+import java.util.Objects;
 
 public class App extends Application {
 
@@ -32,6 +33,11 @@ public class App extends Application {
         Scene scene = new Scene(login.getRoot());
 
         stage.setScene(scene);
+        scene.getStylesheets().add(
+                Objects.requireNonNull(
+                        getClass().getResource("/styles/chat.css")
+                ).toExternalForm()
+        );
         stage.setTitle("Nodes");
         stage.show();
         stage.setOnCloseRequest(event -> {
@@ -79,11 +85,15 @@ public class App extends Application {
                 peerId -> showChatScene(stage, ctx, store, peerId)
         );
 
-        Platform.runLater(() ->
-                stage.setScene(
-                        new Scene(cc.getRoot(), 500, 700)
-                )
-        );
+        Platform.runLater(() -> {
+            Scene scene = new Scene(cc.getRoot(), 500, 700);
+            stage.setScene(scene);
+            scene.getStylesheets().add(
+                    Objects.requireNonNull(
+                            getClass().getResource("/styles/chat.css")
+                    ).toExternalForm()
+            );
+        });
     }
 
     private void showChatScene(
@@ -104,6 +114,11 @@ public class App extends Application {
         Platform.runLater(() -> {
             Scene scene = new Scene(controller.getRoot(), 500, 700);
             stage.setScene(scene);
+            scene.getStylesheets().add(
+                    Objects.requireNonNull(
+                            getClass().getResource("/styles/chat.css")
+                    ).toExternalForm()
+            );
             stage.setTitle("Chat: " + peerId);
         });
     }

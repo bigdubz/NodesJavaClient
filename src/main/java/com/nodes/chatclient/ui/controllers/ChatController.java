@@ -3,12 +3,16 @@ package com.nodes.chatclient.ui.controllers;
 import com.nodes.chatclient.AppContext;
 import com.nodes.chatclient.store.model.ChatMessage;
 import com.nodes.chatclient.ui.vm.ChatViewModel;
+import javafx.application.Platform;
+import javafx.collections.ListChangeListener;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 
 public class ChatController {
 
@@ -22,12 +26,22 @@ public class ChatController {
 
         ListView<ChatMessage> messages = new ListView<>();
         messages.setItems(vm.getMessages());
-        messages.setCellFactory(lv -> new MessageCell(vm.getPeerId()));
+        messages.setCellFactory(lv -> {
+            MessageCell cell = new MessageCell(vm.getPeerId());
+            cell.setMaxWidth(Double.MAX_VALUE);
+            return cell;
+        });
+        messages.setStyle("-fx-background-insets: 0;");
+        vm.getMessages().addListener((ListChangeListener<ChatMessage>) c -> {
+            Platform.runLater(() -> messages.scrollTo(vm.getMessages().size() - 1));
+        });
 
         TextField input = new TextField();
         input.setPromptText("Send a message...");
+        input.getStyleClass().add("chat-input");
 
         Button send = new Button("Send");
+        send.getStyleClass().add("chat-send");
 
         send.setOnAction(e -> {
             String text = input.getText().trim();
@@ -54,24 +68,64 @@ public class ChatController {
     }
 
     private static class MessageCell extends ListCell<ChatMessage> {
-        private final String peerId;
+        private final String selfId;
 
-        MessageCell(String peerId) {
-            this.peerId = peerId;
+        MessageCell(String selfId) {
+            this.selfId = selfId;
+            getStyleClass().add("msg-cell");
+
+            setOnMouseClicked(e -> {
+                if (e.getClickCount() == 2 && getItem() != null) {
+                    // TODO: reply to this message
+                }
+            });
         }
 
         @Override
-        protected void updateItem(ChatMessage item, boolean empty) {
-            super.updateItem(item, empty);
-            if (empty || item == null) {
-                setText(null);
+        public void updateSelected(boolean selected) {
+            // Do NOT call super.updateSelected -> prevents :selected CSS state,
+            // but mouse events still fire normally.
+        }
+
+        @Override
+        protected void updateItem(ChatMessage m, boolean empty) {
+            super.updateItem(m, empty);
+
+            if (empty || m == null) {
                 setGraphic(null);
                 return;
             }
 
-            boolean isIncoming = !item.fromUserId.equals(peerId);
-            String display = (isIncoming ? "< " : "> ") + item.text;
-            setText(display);
+            HBox box = new HBox();
+            box.setFillHeight(false);
+            box.setMaxWidth(Double.MAX_VALUE);
+            box.setPrefWidth(Region.USE_COMPUTED_SIZE);
+            box.getStyleClass().add("msg-row");
+
+            boolean fromMe = !m.fromUserId.equals(selfId);
+
+            if (fromMe) {
+                box.setAlignment(Pos.CENTER_RIGHT);
+                box.getStyleClass().add("msg-right");
+            } else {
+                box.setAlignment(Pos.CENTER_LEFT);
+                box.getStyleClass().add("msg-left");
+            }
+
+            Label text = new Label(m.text);
+            text.getStyleClass().add("msg-text");
+            text.setWrapText(true);
+
+            text.maxWidthProperty().bind(
+                    getListView().widthProperty()
+                            .multiply(0.80)
+                            .subtract(30) // padding
+            );
+
+            box.getChildren().add(text);
+
+            HBox.setHgrow(box, Priority.ALWAYS);
+            setGraphic(box);
         }
     }
 }

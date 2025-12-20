@@ -36,13 +36,13 @@ public final class ChatViewModel implements StoreListener {
 
     private void reload() {
         List<ChatMessage> snapshot = store.getMessagesSnapshot(peerId);
-        Platform.runLater(() -> messages.setAll(snapshot));
+        Platform.runLater(() -> {
+            messages.setAll(snapshot);
+        });
     }
 
     @Override
     public void onMessageListUpdated(String peerId) {
-        System.out.println("Message list updated for peerId: " + peerId);
-        System.out.println("Current peerId: " + this.peerId);
         if (peerId.equals(this.peerId)) {
             reload();
         }
