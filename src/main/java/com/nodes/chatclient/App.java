@@ -5,12 +5,7 @@ import com.nodes.chatclient.config.ClientConfig;
 import com.nodes.chatclient.http.AuthApi;
 import com.nodes.chatclient.http.ChatApi;
 import com.nodes.chatclient.http.HttpClientFactory;
-import com.nodes.chatclient.store.ChatStore;
-import com.nodes.chatclient.ui.controllers.ChatController;
-import com.nodes.chatclient.ui.controllers.ConversationsController;
-import com.nodes.chatclient.ui.controllers.LoginController;
-import com.nodes.chatclient.ui.vm.ChatViewModel;
-import com.nodes.chatclient.ui.vm.ConversationsViewModel;
+import com.nodes.chatclient.ui.controllers.AppRootController;
 import com.nodes.chatclient.ws.WsMessageRouter;
 import com.nodes.chatclient.ws.WsService;
 import javafx.application.Application;
@@ -23,29 +18,27 @@ import java.util.Objects;
 
 public class App extends Application {
 
-    private final int DEFAULT_SIZE_W = 1200;
-    private final int DEFAULT_SIZE_H = 1000;
-
     @Override
     public void start(Stage stage) {
         ClientConfig config = ClientConfig.localDev();
         AppContext ctx = getAppContext(config);
 
-        LoginController login = new LoginController(ctx, (userId) -> showConversationScene(stage, ctx, userId));
+        AppRootController app = new AppRootController(ctx, stage);
 
-        Scene scene = new Scene(login.getRoot(), DEFAULT_SIZE_W, DEFAULT_SIZE_H);
+        int DEFAULT_SIZE_H = 1000;
+        int DEFAULT_SIZE_W = 1200;
+        Scene scene = new Scene(app.getRoot(), DEFAULT_SIZE_W, DEFAULT_SIZE_H);
+        scene.getStylesheets().addAll(
+                Objects.requireNonNull(getClass().getResource("/styles/global.css")).toExternalForm(),
+                Objects.requireNonNull(getClass().getResource("/styles/login.css")).toExternalForm(),
+                Objects.requireNonNull(getClass().getResource("/styles/chat.css")).toExternalForm(),
+                Objects.requireNonNull(getClass().getResource("/styles/conversations.css")).toExternalForm()
+        );
 
         stage.setScene(scene);
-        scene.getStylesheets().addAll(
-                Objects.requireNonNull(
-                        getClass().getResource("/styles/global.css")
-                ).toExternalForm(),
-                Objects.requireNonNull(
-                        getClass().getResource("/styles/login.css")
-                ).toExternalForm()
-        );
         stage.setTitle("Nodes");
         stage.show();
+
         stage.setOnCloseRequest(event -> {
             System.out.println("Closing application...");
             ctx.wsService.disconnect();
@@ -74,64 +67,5 @@ public class App extends Application {
                 wsService,
                 router
         );
-    }
-
-    private void showConversationScene(Stage stage, AppContext ctx, String userId) {
-        ChatStore store = new ChatStore(userId);
-        ctx.router.registerServerHandlers(store);
-        ctx.wsService.setAuth(userId, ctx.jwt);
-        ctx.wsService.connect();
-
-        ctx.chatApi.getConversationsAsync(ctx.jwt)
-                .thenAccept(store::mergeConversations);
-
-        ConversationsViewModel cvm = new ConversationsViewModel(store);
-        ConversationsController cc = new ConversationsController(
-                cvm,
-                peerId -> showChatScene(stage, ctx, store, peerId)
-        );
-
-        Platform.runLater(() -> {
-            Scene scene = new Scene(cc.getRoot(), DEFAULT_SIZE_W, DEFAULT_SIZE_H);
-            stage.setScene(scene);
-            scene.getStylesheets().addAll(
-                    Objects.requireNonNull(
-                            getClass().getResource("/styles/global.css")
-                    ).toExternalForm(),
-                    Objects.requireNonNull(
-                            getClass().getResource("/styles/conversations.css")
-                    ).toExternalForm()
-            );
-        });
-    }
-
-    private void showChatScene(
-            Stage stage,
-            AppContext ctx,
-            ChatStore store,
-            String peerId
-    ) {
-        ChatViewModel vm = new ChatViewModel(store, peerId);
-        ChatController controller = new ChatController(ctx, vm);
-        long cursor = store.getConversation(peerId)
-                .map(c -> (c.lastTimestamp + 1)) // make sure to include last message because backend does < not <=
-                .orElse(Long.MAX_VALUE);
-
-        ctx.chatApi.getHistoryAsync(ctx.jwt, peerId, cursor, 50)
-                .thenAccept(rows -> store.mergeHistory(peerId, rows));
-
-        Platform.runLater(() -> {
-            Scene scene = new Scene(controller.getRoot(), DEFAULT_SIZE_W, DEFAULT_SIZE_H);
-            stage.setScene(scene);
-            scene.getStylesheets().addAll(
-                    Objects.requireNonNull(
-                            getClass().getResource("/styles/global.css")
-                    ).toExternalForm(),
-                    Objects.requireNonNull(
-                            getClass().getResource("/styles/chat.css")
-                    ).toExternalForm()
-            );
-            stage.setTitle("Chat: " + peerId);
-        });
     }
 }

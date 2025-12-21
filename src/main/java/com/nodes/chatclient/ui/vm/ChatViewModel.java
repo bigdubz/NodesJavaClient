@@ -13,7 +13,7 @@ import java.util.List;
 
 public final class ChatViewModel implements StoreListener {
     private final ChatStore store;
-    private final String peerId;
+    private String peerId;
 
     private final ObservableList<ChatMessage> messages = FXCollections.observableArrayList();
 
@@ -34,7 +34,13 @@ public final class ChatViewModel implements StoreListener {
         return messages;
     }
 
+    public void setPeerId(String peerId) {
+        this.peerId = peerId;
+        reload();
+    }
+
     private void reload() {
+        if (peerId == null) return;
         List<ChatMessage> snapshot = store.getMessagesSnapshot(peerId);
         Platform.runLater(() -> {
             messages.setAll(snapshot);
@@ -69,5 +75,9 @@ public final class ChatViewModel implements StoreListener {
 
     private String clientIdGenerator() {
         return "client-" + System.nanoTime();
+    }
+
+    public void reset() {
+        messages.clear();
     }
 }

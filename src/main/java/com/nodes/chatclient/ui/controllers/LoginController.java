@@ -77,4 +77,11 @@ public final class LoginController {
     public LoginViewModel getViewModel() {
         return vm;
     }
+
+    public void reset() {
+        vm.usernameProperty().set("");
+        vm.passwordProperty().set("");
+        vm.errorMessageProperty().set(null);
+        vm.loginInProgressProperty().set(false);
+    }
 }

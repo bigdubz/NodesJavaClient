@@ -62,8 +62,8 @@ public final class WsService {
         this.mapper = Objects.requireNonNull(mapper, "mapper");
         this.router = Objects.requireNonNull(router, "router");
 
-        router.on("AUTH_OK", ServerAuthOk.Payload.class, this::handleAuthOk);
-        router.on("AUTH_ERROR", ServerAuthError.Payload.class, this::handleAuthError);
+        router.onCore("AUTH_OK", ServerAuthOk.Payload.class, this::handleAuthOk);
+        router.onCore("AUTH_ERROR", ServerAuthError.Payload.class, this::handleAuthError);
     }
 
     public void setAuth(String userId, String jwt) {
@@ -131,6 +131,7 @@ public final class WsService {
     }
 
     public void send(Object message) {
+        System.out.println(state.name());
         if (state != State.AUTHENTICATED) return;
         try {
             webSocket.sendText(mapper.writeValueAsString(message), true);

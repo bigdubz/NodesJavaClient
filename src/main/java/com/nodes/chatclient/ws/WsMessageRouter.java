@@ -9,27 +9,44 @@ import java.util.function.Consumer;
 
 public final class WsMessageRouter {
     private final ObjectMapper mapper;
-    private final Map<String, List<Consumer<JsonNode>>> handlers = new HashMap<>();
+
+    private final Map<String, List<Consumer<JsonNode>>> coreHandlers = new HashMap<>();
+    private final Map<String, List<Consumer<JsonNode>>> sessionHandlers = new HashMap<>();
+
     private Consumer<WsEnvelope> fallbackHandler = env -> {};
 
     public WsMessageRouter(ObjectMapper mapper) {
         this.mapper = Objects.requireNonNull(mapper, "mapper");
     }
 
-    public <T> void on(
+    public <T> void onCore(
             String type,
             Class<T> payloadClass,
             Consumer<T> handler
     ) {
-        handlers
-                .computeIfAbsent(type, k -> new ArrayList<>())
+        register(coreHandlers, type, payloadClass, handler);
+    }
+
+    public <T> void onSession(
+            String type,
+            Class<T> payloadClass,
+            Consumer<T> handler
+    ) {
+        register(sessionHandlers, type, payloadClass, handler);
+    }
+
+    private <T> void register(
+            Map<String, List<Consumer<JsonNode>>> map,
+            String type,
+            Class<T> payloadClass,
+            Consumer<T> handler
+    ) {
+        map.computeIfAbsent(type, k -> new ArrayList<>())
                 .add(payload -> {
                     try {
-                        T msg = mapper.treeToValue(payload, payloadClass);
-                        handler.accept(msg);
+                        handler.accept(mapper.treeToValue(payload, payloadClass));
                     } catch (Exception e) {
-                        throw new RuntimeException("Failed to deserialize payload for type " + type, e
-                        );
+                        throw new RuntimeException("Failed to deserialize payload for type " + type, e);
                     }
                 });
     }
@@ -41,34 +58,44 @@ public final class WsMessageRouter {
     public void route (WsEnvelope env) {
         if (env == null || env.type == null) return;
 
-        List<Consumer<JsonNode>> list = handlers.get(env.type);
+        dispatch(coreHandlers, env);
+        dispatch(sessionHandlers, env);
+    }
+
+    private void dispatch(
+            Map<String, List<Consumer<JsonNode>>> map,
+            WsEnvelope env
+    ) {
+        List<Consumer<JsonNode>> list = map.get(env.type);
         if (list != null) {
-            for (Consumer<JsonNode> handler : list) {
-                handler.accept(env.payload);
+            for (Consumer<JsonNode> c : list) {
+                c.accept(env.payload);
             }
-        } else {
-            fallbackHandler.accept(env);
         }
     }
 
     public void registerServerHandlers(ServerHandlers h)  {
         Objects.requireNonNull(h, "handlers");
 
-        on("AUTH_OK", ServerAuthOk.Payload.class, h::onAuthOk);
-        on("AUTH_ERROR", ServerAuthError.Payload.class, h::onAuthError);
+        onCore("AUTH_OK", ServerAuthOk.Payload.class, h::onAuthOk);
+        onCore("AUTH_ERROR", ServerAuthError.Payload.class, h::onAuthError);
 
-        on("CHAT_MESSAGE", ServerChatMessage.Payload.class, h::onChatMessage);
+        onSession("CHAT_MESSAGE", ServerChatMessage.Payload.class, h::onChatMessage);
 
-        on("MESSAGE_DELIVERED", ServerMessageDelivered.Payload.class, h::onMessageDelivered);
-        on("MESSAGE_SEEN", ServerMessageSeen.Payload.class, h::onMessageSeen);
+        onSession("MESSAGE_DELIVERED", ServerMessageDelivered.Payload.class, h::onMessageDelivered);
+        onSession("MESSAGE_SEEN", ServerMessageSeen.Payload.class, h::onMessageSeen);
 
-        on("USER_TYPING", ServerUserTyping.Payload.class, h::onUserTyping);
+        onSession("USER_TYPING", ServerUserTyping.Payload.class, h::onUserTyping);
 
-        on("USER_ONLINE", ServerUserOnline.Payload.class, h::onUserOnline);
-        on("USER_OFFLINE", ServerUserOffline.Payload.class, h::onUserOffline);
+        onSession("USER_ONLINE", ServerUserOnline.Payload.class, h::onUserOnline);
+        onSession("USER_OFFLINE", ServerUserOffline.Payload.class, h::onUserOffline);
 
-        on("ADD_REACTION", ServerAddReaction.Payload.class, h::onAddReaction);
-        on("REMOVE_REACTION", ServerRemoveReaction.Payload.class, h::onRemoveReaction);
+        onSession("ADD_REACTION", ServerAddReaction.Payload.class, h::onAddReaction);
+        onSession("REMOVE_REACTION", ServerRemoveReaction.Payload.class, h::onRemoveReaction);
+    }
+
+    public void clearHandlers() {
+        sessionHandlers.clear();
     }
 
     public interface ServerHandlers {

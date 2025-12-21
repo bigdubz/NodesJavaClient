@@ -1,6 +1,6 @@
 /* ===== CONVERSATIONS ROOT ===== */
 .conversations-root {
-    -fx-background-color: -fx-global-bg-color;
+    -fx-background-color: -fx-global-bg-dark;
 }
 
 /* ===== TITLE ===== */
@@ -12,7 +12,7 @@
 
 /* ===== LIST VIEW ===== */
 .conversations-list {
-    -fx-background-color: -fx-global-bg-color;
+    -fx-background-color: -fx-global-bg-dark;
     -fx-padding: 0;
 }
 

@@ -129,7 +129,10 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
     }
 
     public List<Conversation> getConversationsSnapshot() {
-        return List.copyOf(conversations.values());
+        return conversations.values()
+                .stream()
+                .sorted(Comparator.comparingLong(m -> m.lastTimestamp))
+                .toList().reversed();
     }
 
     public List<ChatMessage> getMessagesSnapshot(String peerId) {

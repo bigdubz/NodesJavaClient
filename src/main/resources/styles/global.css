@@ -2,6 +2,7 @@
     -fx-background-color: #17131B;
 
     -fx-global-bg-color: #17131B;
+    -fx-global-bg-dark: #130F17;
     -fx-global-bg-light: #201B26;
     -fx-global-bg-lighter: #2C2433;
 
@@ -111,4 +112,9 @@
 .error {
     -fx-text-fill: -fx-nodes-red;
     -fx-font-size: 12px;
+}
+
+.top-bar {
+    -fx-background-color: -fx-global-bg-light;
+    -fx-padding: 8 12;
 }

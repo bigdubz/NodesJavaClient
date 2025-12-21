@@ -47,4 +47,8 @@ public final class ConversationsViewModel implements StoreListener {
         // ignore – ConversationView changes already reflected through unread counts
         updateFromStore();
     }
+
+    public void reset() {
+        conversations.clear();
+    }
 }

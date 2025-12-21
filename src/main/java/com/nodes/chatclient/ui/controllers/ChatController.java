@@ -98,36 +98,43 @@ public class ChatController {
                 return;
             }
 
-            HBox box = new HBox();
-            box.setFillHeight(false);
-            box.setMaxWidth(Double.MAX_VALUE);
-            box.setPrefWidth(Region.USE_COMPUTED_SIZE);
-            box.getStyleClass().add("msg-row");
+            boolean fromMe = m.fromUserId.equals(selfId);
 
-            boolean fromMe = !m.fromUserId.equals(selfId);
+            HBox row = new HBox();
+            row.getStyleClass().add("msg-row");
+            row.setAlignment(Pos.TOP_LEFT);
+            row.setFillHeight(false);
+            row.setMaxWidth(Double.MAX_VALUE);
 
-            if (fromMe) {
-                box.setAlignment(Pos.CENTER_RIGHT);
-                box.getStyleClass().add("msg-right");
-            } else {
-                box.setAlignment(Pos.CENTER_LEFT);
-                box.getStyleClass().add("msg-left");
-            }
-
-            Label text = new Label(m.text);
-            text.getStyleClass().add("msg-text");
+            // Message text
+            TextArea text = new TextArea(m.text);
             text.setWrapText(true);
+            text.setEditable(false);
+            text.setFocusTraversable(false);
+            text.setMouseTransparent(false);
+            text.setPickOnBounds(false);
+
+            text.setPrefRowCount(1);
+            text.setMinHeight(Region.USE_PREF_SIZE);
+            text.setMaxHeight(Region.USE_PREF_SIZE);
+
+            text.getStyleClass().add("msg-text");
+            text.getStyleClass().add(fromMe ? "msg-right" : "msg-left");
 
             text.maxWidthProperty().bind(
-                    getListView().widthProperty()
-                            .multiply(0.80)
-                            .subtract(30) // padding
+                    getListView().widthProperty().multiply(0.75)
             );
 
-            box.getChildren().add(text);
+            Region spacer = new Region();
+            HBox.setHgrow(spacer, Priority.ALWAYS);
 
-            HBox.setHgrow(box, Priority.ALWAYS);
-            setGraphic(box);
+            if (fromMe) {
+                row.getChildren().addAll(spacer, text);
+            } else {
+                row.getChildren().addAll(text, spacer);
+            }
+
+            setGraphic(row);
         }
     }
 }
