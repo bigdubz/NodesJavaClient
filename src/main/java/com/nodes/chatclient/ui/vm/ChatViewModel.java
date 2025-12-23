@@ -8,22 +8,35 @@ import com.nodes.chatclient.store.events.StoreListener;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.ListView;
 
 import java.util.List;
+import java.util.OptionalLong;
 
 public final class ChatViewModel implements StoreListener {
+
+    private final AppContext ctx;
     private final ChatStore store;
-    private String peerId;
+    private final String peerId;
+
+    private boolean loadingHistory = false;
+    private boolean hasMoreHistory = true;
 
     private final ObservableList<ChatMessage> messages = FXCollections.observableArrayList();
+    private HistoryPrependListener historyListener;
 
-    public ChatViewModel(ChatStore store, String peerId) {
+    public ChatViewModel(AppContext ctx, ChatStore store, String peerId) {
+        this.ctx = ctx;
         this.store = store;
         this.peerId = peerId;
 
         reload();
 
         store.addListener(this);
+    }
+
+    public void setHistoryListener(HistoryPrependListener h) {
+        this.historyListener = h;
     }
 
     public String getPeerId() {
@@ -34,16 +47,18 @@ public final class ChatViewModel implements StoreListener {
         return messages;
     }
 
-    public void setPeerId(String peerId) {
-        this.peerId = peerId;
-        reload();
-    }
-
     private void reload() {
         if (peerId == null) return;
         List<ChatMessage> snapshot = store.getMessagesSnapshot(peerId);
+        int oldSize = messages.size();
         Platform.runLater(() -> {
             messages.setAll(snapshot);
+
+            int newSize = messages.size();
+            int added = newSize - oldSize;
+            if (added > 0 && historyListener != null) {
+                historyListener.onHistoryPrepended();
+            }
         });
     }
 
@@ -54,7 +69,7 @@ public final class ChatViewModel implements StoreListener {
         }
     }
 
-    public void sendMessage(String text, AppContext ctx) {
+    public void sendMessage(String text) {
         String clientId = clientIdGenerator();
         ChatMessage local = ChatMessage.outgoing(
                 clientId,
@@ -73,11 +88,47 @@ public final class ChatViewModel implements StoreListener {
         );
     }
 
+    public void loadOlderHistory(ListView<ChatMessage> list) {
+        if (loadingHistory || !hasMoreHistory) return;
+
+        loadingHistory = true;
+
+        OptionalLong cursorOpt = store.getOldestMessageTimestamp(peerId);
+        long cursor = cursorOpt.orElse(Long.MAX_VALUE);
+
+        ctx.chatApi
+                .getHistoryAsync(ctx.jwt, peerId, cursor, 50)
+                .thenAccept(rows -> {
+                    if (rows.isEmpty()) {
+                        hasMoreHistory = false;
+                    } else {
+                        store.mergeHistory(peerId, rows);
+                    }
+                    loadingHistory = false;
+                });
+    }
+
     private String clientIdGenerator() {
         return "client-" + System.nanoTime();
     }
 
-    public void reset() {
-        messages.clear();
+    public boolean isLoadingHistory() {
+        return loadingHistory;
+    }
+
+    public boolean hasMoreHistory() {
+        return hasMoreHistory;
+    }
+
+    public void setLoadingHistory(boolean v) {
+        loadingHistory = v;
+    }
+
+    public void setHasMoreHistory(boolean v) {
+        hasMoreHistory = v;
+    }
+
+    public interface HistoryPrependListener {
+        void onHistoryPrepended();
     }
 }

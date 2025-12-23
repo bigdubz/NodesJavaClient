@@ -41,6 +41,7 @@
 
     -fx-text-fill: white;
     -fx-font-size: 14px;
+    -fx-font-weight: normal;
 
     -fx-padding: 0;
     -fx-border-width: 0;

@@ -147,6 +147,18 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
                 .toList();
     }
 
+    public OptionalLong getOldestMessageTimestamp(String peerId) {
+        Conversation convo = conversations.get(peerId);
+        if (convo == null || convo.messages.isEmpty()) {
+            return OptionalLong.empty();
+        }
+
+        return convo.messages.values()
+                .stream()
+                .mapToLong(m -> m.createdAt)
+                .min();
+    }
+
     @Override
     public void onAuthOk(ServerAuthOk.Payload payload) {
     }

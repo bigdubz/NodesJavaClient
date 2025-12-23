@@ -1,6 +1,5 @@
 package com.nodes.chatclient.ui.controllers;
 
-import com.nodes.chatclient.AppContext;
 import com.nodes.chatclient.store.model.ChatMessage;
 import com.nodes.chatclient.ui.vm.ChatViewModel;
 import javafx.application.Platform;
@@ -9,31 +8,40 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
+import javafx.scene.control.skin.VirtualFlow;
 import javafx.scene.layout.*;
 
 public class ChatController {
 
     private final Parent root;
     private final ChatViewModel vm;
+    private int lastChange;
+    private ScrollAnchor pendingAnchor;
+    private final ListView<ChatMessage> messages;
 
-    public ChatController(AppContext ctx, ChatViewModel vm) {
+    public ChatController(ChatViewModel vm) {
         this.vm = vm;
         Label title = new Label(vm.getPeerId());
         title.setPadding(new Insets(5));
 
-        ListView<ChatMessage> messages = new ListView<>();
+        messages = new ListView<>();
         messages.setItems(vm.getMessages());
         messages.setCellFactory(lv -> {
             MessageCell cell = new MessageCell(vm.getPeerId());
             cell.prefWidthProperty().bind(lv.widthProperty());
             return cell;
         });
+        installInfiniteScroll(messages);
         messages.setStyle("-fx-background-insets: 0;");
-        vm.getMessages().addListener((ListChangeListener<ChatMessage>) c ->
-                Platform.runLater(() ->
-                        messages.scrollTo(vm.getMessages().size() - 1)
-                )
+        vm.getMessages().addListener((ListChangeListener<ChatMessage>) change -> {
+                change.next();
+                if (change.getAddedSize() - lastChange == 1) {
+                    messages.scrollTo(vm.getMessages().size());
+                }
+                lastChange = change.getAddedSize();
+            }
         );
+        vm.setHistoryListener(() -> Platform.runLater(() -> restoreAnchor(pendingAnchor)));
 
         TextField input = new TextField();
         input.setPromptText("Send a message...");
@@ -45,7 +53,7 @@ public class ChatController {
         send.setOnAction(e -> {
             String text = input.getText().trim();
             if (!text.isEmpty()) {
-                vm.sendMessage(text, ctx);
+                vm.sendMessage(text);
                 input.clear();
             }
         });
@@ -63,8 +71,67 @@ public class ChatController {
         this.root.applyCss();
     }
 
+    @SuppressWarnings("unchecked")
+    private static VirtualFlow<ListCell<ChatMessage>> getVirtualFlow(ListView<ChatMessage> list) {
+        return (VirtualFlow<ListCell<ChatMessage>>) list.lookup(".virtual-flow");
+    }
+
+    private ScrollAnchor captureAnchor() {
+        VirtualFlow<?> flow = getVirtualFlow(messages);
+        if (flow == null) return null;
+
+        for (int i = 0; i < flow.getCellCount(); i++) {
+            IndexedCell<?> cell = flow.getCell(i);
+            if (cell != null && cell.isVisible()) {
+                ChatMessage msg = (ChatMessage) cell.getItem();
+                double offset = cell.getLayoutY();
+                return new ScrollAnchor(msg, offset);
+            }
+        }
+
+        return null;
+    }
+
+    private void restoreAnchor(ScrollAnchor anchor) {
+        if (anchor == null) return;
+        VirtualFlow<?> flow = getVirtualFlow(messages);
+        if (flow == null) return;
+
+        int index = messages.getItems().indexOf(anchor.message);
+        if (index < 0) return;
+
+        messages.scrollTo(index);
+
+        Platform.runLater(() -> {
+            IndexedCell<?> cell = flow.getCell(index);
+            if (cell == null) return;
+
+            double delta = cell.getLayoutY() - anchor.offsetY();
+            flow.scrollPixels(delta);
+        });
+    }
+
     public Parent getRoot() {
         return root;
+    }
+
+    private void installInfiniteScroll(ListView<ChatMessage> list) {
+        list.skinProperty().addListener((obs, oldSkin, newSkin) -> {
+            if (newSkin == null) return;
+
+            // Defer one more pulse so layout happens
+            Platform.runLater(() -> {
+                ScrollBar vBar = (ScrollBar) list.lookup(".scroll-bar:vertical");
+                if (vBar == null) return;
+
+                vBar.valueProperty().addListener((o, oldV, newV) -> {
+                    if (newV.doubleValue() == 0) {
+                        pendingAnchor = captureAnchor();
+                        vm.loadOlderHistory(list);
+                    }
+                });
+            });
+        });
     }
 
     private static class MessageCell extends ListCell<ChatMessage> {
@@ -123,4 +190,6 @@ public class ChatController {
             setGraphic(row);
         }
     }
+
+    private record ScrollAnchor(ChatMessage message, double offsetY) {}
 }

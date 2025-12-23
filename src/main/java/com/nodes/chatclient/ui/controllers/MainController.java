@@ -52,8 +52,8 @@ public final class MainController {
     private void openChat(String peerId) {
         store.setActiveConversation(peerId);
 
-        ChatViewModel chatVM = new ChatViewModel(store, peerId);
-        ChatController chatController = new ChatController(ctx, chatVM);
+        ChatViewModel chatVM = new ChatViewModel(ctx, store, peerId);
+        ChatController chatController = new ChatController(chatVM);
 
         long cursor = store.getConversation(peerId)
                 .map(c -> c.lastTimestamp + 1) // +1 because backend compares timestamp with < not <=
