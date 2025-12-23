@@ -9,10 +9,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
+import javafx.scene.layout.*;
 
 public class ChatController {
 
@@ -28,7 +25,7 @@ public class ChatController {
         messages.setItems(vm.getMessages());
         messages.setCellFactory(lv -> {
             MessageCell cell = new MessageCell(vm.getPeerId());
-            cell.setMaxWidth(Double.MAX_VALUE);
+            cell.prefWidthProperty().bind(lv.widthProperty());
             return cell;
         });
         messages.setStyle("-fx-background-insets: 0;");
@@ -63,6 +60,7 @@ public class ChatController {
         pane.setBottom(bottom);
 
         this.root = pane;
+        this.root.applyCss();
     }
 
     public Parent getRoot() {
@@ -70,11 +68,13 @@ public class ChatController {
     }
 
     private static class MessageCell extends ListCell<ChatMessage> {
-        private final String selfId;
+        private final String toUserId;
 
-        MessageCell(String selfId) {
-            this.selfId = selfId;
+        MessageCell(String toUserId) {
+            this.toUserId = toUserId;
             getStyleClass().add("msg-cell");
+            setPrefWidth(0);
+            setMaxWidth(Double.MAX_VALUE);
 
             setOnMouseClicked(e -> {
                 if (e.getClickCount() == 2 && getItem() != null) {
@@ -98,42 +98,28 @@ public class ChatController {
                 return;
             }
 
-            boolean fromMe = m.fromUserId.equals(selfId);
+            boolean fromMe = !m.fromUserId.equals(toUserId);
 
             HBox row = new HBox();
             row.getStyleClass().add("msg-row");
-            row.setAlignment(Pos.TOP_LEFT);
-            row.setFillHeight(false);
-            row.setMaxWidth(Double.MAX_VALUE);
+            row.prefWidthProperty().bind(getListView().widthProperty().subtract(20));
 
-            // Message text
-            TextArea text = new TextArea(m.text);
+            Label text = new Label(m.text);
             text.setWrapText(true);
-            text.setEditable(false);
-            text.setFocusTraversable(false);
-            text.setMouseTransparent(false);
-            text.setPickOnBounds(false);
-
-            text.setPrefRowCount(1);
-            text.setMinHeight(Region.USE_PREF_SIZE);
-            text.setMaxHeight(Region.USE_PREF_SIZE);
-
             text.getStyleClass().add("msg-text");
-            text.getStyleClass().add(fromMe ? "msg-right" : "msg-left");
 
             text.maxWidthProperty().bind(
                     getListView().widthProperty().multiply(0.75)
             );
 
-            Region spacer = new Region();
-            HBox.setHgrow(spacer, Priority.ALWAYS);
-
             if (fromMe) {
-                row.getChildren().addAll(spacer, text);
+                text.getStyleClass().add("msg-text-right");
+                row.setAlignment(Pos.CENTER_RIGHT);
             } else {
-                row.getChildren().addAll(text, spacer);
+                row.setAlignment(Pos.CENTER_LEFT);
             }
 
+            row.getChildren().add(text);
             setGraphic(row);
         }
     }

@@ -9,6 +9,10 @@
     -fx-font-family: "Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji", sans-serif;
 }
 
+.list-view .scroll-bar:vertical {
+    -fx-opacity: 1.0;
+}
+
 .list-cell {
     -fx-max-width: Infinity;
 }
@@ -28,62 +32,20 @@
     -fx-background-color: -fx-global-bg-light;
 }
 
-/*** message styling ***/
-/*.msg-text {*/
-/*    -fx-background-color: transparent;*/
-/*    -fx-control-inner-background: transparent;*/
-
-/*    -fx-text-fill: white;*/
-/*    -fx-font-size: 14px;*/
-
-/*    -fx-padding: 0;*/
-/*    -fx-border-width: 0;*/
-
-/*    -fx-highlight-fill: -fx-nodes-purple;*/
-/*    -fx-highlight-text-fill: white;*/
-
-/*    -fx-focus-color: transparent;*/
-/*    -fx-faint-focus-color: transparent;*/
-/*}*/
-
-.msg-left .msg-text {
-    -fx-text-fill: white;
-}
-
-.msg-right .msg-text {
-    -fx-text-fill: white;
-}
-
-/* remove scrollbars completely */
-.msg-text .scroll-pane,
-.msg-text .viewport {
-    -fx-background-color: transparent;
-}
-
-.msg-text .scroll-bar {
-    -fx-opacity: 0;
-    -fx-pref-width: 0;
-    -fx-pref-height: 0;
-}
-
 .msg-row {
     -fx-padding: 4 12;
 }
 
 .msg-text {
     -fx-background-color: transparent;
-    -fx-control-inner-background: transparent;
 
     -fx-text-fill: white;
     -fx-font-size: 14px;
 
     -fx-padding: 0;
     -fx-border-width: 0;
-
-    -fx-focus-color: transparent;
-    -fx-faint-focus-color: transparent;
 }
 
-.msg-text .scroll-bar {
-    -fx-opacity: 0;
+.msg-text-right {
+    -fx-text-alignment: right;
 }
