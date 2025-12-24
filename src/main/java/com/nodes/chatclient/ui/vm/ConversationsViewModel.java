@@ -32,9 +32,7 @@ public final class ConversationsViewModel implements StoreListener {
 
     private void updateFromStore() {
         List<Conversation> snapshot = store.getConversationsSnapshot();
-        Platform.runLater(() -> {
-            conversations.setAll(snapshot);
-        });
+        Platform.runLater(() -> conversations.setAll(snapshot));
     }
 
     @Override

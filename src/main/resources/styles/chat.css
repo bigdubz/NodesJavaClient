@@ -50,3 +50,11 @@
 .msg-text-right {
     -fx-text-alignment: right;
 }
+
+.msg-username {
+    -fx-text-fill: -fx-text-muted;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+
+    -fx-padding: 0 0 2 0;
+}

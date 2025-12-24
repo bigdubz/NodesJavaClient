@@ -106,6 +106,17 @@ public final class ChatViewModel implements StoreListener {
                 });
     }
 
+    public void markVisibleMessagesAsSeen() {
+        List<ChatMessage> messages = getMessages();
+
+        for (ChatMessage m : messages) {
+            if (!m.fromUserId.equals(ctx.userId) && !m.read) {
+                ctx.wsService.sendMessageSeenAsync(m.messageId);
+                m.read = true; // optimistic
+            }
+        }
+    }
+
     private String clientIdGenerator() {
         return "client-" + System.nanoTime();
     }

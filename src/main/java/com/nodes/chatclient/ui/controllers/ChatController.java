@@ -9,6 +9,8 @@ import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.control.skin.VirtualFlow;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
 
@@ -41,6 +43,8 @@ public class ChatController {
                 if (!vm.isLoadingHistory()) {
                     messages.scrollTo(vm.getMessages().size() - 1);
                 }
+                // todo: make changes in store reflect immediately upon opening chat (same behavior as IOS)
+                vm.markVisibleMessagesAsSeen();
             }
         );
         vm.setHistoryListener(() -> Platform.runLater(() -> restoreAnchor(pendingAnchor)));
@@ -52,13 +56,15 @@ public class ChatController {
         Button send = new Button("Send");
         send.getStyleClass().add("button");
 
-        send.setOnAction(e -> {
-            String text = input.getText().trim();
-            if (!text.isEmpty()) {
-                vm.sendMessage(text);
-                input.clear();
+        input.addEventHandler(KeyEvent.KEY_PRESSED, e -> {
+            if (e.getCode() == KeyCode.ENTER) {
+                if (e.isShiftDown()) return;
+
+                e.consume();
+                sendMessage(input);
             }
         });
+        send.setOnAction(e -> sendMessage(input));
 
         HBox bottom = new HBox(10, input, send);
         bottom.setPadding(new Insets(10));
@@ -108,7 +114,6 @@ public class ChatController {
             if (cell != null) {
                 double delta = cell.getLayoutY() - anchor.offsetY();
                 flow.scrollPixels(delta);
-                System.out.println("?");
                 vm.setLoadingHistory(false);
             }
         });
@@ -135,6 +140,14 @@ public class ChatController {
                 });
             });
         });
+    }
+
+    private void sendMessage(TextField input) {
+        String text = input.getText().trim();
+        if (!text.isEmpty()) {
+            vm.sendMessage(text);
+            input.clear();
+        }
     }
 
     private static class MessageCell extends ListCell<ChatMessage> {
@@ -170,26 +183,34 @@ public class ChatController {
 
             boolean fromMe = !m.fromUserId.equals(toUserId);
 
-            HBox row = new HBox();
-            row.getStyleClass().add("msg-row");
-            row.prefWidthProperty().bind(getListView().widthProperty().subtract(20));
+            Label username = new Label(m.fromUserId);
+            username.getStyleClass().add("msg-username");
 
             Label text = new Label(m.text);
             text.setWrapText(true);
             text.getStyleClass().add("msg-text");
 
-            text.maxWidthProperty().bind(
-                    getListView().widthProperty().multiply(0.75)
-            );
+            VBox bubble = new VBox(2, username, text);
+            bubble.getStyleClass().add("msg-bubble");
+            bubble.setMaxWidth(Region.USE_PREF_SIZE);
+
+            HBox.setHgrow(bubble, Priority.NEVER);
+
+            HBox row = new HBox(bubble);
+            row.getStyleClass().add("msg-row");
+            row.setFillHeight(false);
+            row.setMaxWidth(Double.MAX_VALUE);
 
             if (fromMe) {
                 text.getStyleClass().add("msg-text-right");
+                text.setAlignment(Pos.CENTER_RIGHT);
+                bubble.setAlignment(Pos.CENTER_RIGHT);
                 row.setAlignment(Pos.CENTER_RIGHT);
             } else {
                 row.setAlignment(Pos.CENTER_LEFT);
             }
 
-            row.getChildren().add(text);
+//            row.getChildren().add(text);
             setGraphic(row);
         }
     }

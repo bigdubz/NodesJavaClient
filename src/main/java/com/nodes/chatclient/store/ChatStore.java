@@ -23,6 +23,7 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
 
     private final String selfUserId;
 
+    // todo: remove conversations map and make it a single "activeConversation" object. no need to keep all in memory.
     private final Map<String, Conversation> conversations = new HashMap<>();
     private final Map<String, Presence> presence = new HashMap<>();
     private volatile String activeConversationPeerId;
@@ -117,17 +118,6 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
         });
     }
 
-    public void addOutgoingMessage(String peerId, ChatMessage msg) {
-        storeExecutor.execute(() -> {
-            Conversation convo = conversations.computeIfAbsent(
-                    peerId,
-                    Conversation::new
-            );
-            convo.messages.put(msg.messageId, msg);
-            notifyMessageListUpdated(peerId);
-        });
-    }
-
     public List<Conversation> getConversationsSnapshot() {
         return conversations.values()
                 .stream()
@@ -157,6 +147,20 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
                 .stream()
                 .mapToLong(m -> m.createdAt)
                 .min();
+    }
+
+    public void addOutgoingMessage(String peerId, ChatMessage msg) {
+        storeExecutor.execute(() -> {
+            Conversation convo = conversations.computeIfAbsent(
+                    peerId,
+                    Conversation::new
+            );
+            convo.messages.put(msg.messageId, msg);
+            convo.lastTimestamp = msg.createdAt;
+            convo.lastMessage = msg.text;
+            notifyMessageListUpdated(peerId);
+            notifyConversationsUpdated();
+        });
     }
 
     @Override
@@ -201,8 +205,8 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
                 convo.unreadCount++;
             }
 
-            notifyConversationsUpdated();
             notifyMessageListUpdated(peerId);
+            notifyConversationsUpdated();
         });
     }
 
@@ -243,7 +247,6 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
                     p.fromUserId, Presence::new
             );
             pr.isTyping = p.isTyping;
-            notifyMessageListUpdated(p.fromUserId);
         });
     }
 
@@ -255,6 +258,9 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
             );
             pr.online = true;
             pr.lastSeen = null;
+            if (conversations.containsKey(p.userId)) {
+                conversations.get(p.userId).isOnline = true;
+            }
             notifyConversationsUpdated();
             notifyMessageListUpdated(p.userId);
         });
@@ -268,6 +274,9 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
             );
             pr.online = false;
             pr.lastSeen = p.lastSeen;
+            if (conversations.containsKey(p.userId)) {
+                conversations.get(p.userId).isOnline = false;
+            }
             notifyConversationsUpdated();
             notifyMessageListUpdated(p.userId);
         });

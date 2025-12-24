@@ -2,10 +2,7 @@ package com.nodes.chatclient.ws;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nodes.chatclient.config.ClientConfig;
-import com.nodes.chatclient.ws.messages.ClientAuthMessage;
-import com.nodes.chatclient.ws.messages.ClientChatMessage;
-import com.nodes.chatclient.ws.messages.ServerAuthError;
-import com.nodes.chatclient.ws.messages.ServerAuthOk;
+import com.nodes.chatclient.ws.messages.*;
 
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
@@ -119,21 +116,21 @@ public final class WsService {
                 replyingTo
         );
 
-        System.out.println(
-                "SEND MESSAGE:\n\t" +
-                    "To user:\t\t"+toUserId+
-                    "\n\tText:\t\t\t"+text+
-                    "\n\tTemp client ID:\t"+clientId+
-                    "\n\tReplying to:\t"+replyingTo
-        );
-
-        send(msg);
+        sendAsync(msg);
     }
 
-    public void send(Object message) {
-        System.out.println(state.name());
+    public void sendMessageSeenAsync(
+            String messageId
+    ) {
+        if (webSocket == null) return;
+        ClientMessageSeen msg = new ClientMessageSeen(messageId);
+        sendAsync(msg);
+    }
+
+    public void sendAsync(Object message) {
         if (state != State.AUTHENTICATED) return;
         try {
+            System.out.println(message);
             webSocket.sendText(mapper.writeValueAsString(message), true);
         } catch (Exception ignored) {
         }
