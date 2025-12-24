@@ -8,7 +8,6 @@ import com.nodes.chatclient.store.events.StoreListener;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.control.ListView;
 
 import java.util.List;
 import java.util.OptionalLong;
@@ -88,7 +87,7 @@ public final class ChatViewModel implements StoreListener {
         );
     }
 
-    public void loadOlderHistory(ListView<ChatMessage> list) {
+    public void loadOlderHistory() {
         if (loadingHistory || !hasMoreHistory) return;
 
         loadingHistory = true;
@@ -104,7 +103,6 @@ public final class ChatViewModel implements StoreListener {
                     } else {
                         store.mergeHistory(peerId, rows);
                     }
-                    loadingHistory = false;
                 });
     }
 
@@ -116,16 +114,8 @@ public final class ChatViewModel implements StoreListener {
         return loadingHistory;
     }
 
-    public boolean hasMoreHistory() {
-        return hasMoreHistory;
-    }
-
     public void setLoadingHistory(boolean v) {
         loadingHistory = v;
-    }
-
-    public void setHasMoreHistory(boolean v) {
-        hasMoreHistory = v;
     }
 
     public interface HistoryPrependListener {

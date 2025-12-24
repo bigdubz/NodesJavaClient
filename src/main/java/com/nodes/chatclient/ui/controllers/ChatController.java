@@ -9,13 +9,13 @@ import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.control.skin.VirtualFlow;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
 
 public class ChatController {
 
     private final Parent root;
     private final ChatViewModel vm;
-    private int lastChange;
     private ScrollAnchor pendingAnchor;
     private final ListView<ChatMessage> messages;
 
@@ -32,13 +32,15 @@ public class ChatController {
             return cell;
         });
         installInfiniteScroll(messages);
-        messages.setStyle("-fx-background-insets: 0;");
-        vm.getMessages().addListener((ListChangeListener<ChatMessage>) change -> {
-                change.next();
-                if (change.getAddedSize() - lastChange == 1) {
-                    messages.scrollTo(vm.getMessages().size());
+        messages.addEventFilter(ScrollEvent.SCROLL, e -> {
+            if (vm.isLoadingHistory() && e.getDeltaY() > 0) {
+                e.consume();
+            }
+        });
+        vm.getMessages().addListener((ListChangeListener<ChatMessage>) c -> {
+                if (!vm.isLoadingHistory()) {
+                    messages.scrollTo(vm.getMessages().size() - 1);
                 }
-                lastChange = change.getAddedSize();
             }
         );
         vm.setHistoryListener(() -> Platform.runLater(() -> restoreAnchor(pendingAnchor)));
@@ -93,9 +95,8 @@ public class ChatController {
     }
 
     private void restoreAnchor(ScrollAnchor anchor) {
-        if (anchor == null) return;
         VirtualFlow<?> flow = getVirtualFlow(messages);
-        if (flow == null) return;
+        if (anchor == null || flow == null || !vm.isLoadingHistory()) return;
 
         int index = messages.getItems().indexOf(anchor.message);
         if (index < 0) return;
@@ -104,10 +105,12 @@ public class ChatController {
 
         Platform.runLater(() -> {
             IndexedCell<?> cell = flow.getCell(index);
-            if (cell == null) return;
-
-            double delta = cell.getLayoutY() - anchor.offsetY();
-            flow.scrollPixels(delta);
+            if (cell != null) {
+                double delta = cell.getLayoutY() - anchor.offsetY();
+                flow.scrollPixels(delta);
+                System.out.println("?");
+                vm.setLoadingHistory(false);
+            }
         });
     }
 
@@ -127,7 +130,7 @@ public class ChatController {
                 vBar.valueProperty().addListener((o, oldV, newV) -> {
                     if (newV.doubleValue() == 0) {
                         pendingAnchor = captureAnchor();
-                        vm.loadOlderHistory(list);
+                        vm.loadOlderHistory();
                     }
                 });
             });
