@@ -2,7 +2,7 @@ package com.nodes.chatclient.ui.vm;
 
 import com.nodes.chatclient.store.ChatStore;
 import com.nodes.chatclient.store.events.StoreListener;
-import com.nodes.chatclient.store.model.Conversation;
+import com.nodes.chatclient.store.model.ConversationUi;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -13,7 +13,7 @@ public final class ConversationsViewModel implements StoreListener {
 
     private final ChatStore store;
 
-    private final ObservableList<Conversation> conversations =
+    private final ObservableList<ConversationUi> conversations =
             FXCollections.observableArrayList();
 
     public ConversationsViewModel(ChatStore store) {
@@ -26,12 +26,12 @@ public final class ConversationsViewModel implements StoreListener {
         store.addListener(this);
     }
 
-    public ObservableList<Conversation> getConversations() {
+    public ObservableList<ConversationUi> getConversations() {
         return conversations;
     }
 
     private void updateFromStore() {
-        List<Conversation> snapshot = store.getConversationsSnapshot();
+        List<ConversationUi> snapshot = store.getConversationsSnapshot();
         Platform.runLater(() -> conversations.setAll(snapshot));
     }
 
@@ -48,5 +48,6 @@ public final class ConversationsViewModel implements StoreListener {
 
     public void reset() {
         conversations.clear();
+        store.removeListener(this);
     }
 }

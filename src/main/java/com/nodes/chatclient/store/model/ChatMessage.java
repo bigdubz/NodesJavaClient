@@ -33,6 +33,20 @@ public final class ChatMessage {
         this.replyingTo = replyingTo;
     }
 
+    public ChatMessageUi toUi() {
+        return new ChatMessageUi(
+                messageId,
+                fromUserId,
+                toUserId,
+                text,
+                createdAt,
+                replyingTo,
+                delivered,
+                read,
+                Map.copyOf(reactions)
+        );
+    }
+
     public static ChatMessage incoming(
             String messageId,
             String fromUserId,

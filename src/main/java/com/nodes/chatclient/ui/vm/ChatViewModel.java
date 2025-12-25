@@ -5,6 +5,7 @@ import com.nodes.chatclient.store.ChatStore;
 import com.nodes.chatclient.store.model.ChatMessage;
 import com.nodes.chatclient.store.events.StoreListener;
 
+import com.nodes.chatclient.store.model.ChatMessageUi;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -16,21 +17,26 @@ public final class ChatViewModel implements StoreListener {
 
     private final AppContext ctx;
     private final ChatStore store;
-    private final String peerId;
+    private String peerId;
 
     private boolean loadingHistory = false;
     private boolean hasMoreHistory = true;
 
-    private final ObservableList<ChatMessage> messages = FXCollections.observableArrayList();
+    private final ObservableList<ChatMessageUi> messages = FXCollections.observableArrayList();
     private HistoryPrependListener historyListener;
 
-    public ChatViewModel(AppContext ctx, ChatStore store, String peerId) {
+    private volatile boolean disposed = false;
+
+    public ChatViewModel(AppContext ctx, ChatStore store) {
         this.ctx = ctx;
         this.store = store;
+    }
+
+    public void setPeer(String peerId) {
+        disposed = false;
         this.peerId = peerId;
 
         reload();
-
         store.addListener(this);
     }
 
@@ -42,20 +48,18 @@ public final class ChatViewModel implements StoreListener {
         return peerId;
     }
 
-    public ObservableList<ChatMessage> getMessages() {
+    public ObservableList<ChatMessageUi> getMessages() {
         return messages;
     }
 
     private void reload() {
-        if (peerId == null) return;
-        List<ChatMessage> snapshot = store.getMessagesSnapshot(peerId);
+        if (disposed || peerId == null) return;
+        List<ChatMessageUi> snapshot = store.getMessagesSnapshot(peerId);
         int oldSize = messages.size();
         Platform.runLater(() -> {
             messages.setAll(snapshot);
 
-            int newSize = messages.size();
-            int added = newSize - oldSize;
-            if (added > 0 && historyListener != null) {
+            if (snapshot.size() != oldSize && historyListener != null) {
                 historyListener.onHistoryPrepended();
             }
         });
@@ -107,13 +111,15 @@ public final class ChatViewModel implements StoreListener {
     }
 
     public void markVisibleMessagesAsSeen() {
-        List<ChatMessage> messages = getMessages();
+        List<String> messages =
+                getMessages().stream()
+                        .filter(m -> !m.fromUserId.equals(ctx.userId) && !m.read)
+                        .map(c -> c.messageId)
+                        .toList();
 
-        for (ChatMessage m : messages) {
-            if (!m.fromUserId.equals(ctx.userId) && !m.read) {
-                ctx.wsService.sendMessageSeenAsync(m.messageId);
-                m.read = true; // optimistic
-            }
+        store.bulkMarkMessagesAsSeen(peerId, messages);
+        for (String m : messages) {
+            ctx.wsService.sendMessageSeenAsync(m);
         }
     }
 
@@ -127,6 +133,15 @@ public final class ChatViewModel implements StoreListener {
 
     public void setLoadingHistory(boolean v) {
         loadingHistory = v;
+    }
+
+    public void reset() {
+        disposed = true;
+        loadingHistory = false;
+        hasMoreHistory = true;
+        this.messages.clear();
+        historyListener = null;
+        store.removeListener(this);
     }
 
     public interface HistoryPrependListener {

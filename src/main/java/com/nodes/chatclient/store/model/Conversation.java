@@ -1,8 +1,5 @@
 package com.nodes.chatclient.store.model;
 
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -17,5 +14,16 @@ public final class Conversation {
 
     public Conversation(String peerId) {
         this.peerId = peerId;
+    }
+
+    public ConversationUi toUi() {
+        return new ConversationUi(
+                peerId,
+                lastMessage,
+                lastTimestamp,
+                unreadCount,
+                isOnline,
+                Map.copyOf(messages)
+        );
     }
 }

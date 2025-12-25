@@ -1,11 +1,12 @@
 package com.nodes.chatclient.ui.controllers;
 
 import com.nodes.chatclient.store.model.ChatMessage;
+import com.nodes.chatclient.store.model.ChatMessageUi;
+import com.nodes.chatclient.ui.cells.MessageCell;
 import com.nodes.chatclient.ui.vm.ChatViewModel;
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.control.skin.VirtualFlow;
@@ -14,14 +15,24 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
 
+import java.util.stream.IntStream;
+
 public class ChatController {
 
-    private final Parent root;
-    private final ChatViewModel vm;
+    private Parent root;
+    private ChatViewModel vm;
     private ScrollAnchor pendingAnchor;
-    private final ListView<ChatMessage> messages;
+    private ListView<ChatMessageUi> messages;
+    private ListChangeListener<ChatMessageUi> messageListener;
 
-    public ChatController(ChatViewModel vm) {
+    public ChatController() {}
+
+    public void setVm(ChatViewModel vm) {
+        if (this.vm != null) {
+            this.vm.getMessages().removeListener(messageListener);
+            this.vm.setHistoryListener(null);
+        }
+
         this.vm = vm;
         Label title = new Label(vm.getPeerId());
         title.setPadding(new Insets(5));
@@ -39,14 +50,19 @@ public class ChatController {
                 e.consume();
             }
         });
-        vm.getMessages().addListener((ListChangeListener<ChatMessage>) c -> {
-                if (!vm.isLoadingHistory()) {
-                    messages.scrollTo(vm.getMessages().size() - 1);
-                }
-                // todo: make changes in store reflect immediately upon opening chat (same behavior as IOS)
-                vm.markVisibleMessagesAsSeen();
+        messageListener = c -> {
+            if (!vm.isLoadingHistory()) {
+                Platform.runLater(() -> {
+                    int last = vm.getMessages().size() - 1;
+                    if (last >= 0) {
+                        messages.scrollTo(vm.getMessages().size() - 1);
+                    }
+                });
             }
-        );
+            vm.markVisibleMessagesAsSeen();
+        };
+
+        vm.getMessages().addListener(messageListener);
         vm.setHistoryListener(() -> Platform.runLater(() -> restoreAnchor(pendingAnchor)));
 
         TextField input = new TextField();
@@ -80,7 +96,7 @@ public class ChatController {
     }
 
     @SuppressWarnings("unchecked")
-    private static VirtualFlow<ListCell<ChatMessage>> getVirtualFlow(ListView<ChatMessage> list) {
+    private static VirtualFlow<ListCell<ChatMessage>> getVirtualFlow(ListView<ChatMessageUi> list) {
         return (VirtualFlow<ListCell<ChatMessage>>) list.lookup(".virtual-flow");
     }
 
@@ -91,9 +107,10 @@ public class ChatController {
         for (int i = 0; i < flow.getCellCount(); i++) {
             IndexedCell<?> cell = flow.getCell(i);
             if (cell != null && cell.isVisible()) {
-                ChatMessage msg = (ChatMessage) cell.getItem();
+                System.out.println("captured anchor");
+                ChatMessageUi msg = (ChatMessageUi) cell.getItem();
                 double offset = cell.getLayoutY();
-                return new ScrollAnchor(msg, offset);
+                return new ScrollAnchor(msg.messageId, offset);
             }
         }
 
@@ -104,11 +121,16 @@ public class ChatController {
         VirtualFlow<?> flow = getVirtualFlow(messages);
         if (anchor == null || flow == null || !vm.isLoadingHistory()) return;
 
-        int index = messages.getItems().indexOf(anchor.message);
+        int index = IntStream.range(0,
+                messages.getItems().size())
+                .filter(i -> messages
+                                .getItems()
+                                .get(i)
+                                .messageId.equals(anchor.message))
+                .findFirst().orElse(-1);
+
         if (index < 0) return;
-
         messages.scrollTo(index);
-
         Platform.runLater(() -> {
             IndexedCell<?> cell = flow.getCell(index);
             if (cell != null) {
@@ -123,7 +145,7 @@ public class ChatController {
         return root;
     }
 
-    private void installInfiniteScroll(ListView<ChatMessage> list) {
+    private void installInfiniteScroll(ListView<ChatMessageUi> list) {
         list.skinProperty().addListener((obs, oldSkin, newSkin) -> {
             if (newSkin == null) return;
 
@@ -150,70 +172,9 @@ public class ChatController {
         }
     }
 
-    private static class MessageCell extends ListCell<ChatMessage> {
-        private final String toUserId;
-
-        MessageCell(String toUserId) {
-            this.toUserId = toUserId;
-            getStyleClass().add("msg-cell");
-            setPrefWidth(0);
-            setMaxWidth(Double.MAX_VALUE);
-
-            setOnMouseClicked(e -> {
-                if (e.getClickCount() == 2 && getItem() != null) {
-                    // TODO: reply to this message
-                }
-            });
-        }
-
-        @Override
-        public void updateSelected(boolean selected) {
-            // Do NOT call super.updateSelected -> prevents :selected CSS state,
-            // but mouse events still fire normally.
-        }
-
-        @Override
-        protected void updateItem(ChatMessage m, boolean empty) {
-            super.updateItem(m, empty);
-
-            if (empty || m == null) {
-                setGraphic(null);
-                return;
-            }
-
-            boolean fromMe = !m.fromUserId.equals(toUserId);
-
-            Label username = new Label(m.fromUserId);
-            username.getStyleClass().add("msg-username");
-
-            Label text = new Label(m.text);
-            text.setWrapText(true);
-            text.getStyleClass().add("msg-text");
-
-            VBox bubble = new VBox(2, username, text);
-            bubble.getStyleClass().add("msg-bubble");
-            bubble.setMaxWidth(Region.USE_PREF_SIZE);
-
-            HBox.setHgrow(bubble, Priority.NEVER);
-
-            HBox row = new HBox(bubble);
-            row.getStyleClass().add("msg-row");
-            row.setFillHeight(false);
-            row.setMaxWidth(Double.MAX_VALUE);
-
-            if (fromMe) {
-                text.getStyleClass().add("msg-text-right");
-                text.setAlignment(Pos.CENTER_RIGHT);
-                bubble.setAlignment(Pos.CENTER_RIGHT);
-                row.setAlignment(Pos.CENTER_RIGHT);
-            } else {
-                row.setAlignment(Pos.CENTER_LEFT);
-            }
-
-//            row.getChildren().add(text);
-            setGraphic(row);
-        }
+    public void reset() {
+        pendingAnchor = null;
     }
 
-    private record ScrollAnchor(ChatMessage message, double offsetY) {}
+    private record ScrollAnchor(String message, double offsetY) {}
 }

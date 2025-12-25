@@ -38,6 +38,10 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
         listeners.add(listener);
     }
 
+    public void removeListener(StoreListener listener) {
+        listeners.remove(listener);
+    }
+
     private void notifyConversationsUpdated() {
         listeners.forEach(StoreListener::onConversationsUpdated);
     }
@@ -118,14 +122,36 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
         });
     }
 
-    public List<Conversation> getConversationsSnapshot() {
+    public void bulkMarkMessagesAsSeen(String peerId, List<String> messages) {
+        if (messages.isEmpty()) return;
+        Optional<Conversation> conv = getConversation(peerId);
+        if (conv.isPresent()) {
+            Conversation convo = conv.get();
+            int count = 0;
+            for (String messageId : messages) {
+                ChatMessage msg = convo.messages.get(messageId);
+                if (msg != null) {
+                    msg.read = true;
+                    count++;
+                }
+            }
+            if (count > 0) {
+                convo.unreadCount = Math.max(convo.unreadCount - count, 0);
+                notifyMessageListUpdated(peerId);
+                notifyConversationsUpdated();
+            }
+        }
+    }
+
+    public List<ConversationUi> getConversationsSnapshot() {
         return conversations.values()
                 .stream()
                 .sorted(Comparator.comparingLong(m -> m.lastTimestamp))
+                .map(Conversation::toUi)
                 .toList().reversed();
     }
 
-    public List<ChatMessage> getMessagesSnapshot(String peerId) {
+    public List<ChatMessageUi> getMessagesSnapshot(String peerId) {
         Conversation convo = conversations.get(peerId);
         if (convo == null || convo.messages.isEmpty()) {
             return Collections.emptyList();
@@ -134,6 +160,7 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
         return convo.messages.values()
                 .stream()
                 .sorted(Comparator.comparingLong(m -> m.createdAt))
+                .map(ChatMessage::toUi)
                 .toList();
     }
 
@@ -161,6 +188,12 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
             notifyMessageListUpdated(peerId);
             notifyConversationsUpdated();
         });
+    }
+
+    public void resetChat(String peerId) {
+        if (conversations.containsKey(peerId)) {
+            conversations.get(peerId).messages.clear();
+        }
     }
 
     @Override

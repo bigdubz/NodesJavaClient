@@ -17,6 +17,8 @@ public final class MainController {
     private final BorderPane root = new BorderPane();
 
     private final ConversationsViewModel conversationsVM;
+    private final ChatViewModel activeChatVM;
+    private final ChatController chatController;
 
     private final AppContext ctx;
     private final ChatStore store;
@@ -30,6 +32,8 @@ public final class MainController {
         this.store = store;
 
         conversationsVM = new ConversationsViewModel(store);
+        activeChatVM = new ChatViewModel(ctx, store);
+        chatController = new ChatController();
 
         ConversationsController conversationsController =
                 new ConversationsController(
@@ -51,17 +55,21 @@ public final class MainController {
 
     private void openChat(String peerId) {
         store.setActiveConversation(peerId);
+        store.resetChat(peerId);
 
-        ChatViewModel chatVM = new ChatViewModel(ctx, store, peerId);
-        ChatController chatController = new ChatController(chatVM);
+        activeChatVM.reset();
+        chatController.reset();
+
+        activeChatVM.setPeer(peerId);
+        chatController.setVm(activeChatVM);
 
         long cursor = store.getConversation(peerId)
                 .map(c -> c.lastTimestamp + 1) // +1 because backend compares timestamp with < not <=
                 .orElse(Long.MAX_VALUE);
 
-        int defaultLimit = 50;
+        int defaultMessageLimit = 50;
         ctx.chatApi
-                .getHistoryAsync(ctx.jwt, peerId, cursor, defaultLimit)
+                .getHistoryAsync(ctx.jwt, peerId, cursor, defaultMessageLimit)
                 .thenAccept(rows -> store.mergeHistory(peerId, rows));
 
         Platform.runLater(() -> root.setCenter(chatController.getRoot()));
