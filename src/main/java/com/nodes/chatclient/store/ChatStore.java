@@ -76,6 +76,7 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
                 );
 
                 pr.online = row.isOnline;
+                System.out.println(convo.peerId + " " + convo.isOnline);
             }
 
             notifyConversationsUpdated();
@@ -197,13 +198,10 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
     }
 
     @Override
-    public void onAuthOk(ServerAuthOk.Payload payload) {
-    }
+    public void onAuthOk(ServerAuthOk.Payload payload) {}
 
     @Override
-    public void onAuthError(ServerAuthError.Payload payload) {
-
-    }
+    public void onAuthError(ServerAuthError.Payload payload) {}
 
     @Override
     public void onChatMessage(ServerChatMessage.Payload p) {
@@ -291,11 +289,9 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
             );
             pr.online = true;
             pr.lastSeen = null;
-            if (conversations.containsKey(p.userId)) {
-                conversations.get(p.userId).isOnline = true;
-            }
+            Conversation convo = conversations.computeIfAbsent(p.userId, Conversation::new);
+            convo.isOnline = true;
             notifyConversationsUpdated();
-            notifyMessageListUpdated(p.userId);
         });
     }
 
@@ -307,11 +303,9 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
             );
             pr.online = false;
             pr.lastSeen = p.lastSeen;
-            if (conversations.containsKey(p.userId)) {
-                conversations.get(p.userId).isOnline = false;
-            }
+            Conversation convo = conversations.computeIfAbsent(p.userId, Conversation::new);
+            convo.isOnline = false;
             notifyConversationsUpdated();
-            notifyMessageListUpdated(p.userId);
         });
     }
 

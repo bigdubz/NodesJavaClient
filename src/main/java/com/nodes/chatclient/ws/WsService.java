@@ -48,6 +48,8 @@ public final class WsService {
     private ScheduledFuture<?> pingTask;
     private ScheduledFuture<?> pongWatchdog;
 
+    private CompletableFuture<Void> authFuture;
+
     public WsService(
             ClientConfig config,
             HttpClient httpClient,
@@ -68,23 +70,27 @@ public final class WsService {
         this.jwt = jwt;
     }
 
-    public State getState() {
-        return state;
-    }
-
     private void handleAuthOk(ServerAuthOk.Payload p) {
         state = State.AUTHENTICATED;
+
+        if (authFuture != null && !authFuture.isDone()) {
+            authFuture.complete(null);
+        }
     }
 
     private void handleAuthError(ServerAuthError.Payload p) {
-        System.out.println("WsService → AUTH_ERROR");
-        // maybe logout? maybe reconnect?
+        if (authFuture != null && !authFuture.isDone()) {
+            authFuture.completeExceptionally(
+                    new RuntimeException("Authentication failed.")
+            );
+        }
     }
 
-
-    public void connect() {
+    public CompletableFuture<Void> connect() {
+        authFuture = new CompletableFuture<>();
         long gen = generation.incrementAndGet();
         scheduleConnect(gen, Duration.ZERO);
+        return authFuture;
     }
 
     public void disconnect() {

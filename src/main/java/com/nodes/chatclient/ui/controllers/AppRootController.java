@@ -2,6 +2,7 @@ package com.nodes.chatclient.ui.controllers;
 
 import com.nodes.chatclient.AppContext;
 import com.nodes.chatclient.store.ChatStore;
+import javafx.application.Platform;
 import javafx.scene.Parent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
@@ -32,21 +33,27 @@ public final class AppRootController {
         
         ctx.router.clearHandlers();
         ctx.router.registerServerHandlers(store);
-        
+
         ctx.wsService.setAuth(userId, ctx.jwt);
-        ctx.wsService.connect();
+        ctx.wsService.connect()
+                .thenRun(() -> {
+                    ctx.chatApi.getConversationsAsync(ctx.jwt)
+                            .thenAccept(store::mergeConversations);
+                    Platform.runLater(() -> {
+                        mainController = new MainController(
+                                ctx,
+                                store,
+                                this::logout
+                        );
 
-        ctx.chatApi.getConversationsAsync(ctx.jwt)
-                .thenAccept(store::mergeConversations);
-
-        mainController = new MainController(
-                ctx,
-                store,
-                this::logout
-        );
-
-        root.getChildren().setAll(mainController.getRoot());
-        stage.setTitle("Nodes");
+                        root.getChildren().setAll(mainController.getRoot());
+                        stage.setTitle("Nodes");
+                    });
+                })
+                .exceptionally(err -> {
+                    Platform.runLater(() -> System.err.println("WS auth failed: " + err.getMessage()));
+                    return null;
+                });
     }
 
     private void logout() {
