@@ -13,11 +13,5 @@ public class ClientMessageSeen implements ClientMessage {
         return type;
     }
 
-    public static final class Payload {
-        public final String messageId;
-
-        public Payload(String messageId) {
-            this.messageId = messageId;
-        }
-    }
+    public record Payload(String messageId) {}
 }

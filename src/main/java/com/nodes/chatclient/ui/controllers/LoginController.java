@@ -6,6 +6,8 @@ import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 
 import java.util.function.Consumer;
@@ -35,14 +37,12 @@ public final class LoginController {
 
         loginBtn.disableProperty().bind(vm.loginInProgressProperty());
 
-        loginBtn.setOnAction(e -> vm.loginAsync().thenAccept(res -> {
-            if (res != null) {
-                ctx.userId = res.userId;
-                ctx.jwt = res.token;
-
-                Platform.runLater(() -> onLoginSuccess.accept(res.userId));
+        password.addEventHandler(KeyEvent.KEY_PRESSED, e -> {
+            if (e.getCode() == KeyCode.ENTER) {
+                loginAsync(ctx, onLoginSuccess);
             }
-        }));
+        });
+        loginBtn.setOnAction(e -> loginAsync(ctx, onLoginSuccess));
 
 
         usernameLabel.getStyleClass().add("label");
@@ -70,12 +70,19 @@ public final class LoginController {
         this.root = box;
     }
 
-    public Parent getRoot() {
-        return root;
+    private void loginAsync(AppContext ctx, Consumer<String> onSuccess) {
+        vm.loginAsync().thenAccept(res -> {
+            if (res != null) {
+                ctx.userId = res.userId;
+                ctx.jwt = res.token;
+
+                Platform.runLater(() -> onSuccess.accept(res.userId));
+            }
+        });
     }
 
-    public LoginViewModel getViewModel() {
-        return vm;
+    public Parent getRoot() {
+        return root;
     }
 
     public void reset() {

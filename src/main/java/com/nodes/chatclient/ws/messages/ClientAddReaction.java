@@ -13,15 +13,5 @@ public final class ClientAddReaction implements ClientMessage {
         return type;
     }
 
-    public static final class Payload {
-        public final String messageId;
-        public final String reaction;
-        public final String toUserId;
-
-        public Payload(String messageId, String reaction, String toUserId) {
-            this.messageId = messageId;
-            this.reaction = reaction;
-            this.toUserId = toUserId;
-        }
-    }
+    public record Payload(String messageId, String reaction, String toUserId) {}
 }

@@ -13,8 +13,6 @@ public final class WsMessageRouter {
     private final Map<String, List<Consumer<JsonNode>>> coreHandlers = new HashMap<>();
     private final Map<String, List<Consumer<JsonNode>>> sessionHandlers = new HashMap<>();
 
-    private Consumer<WsEnvelope> fallbackHandler = env -> {};
-
     public WsMessageRouter(ObjectMapper mapper) {
         this.mapper = Objects.requireNonNull(mapper, "mapper");
     }
@@ -49,10 +47,6 @@ public final class WsMessageRouter {
                         throw new RuntimeException("Failed to deserialize payload for type " + type, e);
                     }
                 });
-    }
-
-    public void setFallbackHandler(Consumer<WsEnvelope> fallbackHandler) {
-        this.fallbackHandler = fallbackHandler != null ? fallbackHandler : env -> {};
     }
 
     public void route (WsEnvelope env) {
@@ -96,23 +90,5 @@ public final class WsMessageRouter {
 
     public void clearHandlers() {
         sessionHandlers.clear();
-    }
-
-    public interface ServerHandlers {
-        void onAuthOk(ServerAuthOk.Payload payload);
-        void onAuthError(ServerAuthError.Payload payload);
-
-        void onChatMessage(ServerChatMessage.Payload payload);
-
-        void onMessageDelivered(ServerMessageDelivered.Payload payload);
-        void onMessageSeen(ServerMessageSeen.Payload payload);
-
-        void onUserTyping(ServerUserTyping.Payload payload);
-
-        void onUserOnline(ServerUserOnline.Payload payload);
-        void onUserOffline(ServerUserOffline.Payload payload);
-
-        void onAddReaction(ServerAddReaction.Payload payload);
-        void onRemoveReaction(ServerRemoveReaction.Payload payload);
     }
 }

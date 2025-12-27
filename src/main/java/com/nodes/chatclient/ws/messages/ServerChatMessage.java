@@ -1,12 +1,7 @@
 package com.nodes.chatclient.ws.messages;
 
-public final class ServerChatMessage implements ServerMessage {
-    public final String type = "CHAT_MESSAGE";
-    public final Payload payload;
-
-    public ServerChatMessage(Payload payload) {
-        this.payload = payload;
-    }
+public record ServerChatMessage(Payload payload) implements ServerMessage {
+    public static final String type = "CHAT_MESSAGE";
 
     @Override
     public String type() {

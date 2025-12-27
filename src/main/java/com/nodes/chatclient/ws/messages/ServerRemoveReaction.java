@@ -1,12 +1,7 @@
 package com.nodes.chatclient.ws.messages;
 
-public final class ServerRemoveReaction implements ServerMessage {
-    public final String type = "REMOVE_REACTION";
-    public final Payload payload;
-
-    public ServerRemoveReaction(Payload payload) {
-        this.payload = payload;
-    }
+public record ServerRemoveReaction(Payload payload) implements ServerMessage {
+    public static final String type = "REMOVE_REACTION";
 
     @Override
     public String type() {

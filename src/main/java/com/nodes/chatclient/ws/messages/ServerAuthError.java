@@ -1,12 +1,7 @@
 package com.nodes.chatclient.ws.messages;
 
-public final class ServerAuthError implements ServerMessage {
-    public final String type = "AUTH_ERROR";
-    public final Payload payload;
-
-    public ServerAuthError(Payload payload) {
-        this.payload = payload;
-    }
+public record ServerAuthError(Payload payload) implements ServerMessage {
+    public static final String type = "AUTH_ERROR";
 
     @Override
     public String type() {

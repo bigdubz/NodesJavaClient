@@ -3,7 +3,7 @@ package com.nodes.chatclient.store;
 import com.nodes.chatclient.http.dto.ConversationRowDto;
 import com.nodes.chatclient.http.dto.MessageRowDto;
 import com.nodes.chatclient.store.events.StoreListener;
-import com.nodes.chatclient.ws.WsMessageRouter;
+import com.nodes.chatclient.ws.ServerHandlers;
 import com.nodes.chatclient.ws.messages.*;
 import com.nodes.chatclient.store.model.*;
 
@@ -11,7 +11,7 @@ import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-public final class ChatStore implements WsMessageRouter.ServerHandlers {
+public final class ChatStore implements ServerHandlers {
 
     private final Executor storeExecutor = Executors.newSingleThreadExecutor(
             r -> {
@@ -23,7 +23,6 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
 
     private final String selfUserId;
 
-    // todo: remove conversations map and make it a single "activeConversation" object. no need to keep all in memory.
     private final Map<String, Conversation> conversations = new HashMap<>();
     private final Map<String, Presence> presence = new HashMap<>();
     private volatile String activeConversationPeerId;
@@ -78,7 +77,6 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
                 pr.online = row.isOnline;
                 System.out.println(convo.peerId + " " + convo.isOnline);
             }
-
             notifyConversationsUpdated();
         });
     }
@@ -289,8 +287,10 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
             );
             pr.online = true;
             pr.lastSeen = null;
-            Conversation convo = conversations.computeIfAbsent(p.userId, Conversation::new);
-            convo.isOnline = true;
+            conversations.computeIfPresent(p.userId, (k, v) -> {
+                v.isOnline = true;
+                return v;
+            });
             notifyConversationsUpdated();
         });
     }
@@ -303,8 +303,10 @@ public final class ChatStore implements WsMessageRouter.ServerHandlers {
             );
             pr.online = false;
             pr.lastSeen = p.lastSeen;
-            Conversation convo = conversations.computeIfAbsent(p.userId, Conversation::new);
-            convo.isOnline = false;
+            conversations.computeIfPresent(p.userId, (k, v) -> {
+                v.isOnline = false;
+                return v;
+            });
             notifyConversationsUpdated();
         });
     }

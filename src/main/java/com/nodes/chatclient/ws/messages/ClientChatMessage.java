@@ -18,17 +18,5 @@ public class ClientChatMessage implements ClientMessage {
         return "";
     }
 
-    public static final class Payload {
-        public final String toUserId;
-        public final String text;
-        public final String clientId;
-        public final String replyingTo;
-
-        public Payload(String toUserId, String text, String clientId, String replyingTo) {
-            this.toUserId = toUserId;
-            this.text = text;
-            this.clientId = clientId;
-            this.replyingTo = replyingTo;
-        }
-    }
+    public record Payload(String toUserId, String text, String clientId, String replyingTo) {}
 }

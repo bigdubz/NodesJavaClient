@@ -13,13 +13,5 @@ public class ClientAuthMessage implements ClientMessage {
         return "";
     }
 
-    public static final class Payload {
-        public final String userId;
-        public final String token;
-
-        public Payload(String userId, String token) {
-            this.userId = userId;
-            this.token = token;
-        }
-    }
+    public record Payload(String userId, String token) {}
 }

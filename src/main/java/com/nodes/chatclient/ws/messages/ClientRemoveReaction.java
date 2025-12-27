@@ -13,13 +13,5 @@ public final class ClientRemoveReaction implements ClientMessage {
         return type;
     }
 
-    public static final class Payload {
-        public final String messageId;
-        public final String toUserId;
-
-        public Payload(String messageId, String toUserId) {
-            this.messageId = messageId;
-            this.toUserId = toUserId;
-        }
-    }
+    public record Payload(String messageId, String toUserId) {}
 }

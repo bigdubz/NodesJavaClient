@@ -1,12 +1,7 @@
 package com.nodes.chatclient.ws.messages;
 
-public final class ServerUserTyping implements ServerMessage {
-    public final String type = "USER_TYPING";
-    public final Payload payload;
-
-    public ServerUserTyping(Payload payload) {
-        this.payload = payload;
-    }
+public record ServerUserTyping(Payload payload) implements ServerMessage {
+    public static final String type = "USER_TYPING";
 
     @Override
     public String type() {

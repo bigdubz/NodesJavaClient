@@ -35,10 +35,11 @@ public final class AppRootController {
         ctx.router.registerServerHandlers(store);
 
         ctx.wsService.setAuth(userId, ctx.jwt);
-        ctx.wsService.connect()
+        ctx.wsService.connectThenWaitAuth()
+                .thenCompose(v -> ctx.chatApi.getConversationsAsync(ctx.jwt))
+                .thenAccept(store::mergeConversations)
                 .thenRun(() -> {
-                    ctx.chatApi.getConversationsAsync(ctx.jwt)
-                            .thenAccept(store::mergeConversations);
+                    ctx.wsService.enableRoutingAndFlush();
                     Platform.runLater(() -> {
                         mainController = new MainController(
                                 ctx,

@@ -13,13 +13,5 @@ public final class ClientTypingMessage implements ClientMessage {
         return type;
     }
 
-    public static final class Payload {
-        public final String toUserId;
-        public final boolean isTyping;
-
-        public Payload(String toUserId, boolean isTyping) {
-            this.toUserId = toUserId;
-            this.isTyping = isTyping;
-        }
-    }
+    public record Payload(String toUserId, boolean isTyping) {}
 }

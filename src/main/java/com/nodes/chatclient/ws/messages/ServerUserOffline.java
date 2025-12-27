@@ -1,12 +1,7 @@
 package com.nodes.chatclient.ws.messages;
 
-public final class ServerUserOffline implements ServerMessage {
-    public final String type = "USER_OFFLINE";
-    public final Payload payload;
-
-    public ServerUserOffline(Payload payload) {
-        this.payload = payload;
-    }
+public record ServerUserOffline(Payload payload) implements ServerMessage {
+    public static final String type = "USER_OFFLINE";
 
     @Override
     public String type() {

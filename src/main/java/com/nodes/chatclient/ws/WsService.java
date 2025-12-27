@@ -9,6 +9,7 @@ import java.net.http.WebSocket;
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.Objects;
+import java.util.Queue;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -50,6 +51,9 @@ public final class WsService {
 
     private CompletableFuture<Void> authFuture;
 
+    private final Queue<WsEnvelope> messageQueue = new ConcurrentLinkedQueue<>();
+    private volatile boolean routingEnabled = false;
+
     public WsService(
             ClientConfig config,
             HttpClient httpClient,
@@ -78,6 +82,16 @@ public final class WsService {
         }
     }
 
+    public void enableRoutingAndFlush() {
+        routingEnabled = true;
+
+        WsEnvelope env;
+        while ((env = messageQueue.poll()) != null) {
+            System.out.println("RECEIVED THROUGH WS: " + env.type + ", " + env.payload);
+            router.route(env);
+        }
+    }
+
     private void handleAuthError(ServerAuthError.Payload p) {
         if (authFuture != null && !authFuture.isDone()) {
             authFuture.completeExceptionally(
@@ -86,7 +100,7 @@ public final class WsService {
         }
     }
 
-    public CompletableFuture<Void> connect() {
+    public CompletableFuture<Void> connectThenWaitAuth() {
         authFuture = new CompletableFuture<>();
         long gen = generation.incrementAndGet();
         scheduleConnect(gen, Duration.ZERO);
@@ -189,6 +203,7 @@ public final class WsService {
 
         try {
             ClientAuthMessage msg = new ClientAuthMessage(userId, jwt);
+            System.out.println(msg.type);
             webSocket.sendText(mapper.writeValueAsString(msg), true).join();
         } catch (Exception ignored) {}
     }
@@ -233,7 +248,6 @@ public final class WsService {
 
         @Override
         public CompletionStage<?> onText(WebSocket ws, CharSequence data, boolean last) {
-            System.out.println("RECEIVED THROUGH WS: " + data);
             if (gen != generation.get()) return CompletableFuture.completedFuture(null);
 
             buffer.append(data);
@@ -241,7 +255,13 @@ public final class WsService {
                 try {
                     WsEnvelope env = mapper.readValue(buffer.toString(), WsEnvelope.class);
                     buffer.setLength(0);
-                    router.route(env);
+                    if (!env.type.equals(ServerAuthOk.type) && (state != State.AUTHENTICATED || !routingEnabled)) {
+                        System.out.println("QUEUED: " + data);
+                        messageQueue.add(env);
+                    } else {
+                        System.out.println("RECEIVED THROUGH WS: " + data);
+                        router.route(env);
+                    }
                 } catch (Exception ignored) {}
             }
 

@@ -1,12 +1,7 @@
 package com.nodes.chatclient.ws.messages;
 
-public final class ServerAddReaction implements ServerMessage {
-    public final String type = "ADD_REACTION";
-    public final Payload payload;
-
-    public ServerAddReaction(Payload payload) {
-        this.payload = payload;
-    }
+public record ServerAddReaction(Payload payload) implements ServerMessage {
+    public static final String type = "ADD_REACTION";
 
     @Override
     public String type() {
