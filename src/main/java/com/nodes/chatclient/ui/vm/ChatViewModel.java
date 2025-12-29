@@ -72,7 +72,7 @@ public final class ChatViewModel implements StoreListener {
         }
     }
 
-    public void sendMessage(String text) {
+    public void sendMessage(String text, String replyingTo) {
         String clientId = clientIdGenerator();
         ChatMessage local = ChatMessage.outgoing(
                 clientId,
@@ -80,14 +80,14 @@ public final class ChatViewModel implements StoreListener {
                 peerId,
                 text,
                 System.currentTimeMillis(),
-                null
+                replyingTo
         );
         store.addOutgoingMessage(peerId, local);
         ctx.wsService.sendChatMessageAsync(
                 peerId,
                 text,
                 clientId,
-                null
+                replyingTo
         );
     }
 

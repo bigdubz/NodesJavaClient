@@ -7,6 +7,7 @@ import com.nodes.chatclient.ui.vm.ChatViewModel;
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.control.skin.VirtualFlow;
@@ -24,6 +25,11 @@ public class ChatController {
     private ScrollAnchor pendingAnchor;
     private ListView<ChatMessageUi> messages;
     private ListChangeListener<ChatMessageUi> messageListener;
+    private ChatMessageUi replyingTo;
+
+    private HBox replyBar;
+    private Label replyUser;
+    private Label replyText;
 
     public ChatController() {}
 
@@ -39,11 +45,7 @@ public class ChatController {
 
         messages = new ListView<>();
         messages.setItems(vm.getMessages());
-        messages.setCellFactory(lv -> {
-            MessageCell cell = new MessageCell(vm.getPeerId());
-            cell.prefWidthProperty().bind(lv.widthProperty());
-            return cell;
-        });
+        messages.setCellFactory(lv -> new MessageCell(vm.getPeerId(), this::onReplyRequested));
         installInfiniteScroll(messages);
         messages.addEventFilter(ScrollEvent.SCROLL, e -> {
             if (vm.isLoadingHistory() && e.getDeltaY() > 0) {
@@ -65,9 +67,12 @@ public class ChatController {
         vm.getMessages().addListener(messageListener);
         vm.setHistoryListener(() -> Platform.runLater(() -> restoreAnchor(pendingAnchor)));
 
+        VBox inputContainer = new VBox(4);
         TextField input = new TextField();
         input.setPromptText("Send a message...");
         input.getStyleClass().add("input-field");
+        inputContainer.getChildren().addFirst(createReplyBar());
+        inputContainer.getChildren().add(input);
 
         Button send = new Button("Send");
         send.getStyleClass().add("button");
@@ -82,9 +87,9 @@ public class ChatController {
         });
         send.setOnAction(e -> sendMessage(input));
 
-        HBox bottom = new HBox(10, input, send);
+        HBox bottom = new HBox(10, inputContainer, send);
         bottom.setPadding(new Insets(10));
-        HBox.setHgrow(input, Priority.ALWAYS);
+        HBox.setHgrow(inputContainer, Priority.ALWAYS);
 
         BorderPane pane = new BorderPane();
         pane.setTop(title);
@@ -95,9 +100,50 @@ public class ChatController {
         this.root.applyCss();
     }
 
+    private Node createReplyBar() {
+        replyUser = new Label();
+        replyUser.getStyleClass().add("reply-bar-user");
+
+        replyText = new Label();
+        replyText.setWrapText(true);
+        replyText.setMaxWidth(Double.MAX_VALUE);
+        replyText.setMaxHeight(100);
+        replyText.setTextOverrun(OverrunStyle.ELLIPSIS);
+        replyText.getStyleClass().add("reply-bar-text");
+
+        Button cancel = new Button("x");
+        cancel.getStyleClass().add("reply-bar-cancel");
+        cancel.setOnAction(e -> clearReply());
+
+        VBox textBox = new VBox(2, replyUser, replyText);
+
+        replyBar = new HBox(8, textBox, cancel);
+        replyBar.getStyleClass().add("reply-bar");
+        replyBar.setVisible(false);
+        replyBar.setManaged(false);
+
+        return replyBar;
+    }
+
     @SuppressWarnings("unchecked")
     private static VirtualFlow<ListCell<ChatMessage>> getVirtualFlow(ListView<ChatMessageUi> list) {
         return (VirtualFlow<ListCell<ChatMessage>>) list.lookup(".virtual-flow");
+    }
+
+    private void onReplyRequested(ChatMessageUi message) {
+        replyingTo = message;
+
+        replyUser.setText(message.fromUserId);
+        replyText.setText(message.text);
+
+        replyBar.setVisible(true);
+        replyBar.setManaged(true);
+    }
+
+    private void clearReply() {
+        replyingTo = null;
+        replyBar.setManaged(false);
+        replyBar.setVisible(false);
     }
 
     private ScrollAnchor captureAnchor() {
@@ -167,8 +213,10 @@ public class ChatController {
     private void sendMessage(TextField input) {
         String text = input.getText().trim();
         if (!text.isEmpty()) {
-            vm.sendMessage(text);
+            String reply = replyingTo == null ? null : replyingTo.messageId;
+            vm.sendMessage(text, reply);
             input.clear();
+            clearReply();
         }
     }
 

@@ -9,6 +9,15 @@
     -fx-font-family: "Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji", sans-serif;
 }
 
+.list-view .scroll-bar:horizontal {
+    -fx-min-height: 0;
+    -fx-pref-height: 0;
+    -fx-max-height: 0;
+    -fx-min-width: 0;
+    -fx-pref-width: 0;
+    -fx-max-width: 0;
+}
+
 .list-view .scroll-bar:vertical {
     -fx-opacity: 1.0;
 }
@@ -20,6 +29,10 @@
 .list-cell:filled:selected,
 .list-cell:filled:selected:hover {
     -fx-background-color: transparent;
+}
+
+.msg-cell {
+    -fx-pref-width: 100%;
 }
 
 /*** message wrapper ***/
@@ -57,4 +70,70 @@
     -fx-font-weight: bold;
 
     -fx-padding: 0 0 2 0;
+}
+
+.msg-reply-box {
+    -fx-padding: 4 6 4 8;
+    -fx-border-color: -fx-nodes-purple-light;
+    -fx-border-width: 0 0 0 3;
+    -fx-background-color: -fx-nodes-purple-dark;
+    -fx-background-radius: 6;
+}
+
+.msg-reply-box.me {
+    -fx-border-width: 0 3 0 0;
+}
+
+.msg-reply-username {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-text-muted;
+}
+
+.msg-reply-text {
+    -fx-font-size: 12px;
+    -fx-text-fill: -fx-text-muted;
+}
+
+.reply-bar {
+    -fx-background-color: -fx-nodes-purple-dark;
+    -fx-border-color: -fx-nodes-purple-light;
+    -fx-border-width: 0 0 0 3;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+
+    -fx-padding: 6 10 6 10;
+    -fx-alignment: CENTER_LEFT;
+}
+
+/* Username */
+.reply-bar-user {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-text-muted;
+}
+
+/* Message preview text */
+.reply-bar-text {
+    -fx-font-size: 12px;
+    -fx-text-fill: -fx-text-muted;
+    -fx-opacity: 0.85;
+}
+
+/* Cancel (✕) button */
+.reply-bar-cancel {
+    -fx-background-color: transparent;
+    -fx-text-fill: -fx-text;
+    -fx-font-size: 14px;
+    -fx-padding: 2 6 2 6;
+    -fx-cursor: hand;
+    -fx-alignment: CENTER_RIGHT;
+}
+
+.reply-bar-cancel:hover {
+    -fx-text-fill: -fx-nodes-red;
+}
+
+.reply-bar-cancel:pressed {
+    -fx-opacity: 0.6;
 }
