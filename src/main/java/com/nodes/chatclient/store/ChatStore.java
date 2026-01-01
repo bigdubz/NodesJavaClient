@@ -75,7 +75,6 @@ public final class ChatStore implements ServerHandlers {
                 );
 
                 pr.online = row.isOnline;
-                System.out.println(convo.peerId + " " + convo.isOnline);
             }
             notifyConversationsUpdated();
         });

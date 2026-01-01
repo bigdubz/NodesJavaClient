@@ -153,7 +153,6 @@ public class ChatController {
         for (int i = 0; i < flow.getCellCount(); i++) {
             IndexedCell<?> cell = flow.getCell(i);
             if (cell != null && cell.isVisible()) {
-                System.out.println("captured anchor");
                 ChatMessageUi msg = (ChatMessageUi) cell.getItem();
                 double offset = cell.getLayoutY();
                 return new ScrollAnchor(msg.messageId, offset);

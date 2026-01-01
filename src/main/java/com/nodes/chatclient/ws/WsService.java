@@ -203,7 +203,6 @@ public final class WsService {
 
         try {
             ClientAuthMessage msg = new ClientAuthMessage(userId, jwt);
-            System.out.println(msg.type);
             webSocket.sendText(mapper.writeValueAsString(msg), true).join();
         } catch (Exception ignored) {}
     }
