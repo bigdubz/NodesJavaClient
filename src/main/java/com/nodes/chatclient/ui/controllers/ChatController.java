@@ -4,6 +4,7 @@ import com.nodes.chatclient.store.model.ChatMessage;
 import com.nodes.chatclient.store.model.ChatMessageUi;
 import com.nodes.chatclient.ui.cells.MessageCell;
 import com.nodes.chatclient.ui.vm.ChatViewModel;
+import com.nodes.chatclient.util.Helper;
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 import javafx.geometry.Insets;
@@ -15,6 +16,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
+import javafx.scene.text.TextFlow;
 
 import java.util.stream.IntStream;
 
@@ -29,7 +31,7 @@ public class ChatController {
 
     private HBox replyBar;
     private Label replyUser;
-    private Label replyText;
+    private TextFlow replyText;
 
     public ChatController() {}
 
@@ -45,7 +47,9 @@ public class ChatController {
 
         messages = new ListView<>();
         messages.setItems(vm.getMessages());
-        messages.setCellFactory(lv -> new MessageCell(vm.getPeerId(), this::onReplyRequested));
+        messages.setCellFactory(lv -> new MessageCell(
+                vm.getPeerId(), this::onReplyRequested, this::onReactionRequested)
+        );
         installInfiniteScroll(messages);
         messages.addEventFilter(ScrollEvent.SCROLL, e -> {
             if (vm.isLoadingHistory() && e.getDeltaY() > 0) {
@@ -104,11 +108,9 @@ public class ChatController {
         replyUser = new Label();
         replyUser.getStyleClass().add("reply-bar-user");
 
-        replyText = new Label();
-        replyText.setWrapText(true);
+        replyText = new TextFlow();
         replyText.setMaxWidth(Double.MAX_VALUE);
         replyText.setMaxHeight(100);
-        replyText.setTextOverrun(OverrunStyle.ELLIPSIS);
         replyText.getStyleClass().add("reply-bar-text");
 
         Button cancel = new Button("x");
@@ -134,10 +136,17 @@ public class ChatController {
         replyingTo = message;
 
         replyUser.setText(message.fromUserId);
-        replyText.setText(message.text);
+        replyText.getChildren().clear();
+        replyText.getChildren().setAll(Helper.textWithEmojiTextFlow(message.text, "reply-bar-text").getChildren());
 
         replyBar.setVisible(true);
         replyBar.setManaged(true);
+    }
+
+    private void onReactionRequested(ChatMessageUi message, String reaction) {
+        if (message != null) {
+            vm.sendReaction(message.messageId, reaction);
+        }
     }
 
     private void clearReply() {

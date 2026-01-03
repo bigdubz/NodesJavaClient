@@ -52,7 +52,8 @@
 .msg-text {
     -fx-background-color: transparent;
 
-    -fx-text-fill: white;
+    /*-fx-text-fill: white;*/
+    -fx-fill: white;
     -fx-font-size: 14px;
     -fx-font-weight: normal;
 
@@ -78,6 +79,7 @@
     -fx-border-width: 0 0 0 3;
     -fx-background-color: -fx-nodes-purple-dark;
     -fx-background-radius: 6;
+    -fx-max-height: 100px;
 }
 
 .msg-reply-box.me {
@@ -116,7 +118,7 @@
 /* Message preview text */
 .reply-bar-text {
     -fx-font-size: 12px;
-    -fx-text-fill: -fx-text-muted;
+    -fx-fill: -fx-text;
     -fx-opacity: 0.85;
 }
 
@@ -136,4 +138,71 @@
 
 .reply-bar-cancel:pressed {
     -fx-opacity: 0.6;
+}
+
+.msg-reactions {
+    -fx-spacing: 6;
+    -fx-padding: 4 0 0 0;
+}
+
+.msg-reaction {
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+    -fx-background-radius: 999;
+    -fx-padding: 2 8 2 8;
+    -fx-spacing: 4;
+    -fx-alignment: CENTER;
+    -fx-cursor: hand;
+}
+
+.msg-reaction:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+}
+
+.msg-reaction.mine {
+    -fx-background-color: rgba(100, 160, 255, 0.25);
+}
+
+.msg-reaction-emoji {
+    -fx-font-size: 13px;
+}
+
+.msg-reaction-count {
+    -fx-font-size: 11px;
+    -fx-text-fill: -fx-text;
+}
+
+.msg-context-menu {
+    -fx-background-color: transparent;
+    -fx-padding: 6;
+    /*-fx-background-radius: 10;*/
+    /*-fx-border-radius: 10;*/
+    -fx-border-color: -fx-nodes-purple;
+    -fx-border-width: 2px;
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 12, 0.3, 0, 2);
+}
+
+.msg-context-menu .menu-item {
+    -fx-padding: 8 14;
+    -fx-background-radius: 6;
+}
+
+.msg-context-menu .menu-item > .label {
+    -fx-text-fill: -fx-text;
+    -fx-font-size: 13px;
+}
+
+.msg-context-menu .menu-item:hover,
+.msg-context-menu .menu-item:focused {
+    -fx-background-color: -fx-global-bg-lighter;
+}
+
+.msg-context-menu .separator {
+    -fx-padding: 4 0;
+}
+
+.msg-context-menu .separator .line {
+    -fx-border-color: -fx-global-bg-color;
+    -fx-border-width: 1 0 0 0;
 }

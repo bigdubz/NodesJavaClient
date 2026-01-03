@@ -1,28 +1,43 @@
 package com.nodes.chatclient.ui.cells;
 
 import com.nodes.chatclient.store.model.ChatMessageUi;
+import com.nodes.chatclient.util.EmojiRegistry;
+import com.nodes.chatclient.util.Helper;
 import javafx.geometry.Pos;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.OverrunStyle;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.*;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.MouseButton;
+import javafx.scene.layout.*;
+import javafx.scene.text.TextAlignment;
+import javafx.scene.text.TextFlow;
 
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+
 
 public class MessageCell extends ListCell<ChatMessageUi> {
     private final String toUserId;
+    private final ContextMenu contextMenu = new ContextMenu();
+    private final Consumer<ChatMessageUi> onReplyRequested;
+    private final BiConsumer<ChatMessageUi, String> onReactionRequested;
 
-    public MessageCell(String toUserId, Consumer<ChatMessageUi> onReplyRequested) {
+
+    public MessageCell(String toUserId, Consumer<ChatMessageUi> onReplyRequested,
+                       BiConsumer<ChatMessageUi, String> onReactionRequested) {
         this.toUserId = toUserId;
+        this.onReplyRequested = onReplyRequested;
+        this.onReactionRequested = onReactionRequested;
         getStyleClass().add("msg-cell");
         setPrefWidth(0);
         setMaxWidth(Double.MAX_VALUE);
 
+        contextMenu.getStyleClass().add("msg-context-menu");
+        setContextMenu(contextMenu);
+
         setOnMouseClicked(e -> {
-            if (e.getClickCount() == 2 && getItem() != null) {
+            if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2 && getItem() != null) {
                 onReplyRequested.accept(getItem());
             }
         });
@@ -39,18 +54,47 @@ public class MessageCell extends ListCell<ChatMessageUi> {
 
         if (empty || m == null) {
             setGraphic(null);
+            setContextMenu(null);
             return;
+        } else {
+            contextMenu.getItems().clear();
+            setContextMenu(contextMenu);
         }
+
+        MenuItem reply = new MenuItem("Reply");
+        reply.setOnAction(e -> {
+            ChatMessageUi msg = getItem();
+            if (msg != null) {
+                this.onReplyRequested.accept(msg);
+            }
+        });
+
+        MenuItem react = new MenuItem("Add reaction");
+        react.setOnAction(e -> {
+            ChatMessageUi msg = getItem();
+            if (msg != null) {
+                onReactionRequested.accept(getItem(), "❤️");
+            }
+        });
+
+        MenuItem copy = new MenuItem("Copy text");
+        copy.setOnAction(e -> {
+            ChatMessageUi msg = getItem();
+            if (msg != null) {
+                ClipboardContent cc = new ClipboardContent();
+                cc.putString(msg.text);
+                Clipboard.getSystemClipboard().setContent(cc);
+            }
+        });
+
+        contextMenu.getItems().addAll(reply, react, copy);
 
         boolean fromMe = !m.fromUserId.equals(toUserId);
 
         Label username = new Label(m.fromUserId);
         username.getStyleClass().add("msg-username");
 
-        Label text = new Label(m.text);
-        text.setWrapText(true);
-        text.getStyleClass().add("msg-text");
-
+        TextFlow flow = Helper.textWithEmojiTextFlow(m.text, "msg-text");
         VBox bubble = new VBox(4);
         bubble.getStyleClass().add("msg-bubble");
         bubble.setMaxWidth(Region.USE_PREF_SIZE);
@@ -69,7 +113,11 @@ public class MessageCell extends ListCell<ChatMessageUi> {
                 bubble.getChildren().add(replyBox);
             }
         }
-        bubble.getChildren().add(text);
+        bubble.getChildren().add(flow);
+        if (m.reactions != null && !m.reactions.isEmpty()) {
+            HBox reactions = createReactions(m);
+            bubble.getChildren().add(reactions);
+        }
 
         HBox.setHgrow(bubble, Priority.NEVER);
 
@@ -79,11 +127,12 @@ public class MessageCell extends ListCell<ChatMessageUi> {
         row.setMaxWidth(Double.MAX_VALUE);
 
         if (fromMe) {
-            text.getStyleClass().add("msg-text-right");
-            text.setAlignment(Pos.CENTER_RIGHT);
+            flow.setTextAlignment(TextAlignment.RIGHT);
             bubble.setAlignment(Pos.CENTER_RIGHT);
             row.setAlignment(Pos.CENTER_RIGHT);
         } else {
+            flow.setTextAlignment(TextAlignment.LEFT);
+            bubble.setAlignment(Pos.CENTER_LEFT);
             row.setAlignment(Pos.CENTER_LEFT);
         }
 
@@ -94,16 +143,34 @@ public class MessageCell extends ListCell<ChatMessageUi> {
         Label replyUser = new Label(replied.fromUserId);
         replyUser.getStyleClass().add("msg-reply-username");
 
-        Label replyText = new Label(replied.text);
-        replyText.setWrapText(true);
-        replyText.setMaxWidth(300);
-        replyText.setTextOverrun(OverrunStyle.ELLIPSIS);
-        replyText.getStyleClass().add("msg-reply-text");
-        replyText.setMaxHeight(100);
+        TextFlow flow = Helper.textWithEmojiTextFlow(replied.text, "msg-text");
+        flow.getStyleClass().add("msg-reply-text");
+        flow.setMaxWidth(500);
+        flow.setMaxHeight(100);
 
-        VBox box = new VBox(1, replyUser, replyText);
+        VBox box = new VBox(1, replyUser, flow);
         box.getStyleClass().add("msg-reply-box");
         if (fromMe) box.getStyleClass().add("me");
         return box;
+    }
+
+    private HBox createReactions(ChatMessageUi m) {
+        HBox row = new HBox(6);
+        row.getStyleClass().add("msg-reactions");
+
+        m.reactions.forEach((userId, emoji) -> {
+            String key = EmojiRegistry.emojiToKey(emoji);
+            double size = 13;
+            ImageView emojiImage = EmojiRegistry.createEmojiView(key, size);
+            Label userLabel = new Label(userId);
+            userLabel.getStyleClass().add("msg-reaction-count");
+
+            HBox pill = new HBox(4, userLabel, emojiImage);
+            pill.getStyleClass().add("msg-reaction");
+
+            row.getChildren().add(pill);
+        });
+
+        return row;
     }
 }

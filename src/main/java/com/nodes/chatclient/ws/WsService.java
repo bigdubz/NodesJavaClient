@@ -139,6 +139,16 @@ public final class WsService {
         sendAsync(msg);
     }
 
+    public void sendReactionAsync(
+            String messageId,
+            String emoji,
+            String toUserId
+    ) {
+        if (webSocket == null) return;
+        ClientAddReaction msg = new ClientAddReaction(messageId, emoji, toUserId);
+        sendAsync(msg);
+    }
+
     public void sendMessageSeenAsync(
             String messageId
     ) {

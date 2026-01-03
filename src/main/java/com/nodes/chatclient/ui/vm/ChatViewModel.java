@@ -72,6 +72,10 @@ public final class ChatViewModel implements StoreListener {
         }
     }
 
+    public void sendReaction(String messageId, String emoji) {
+        ctx.wsService.sendReactionAsync(messageId, emoji, peerId);
+    }
+
     public void sendMessage(String text, String replyingTo) {
         String clientId = clientIdGenerator();
         ChatMessage local = ChatMessage.outgoing(
