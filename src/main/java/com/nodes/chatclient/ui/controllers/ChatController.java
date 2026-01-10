@@ -48,7 +48,10 @@ public class ChatController {
         messages = new ListView<>();
         messages.setItems(vm.getMessages());
         messages.setCellFactory(lv -> new MessageCell(
-                vm.getPeerId(), this::onReplyRequested, this::onReactionRequested)
+                vm.getSelfId(),
+                this::onReplyRequested,
+                this::onReactionRequested,
+                this::onRemoveReactionRequested)
         );
         installInfiniteScroll(messages);
         messages.addEventFilter(ScrollEvent.SCROLL, e -> {
@@ -146,6 +149,12 @@ public class ChatController {
     private void onReactionRequested(ChatMessageUi message, String reaction) {
         if (message != null) {
             vm.sendReaction(message.messageId, reaction);
+        }
+    }
+
+    private void onRemoveReactionRequested(ChatMessageUi message) {
+        if (message != null) {
+            vm.removeReaction(message.messageId);
         }
     }
 

@@ -17,6 +17,7 @@ public final class ChatViewModel implements StoreListener {
 
     private final AppContext ctx;
     private final ChatStore store;
+    private final String selfId;
     private String peerId;
 
     private boolean loadingHistory = false;
@@ -30,6 +31,7 @@ public final class ChatViewModel implements StoreListener {
     public ChatViewModel(AppContext ctx, ChatStore store) {
         this.ctx = ctx;
         this.store = store;
+        this.selfId = ctx.userId;
     }
 
     public void setPeer(String peerId) {
@@ -66,14 +68,18 @@ public final class ChatViewModel implements StoreListener {
     }
 
     @Override
-    public void onMessageListUpdated(String peerId) {
-        if (peerId.equals(this.peerId)) {
+    public void onMessageListUpdated(String receiver) {
+        if (receiver.equals(this.peerId)) {
             reload();
         }
     }
 
     public void sendReaction(String messageId, String emoji) {
         ctx.wsService.sendReactionAsync(messageId, emoji, peerId);
+    }
+
+    public void removeReaction(String messageId) {
+        ctx.wsService.sendRemoveReactionAsync(messageId, peerId);
     }
 
     public void sendMessage(String text, String replyingTo) {
@@ -150,5 +156,9 @@ public final class ChatViewModel implements StoreListener {
 
     public interface HistoryPrependListener {
         void onHistoryPrepended();
+    }
+
+    public String getSelfId() {
+        return selfId;
     }
 }

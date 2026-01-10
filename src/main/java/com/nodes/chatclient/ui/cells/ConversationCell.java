@@ -1,6 +1,5 @@
 package com.nodes.chatclient.ui.cells;
 
-import com.nodes.chatclient.store.model.Conversation;
 import com.nodes.chatclient.store.model.ConversationUi;
 import com.nodes.chatclient.util.TimeFormat;
 import javafx.geometry.Pos;

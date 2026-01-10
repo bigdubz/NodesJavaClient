@@ -3,6 +3,7 @@ package com.nodes.chatclient.store;
 import com.nodes.chatclient.http.dto.ConversationRowDto;
 import com.nodes.chatclient.http.dto.MessageRowDto;
 import com.nodes.chatclient.store.events.StoreListener;
+import com.nodes.chatclient.util.Pair;
 import com.nodes.chatclient.ws.ServerHandlers;
 import com.nodes.chatclient.ws.messages.*;
 import com.nodes.chatclient.store.model.*;
@@ -45,8 +46,8 @@ public final class ChatStore implements ServerHandlers {
         listeners.forEach(StoreListener::onConversationsUpdated);
     }
 
-    private void notifyMessageListUpdated(String peerId) {
-        listeners.forEach(l -> l.onMessageListUpdated(peerId));
+    private void notifyMessageListUpdated(String receiver) {
+        listeners.forEach(l -> l.onMessageListUpdated(receiver));
     }
 
     public void setActiveConversation(String peerId) {
@@ -80,10 +81,10 @@ public final class ChatStore implements ServerHandlers {
         });
     }
 
-    public void mergeHistory(String peerId, List<MessageRowDto> rows) {
+    public void mergeHistory(String receiver, List<MessageRowDto> rows) {
         storeExecutor.execute(() -> {
             Conversation convo = conversations.computeIfAbsent(
-                    peerId,
+                    receiver,
                     Conversation::new
             );
 
@@ -116,13 +117,13 @@ public final class ChatStore implements ServerHandlers {
                 }
             }
 
-            notifyMessageListUpdated(peerId);
+            notifyMessageListUpdated(receiver);
         });
     }
 
-    public void bulkMarkMessagesAsSeen(String peerId, List<String> messages) {
+    public void bulkMarkMessagesAsSeen(String receiver, List<String> messages) {
         if (messages.isEmpty()) return;
-        Optional<Conversation> conv = getConversation(peerId);
+        Optional<Conversation> conv = getConversation(receiver);
         if (conv.isPresent()) {
             Conversation convo = conv.get();
             int count = 0;
@@ -135,7 +136,7 @@ public final class ChatStore implements ServerHandlers {
             }
             if (count > 0) {
                 convo.unreadCount = Math.max(convo.unreadCount - count, 0);
-                notifyMessageListUpdated(peerId);
+                notifyMessageListUpdated(receiver);
                 notifyConversationsUpdated();
             }
         }
@@ -174,16 +175,16 @@ public final class ChatStore implements ServerHandlers {
                 .min();
     }
 
-    public void addOutgoingMessage(String peerId, ChatMessage msg) {
+    public void addOutgoingMessage(String receiver, ChatMessage msg) {
         storeExecutor.execute(() -> {
             Conversation convo = conversations.computeIfAbsent(
-                    peerId,
+                    receiver,
                     Conversation::new
             );
             convo.messages.put(msg.messageId, msg);
             convo.lastTimestamp = msg.createdAt;
             convo.lastMessage = msg.text;
-            notifyMessageListUpdated(peerId);
+            notifyMessageListUpdated(receiver);
             notifyConversationsUpdated();
         });
     }
@@ -203,10 +204,10 @@ public final class ChatStore implements ServerHandlers {
     @Override
     public void onChatMessage(ServerChatMessage.Payload p) {
         storeExecutor.execute(() -> {
-            String peerId = p.fromUserId;
+            String receiver = p.fromUserId;
 
             Conversation convo = conversations.computeIfAbsent(
-                    peerId, Conversation::new
+                    receiver, Conversation::new
             );
 
 
@@ -227,27 +228,25 @@ public final class ChatStore implements ServerHandlers {
             convo.lastTimestamp = msg.createdAt;
             convo.lastMessage = msg.text;
 
-            boolean isActive = peerId.equals(activeConversationPeerId);
+            boolean isActive = receiver.equals(activeConversationPeerId);
 
             if (!isActive) {
                 convo.unreadCount++;
             }
 
-            notifyMessageListUpdated(peerId);
+            notifyMessageListUpdated(receiver);
             notifyConversationsUpdated();
         });
     }
 
     @Override
     public void onMessageDelivered(ServerMessageDelivered.Payload p) {
-        storeExecutor.execute(() -> findMessage(p.clientId).ifPresent(msg -> {
+        storeExecutor.execute(() -> findMessage(p.clientId).ifPresent(msgPair -> {
+            String convoId = msgPair.v1();
+            ChatMessage msg = msgPair.v2();
             boolean changedId = !msg.messageId.equals(p.messageId);
 
-            Conversation convo = conversations.values().stream()
-                    .filter(c -> c.messages.containsKey(msg.messageId))
-                    .findFirst()
-                    .orElse(null);
-
+            Conversation convo = conversations.get(convoId);
             if (convo != null && changedId) {
                 convo.messages.remove(msg.messageId);
                 msg.messageId = p.messageId;
@@ -261,7 +260,8 @@ public final class ChatStore implements ServerHandlers {
 
     @Override
     public void onMessageSeen(ServerMessageSeen.Payload p) {
-        storeExecutor.execute(() -> findMessage(p.messageId).ifPresent(msg -> {
+        storeExecutor.execute(() -> findMessage(p.messageId).ifPresent(msgPair -> {
+            ChatMessage msg = msgPair.v2();
             if (!msg.read) {
                 msg.read = true;
             }
@@ -312,24 +312,38 @@ public final class ChatStore implements ServerHandlers {
 
     @Override
     public void onAddReaction(ServerAddReaction.Payload p) {
-        storeExecutor.execute(() -> findMessage(p.messageId).ifPresent(msg -> {
+        storeExecutor.execute(() -> findMessage(p.messageId).ifPresent(msgPair -> {
+            String convoId = msgPair.v1(); // receiver
+            ChatMessage msg = msgPair.v2();
             msg.reactions.put(p.userId, p.reaction);
-            notifyMessageListUpdated(p.userId);
+            notifyMessageListUpdated(convoId);
         }));
     }
 
     @Override
     public void onRemoveReaction(ServerRemoveReaction.Payload p) {
-        storeExecutor.execute(() -> findMessage(p.messageId).ifPresent(msg -> {
+        storeExecutor.execute(() -> findMessage(p.messageId).ifPresent(msgPair -> {
+            String convoId = msgPair.v1(); // receiver
+            ChatMessage msg = msgPair.v2();
             msg.reactions.remove(p.userId);
-            notifyMessageListUpdated(p.userId);
+            notifyMessageListUpdated(convoId);
         }));
     }
 
-    private Optional<ChatMessage> findMessage(String messageId) {
+    /**
+     *  Finds the message with the messageId passed and returns it with the conversation id
+     *  of the conversation in which the message exists as a Pair where v1 is Conversation ID (String)
+     *  and v2 is the ChatMessage. Optional is used because the message might not exist.
+     *
+     *  @param messageId the id to search for
+     *  @return an Optional of the Pair
+     *  @see Pair
+     *  @see Optional
+     */
+    private Optional<Pair<String, ChatMessage>> findMessage(String messageId) {
         for (Conversation c : conversations.values()) {
             ChatMessage m = c.messages.get(messageId);
-            if (m != null) return Optional.of(m);
+            if (m != null) return Optional.of(new Pair<>(c.peerId, m));
         }
         return Optional.empty();
     }

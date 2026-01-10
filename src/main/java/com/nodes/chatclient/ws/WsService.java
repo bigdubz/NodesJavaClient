@@ -149,6 +149,15 @@ public final class WsService {
         sendAsync(msg);
     }
 
+    public void sendRemoveReactionAsync(
+            String messageId,
+            String toUserId
+    ) {
+        if (webSocket == null) return;
+        ClientRemoveReaction msg = new ClientRemoveReaction(messageId, toUserId);
+        sendAsync(msg);
+    }
+
     public void sendMessageSeenAsync(
             String messageId
     ) {

@@ -18,17 +18,23 @@ import java.util.function.Consumer;
 
 
 public class MessageCell extends ListCell<ChatMessageUi> {
-    private final String toUserId;
+    private final String selfId;
     private final ContextMenu contextMenu = new ContextMenu();
     private final Consumer<ChatMessageUi> onReplyRequested;
     private final BiConsumer<ChatMessageUi, String> onReactionRequested;
+    private final Consumer<ChatMessageUi> onRemoveReactionRequested;
 
 
-    public MessageCell(String toUserId, Consumer<ChatMessageUi> onReplyRequested,
-                       BiConsumer<ChatMessageUi, String> onReactionRequested) {
-        this.toUserId = toUserId;
+    public MessageCell(
+            String selfId,
+            Consumer<ChatMessageUi> onReplyRequested,
+            BiConsumer<ChatMessageUi, String> onReactionRequested,
+            Consumer<ChatMessageUi> onRemoveReactionRequested
+    ) {
+        this.selfId = selfId;
         this.onReplyRequested = onReplyRequested;
         this.onReactionRequested = onReactionRequested;
+        this.onRemoveReactionRequested = onRemoveReactionRequested;
         getStyleClass().add("msg-cell");
         setPrefWidth(0);
         setMaxWidth(Double.MAX_VALUE);
@@ -49,7 +55,8 @@ public class MessageCell extends ListCell<ChatMessageUi> {
         // but mouse events still fire normally.
     }
 
-    @Override protected void updateItem(ChatMessageUi m, boolean empty) {
+    @Override
+    protected void updateItem(ChatMessageUi m, boolean empty) {
         super.updateItem(m, empty);
 
         if (empty || m == null) {
@@ -61,35 +68,28 @@ public class MessageCell extends ListCell<ChatMessageUi> {
             setContextMenu(contextMenu);
         }
 
-        MenuItem reply = new MenuItem("Reply");
-        reply.setOnAction(e -> {
-            ChatMessageUi msg = getItem();
-            if (msg != null) {
-                this.onReplyRequested.accept(msg);
-            }
-        });
 
-        MenuItem react = new MenuItem("Add reaction");
-        react.setOnAction(e -> {
-            ChatMessageUi msg = getItem();
-            if (msg != null) {
-                onReactionRequested.accept(getItem(), "❤️");
-            }
-        });
+        boolean fromMe = m.fromUserId.equals(selfId);
+
+        MenuItem reply = new MenuItem("Reply");
+        reply.setOnAction(e -> this.onReplyRequested.accept(m));
+
+        boolean hasReactionFromMe = m.reactions.get(selfId) != null;
+        MenuItem react = new MenuItem(hasReactionFromMe ? "Remove reaction" : "Add reaction");
+        if (hasReactionFromMe) {
+            react.setOnAction(e -> onRemoveReactionRequested.accept(m));
+        } else {
+            react.setOnAction(e -> onReactionRequested.accept(m, "❤️"));
+        }
 
         MenuItem copy = new MenuItem("Copy text");
         copy.setOnAction(e -> {
-            ChatMessageUi msg = getItem();
-            if (msg != null) {
-                ClipboardContent cc = new ClipboardContent();
-                cc.putString(msg.text);
-                Clipboard.getSystemClipboard().setContent(cc);
-            }
+            ClipboardContent cc = new ClipboardContent();
+            cc.putString(m.text);
+            Clipboard.getSystemClipboard().setContent(cc);
         });
 
         contextMenu.getItems().addAll(reply, react, copy);
-
-        boolean fromMe = !m.fromUserId.equals(toUserId);
 
         Label username = new Label(m.fromUserId);
         username.getStyleClass().add("msg-username");
@@ -105,7 +105,7 @@ public class MessageCell extends ListCell<ChatMessageUi> {
             replied = getListView()
                     .getItems()
                     .stream()
-                    .filter(msg -> msg.messageId.equals(m.replyingTo))
+                    .filter(repliedMsg -> repliedMsg.messageId.equals(m.replyingTo))
                     .findFirst()
                     .orElse(null);
             if (replied != null) {
@@ -114,7 +114,7 @@ public class MessageCell extends ListCell<ChatMessageUi> {
             }
         }
         bubble.getChildren().add(flow);
-        if (m.reactions != null && !m.reactions.isEmpty()) {
+        if (!m.reactions.isEmpty()) {
             HBox reactions = createReactions(m);
             bubble.getChildren().add(reactions);
         }

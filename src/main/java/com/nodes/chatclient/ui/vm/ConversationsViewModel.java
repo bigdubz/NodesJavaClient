@@ -41,7 +41,7 @@ public final class ConversationsViewModel implements StoreListener {
     }
 
     @Override
-    public void onMessageListUpdated(String peerId) {
+    public void onMessageListUpdated(String receiver) {
         // ignore – ConversationView changes already reflected through unread counts
         updateFromStore();
     }
