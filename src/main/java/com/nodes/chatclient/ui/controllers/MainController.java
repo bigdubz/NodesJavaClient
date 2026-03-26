@@ -63,9 +63,7 @@ public final class MainController {
         activeChatVM.setPeer(peerId);
         chatController.setVm(activeChatVM);
 
-        long cursor = store.getConversation(peerId)
-                .map(c -> c.lastTimestamp + 1) // +1 because backend compares timestamp with < not <=
-                .orElse(Long.MAX_VALUE);
+        long cursor = Long.MAX_VALUE;
 
         int defaultMessageLimit = 50;
         ctx.chatApi

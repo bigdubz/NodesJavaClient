@@ -59,6 +59,7 @@ public final class AppRootController {
 
     private void logout() {
         ctx.wsService.disconnect();
+        ctx.wsService.disableRouting();
         ctx.jwt = null;
         ctx.userId = null;
 

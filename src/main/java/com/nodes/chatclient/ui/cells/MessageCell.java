@@ -68,7 +68,6 @@ public class MessageCell extends ListCell<ChatMessageUi> {
             setContextMenu(contextMenu);
         }
 
-
         boolean fromMe = m.fromUserId.equals(selfId);
 
         MenuItem reply = new MenuItem("Reply");
