@@ -68,7 +68,6 @@ public final class ChatStore implements ServerHandlers {
 
                 convo.lastMessage = row.lastMessage;
                 convo.lastTimestamp = Math.max(convo.lastTimestamp, row.lastTimestamp);
-                convo.unreadCount = Math.max(convo.unreadCount, row.unreadCount);
 
                 Presence pr = presence.computeIfAbsent(
                         row.peerId,
