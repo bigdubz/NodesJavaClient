@@ -73,6 +73,12 @@
     -fx-padding: 0 0 2 0;
 }
 
+.msg-time {
+    -fx-text-fill: -fx-text-muted;
+    -fx-font-size: 11px;
+    -fx-padding: 0 0 2 0;
+}
+
 .msg-reply-box {
     -fx-padding: 4 6 4 8;
     -fx-border-color: -fx-nodes-purple-light;

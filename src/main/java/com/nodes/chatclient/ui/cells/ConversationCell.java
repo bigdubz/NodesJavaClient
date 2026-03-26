@@ -40,7 +40,7 @@ public class ConversationCell extends ListCell<ConversationUi> {
         preview.setTextOverrun(OverrunStyle.ELLIPSIS);
         preview.setWrapText(false);
 
-        Label time = new Label(TimeFormat.conversationTime(item.lastTimestamp));
+        Label time = new Label(TimeFormat.longToFormatted(item.lastTimestamp, false));
         time.getStyleClass().add("conversation-time");
 
         Region spacer = new Region();

@@ -5,36 +5,47 @@ import java.time.format.DateTimeFormatter;
 
 public final class TimeFormat {
 
-    private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm");
+    private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("hh:mm a");
     private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("dd/MM");
 
     private TimeFormat() {}
 
-    public static String conversationTime(long epochMillis) {
+    public static String longToFormatted(long epochMillis, boolean specific) {
         Instant instant = Instant.ofEpochMilli(epochMillis);
         ZoneId zone = ZoneId.systemDefault();
 
         LocalDateTime time = instant.atZone(zone).toLocalDateTime();
         LocalDateTime now = LocalDateTime.now(zone);
 
+        String timeStr = time.format(TIME);
+        String dateStr = time.format(DATE);
+
         Duration diff = Duration.between(time, now);
 
-        if (diff.toSeconds() < 60) {
+        boolean isToday = diff.toHours() < 24 && time.toLocalDate().equals(now.toLocalDate());
+
+        if (diff.toSeconds() < 60 && !specific) {
             return "Now";
         }
 
-        if (diff.toMinutes() < 60) {
+        if (diff.toMinutes() < 60 && !specific) {
             return diff.toMinutes() + "m";
         }
 
-        if (diff.toHours() < 24 && time.toLocalDate().equals(now.toLocalDate())) {
-            return time.format(TIME);
+        if (isToday) {
+            return timeStr;
         }
 
         if (time.toLocalDate().equals(now.minusDays(1).toLocalDate())) {
-            return "Yesterday";
+            String formatted = "Yesterday";
+            if (specific)
+                formatted += " at " + timeStr;
+            return formatted;
         }
 
-        return time.format(DATE);
+        String formatted = dateStr;
+        if (specific)
+            formatted += " at " + timeStr;
+        return formatted;
     }
 }

@@ -3,6 +3,7 @@ package com.nodes.chatclient.ui.cells;
 import com.nodes.chatclient.store.model.ChatMessageUi;
 import com.nodes.chatclient.util.EmojiRegistry;
 import com.nodes.chatclient.util.Helper;
+import com.nodes.chatclient.util.TimeFormat;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
@@ -92,12 +93,15 @@ public class MessageCell extends ListCell<ChatMessageUi> {
 
         Label username = new Label(m.fromUserId);
         username.getStyleClass().add("msg-username");
+        Label timestamp = new Label(TimeFormat.longToFormatted(m.createdAt, true));
+        timestamp.getStyleClass().add("msg-time");
 
         TextFlow flow = Helper.textWithEmojiTextFlow(m.text, "msg-text");
         VBox bubble = new VBox(4);
         bubble.getStyleClass().add("msg-bubble");
         bubble.setMaxWidth(Region.USE_PREF_SIZE);
-        bubble.getChildren().add(username);
+        HBox bubbleHeader = new HBox(5);
+        bubble.getChildren().add(bubbleHeader);
 
         ChatMessageUi replied;
         if (m.replyingTo != null) {
@@ -126,10 +130,15 @@ public class MessageCell extends ListCell<ChatMessageUi> {
         row.setMaxWidth(Double.MAX_VALUE);
 
         if (fromMe) {
+            bubbleHeader.getChildren().add(timestamp);
+            bubbleHeader.getChildren().add(username);
             flow.setTextAlignment(TextAlignment.RIGHT);
             bubble.setAlignment(Pos.CENTER_RIGHT);
             row.setAlignment(Pos.CENTER_RIGHT);
+            bubbleHeader.setAlignment(Pos.CENTER_RIGHT);
         } else {
+            bubbleHeader.getChildren().add(username);
+            bubbleHeader.getChildren().add(timestamp);
             flow.setTextAlignment(TextAlignment.LEFT);
             bubble.setAlignment(Pos.CENTER_LEFT);
             row.setAlignment(Pos.CENTER_LEFT);
