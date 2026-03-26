@@ -83,12 +83,11 @@ public final class WsService {
     }
 
     public void enableRoutingAndFlush() {
-        System.out.println("enabling routing");
         routingEnabled = true;
 
         WsEnvelope env;
         while ((env = messageQueue.poll()) != null) {
-            System.out.println("RECEIVED THROUGH WS: " + env.type + ", " + env.payload);
+            System.out.println("DEQUEUED: {\"type\":\"" + env.type + "\",\"payload\":" + env.payload + "}");
             router.route(env);
         }
     }
@@ -278,7 +277,6 @@ public final class WsService {
                 try {
                     WsEnvelope env = mapper.readValue(buffer.toString(), WsEnvelope.class);
                     buffer.setLength(0);
-                    System.out.println(routingEnabled);
                     if (!env.type.equals(ServerAuthOk.type) && (state != State.AUTHENTICATED || !routingEnabled)) {
                         System.out.println("QUEUED: " + data);
                         messageQueue.add(env);
