@@ -16,6 +16,7 @@ import javafx.scene.text.TextFlow;
 
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 
 public class MessageCell extends ListCell<ChatMessageUi> {
@@ -70,6 +71,11 @@ public class MessageCell extends ListCell<ChatMessageUi> {
         }
 
         boolean fromMe = m.fromUserId.equals(selfId);
+        boolean shouldBundle = false;
+        if (getIndex() - 1 >= 0) {
+            ChatMessageUi mOld = getListView().getItems().get(getIndex() - 1);
+            shouldBundle = TimeFormat.getShouldBundle(mOld, m);
+        }
 
         MenuItem reply = new MenuItem("Reply");
         reply.setOnAction(e -> this.onReplyRequested.accept(m));
@@ -101,7 +107,9 @@ public class MessageCell extends ListCell<ChatMessageUi> {
         bubble.getStyleClass().add("msg-bubble");
         bubble.setMaxWidth(Region.USE_PREF_SIZE);
         HBox bubbleHeader = new HBox(5);
-        bubble.getChildren().add(bubbleHeader);
+        if (!shouldBundle) {
+            bubble.getChildren().add(bubbleHeader);
+        }
 
         ChatMessageUi replied;
         if (m.replyingTo != null) {
@@ -123,7 +131,6 @@ public class MessageCell extends ListCell<ChatMessageUi> {
         }
 
         HBox.setHgrow(bubble, Priority.NEVER);
-
         HBox row = new HBox(bubble);
         row.getStyleClass().add("msg-row");
         row.setFillHeight(false);
@@ -136,6 +143,12 @@ public class MessageCell extends ListCell<ChatMessageUi> {
             bubble.setAlignment(Pos.CENTER_RIGHT);
             row.setAlignment(Pos.CENTER_RIGHT);
             bubbleHeader.setAlignment(Pos.CENTER_RIGHT);
+            // if is last message, from me, and is read, show read receipt
+            if (getIndex() == getListView().getItems().size() - 1 && m.read) {
+                Label seen = new Label("Seen");
+                seen.getStyleClass().add("msg-seen");
+                bubble.getChildren().add(seen);
+            }
         } else {
             bubbleHeader.getChildren().add(username);
             bubbleHeader.getChildren().add(timestamp);

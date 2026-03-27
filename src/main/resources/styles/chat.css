@@ -75,8 +75,13 @@
 
 .msg-time {
     -fx-text-fill: -fx-text-muted;
+    -fx-font-size: 10px;
+    -fx-padding: 4;
+}
+
+.msg-seen {
+    -fx-text-fill: -fx-text-muted;
     -fx-font-size: 11px;
-    -fx-padding: 0 0 2 0;
 }
 
 .msg-reply-box {

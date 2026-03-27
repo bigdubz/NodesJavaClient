@@ -264,6 +264,7 @@ public final class ChatStore implements ServerHandlers {
             if (!msg.read) {
                 msg.read = true;
             }
+            notifyMessageListUpdated(msg.toUserId);
         }));
     }
 

@@ -1,5 +1,7 @@
 package com.nodes.chatclient.util;
 
+import com.nodes.chatclient.store.model.ChatMessageUi;
+
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 
@@ -47,5 +49,10 @@ public final class TimeFormat {
         if (specific)
             formatted += " at " + timeStr;
         return formatted;
+    }
+
+    public static boolean getShouldBundle(ChatMessageUi mOld, ChatMessageUi mNew) {
+        // if from the same user and within one minute, bundle
+        return mOld.fromUserId.equals(mNew.fromUserId) && mNew.createdAt - mOld.createdAt < 60000;
     }
 }
