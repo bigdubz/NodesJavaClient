@@ -11,6 +11,7 @@ public final class Conversation {
     public long lastTimestamp = 0;
     public int unreadCount = 0;
     public boolean isOnline = false;
+    public boolean isTyping = false;
 
     public Conversation(String peerId) {
         this.peerId = peerId;
@@ -23,6 +24,7 @@ public final class Conversation {
                 lastTimestamp,
                 unreadCount,
                 isOnline,
+                isTyping,
                 Map.copyOf(messages)
         );
     }

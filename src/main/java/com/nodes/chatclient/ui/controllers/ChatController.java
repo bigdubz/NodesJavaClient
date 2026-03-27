@@ -5,7 +5,10 @@ import com.nodes.chatclient.store.model.ChatMessageUi;
 import com.nodes.chatclient.ui.cells.MessageCell;
 import com.nodes.chatclient.ui.vm.ChatViewModel;
 import com.nodes.chatclient.util.Helper;
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ListChangeListener;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -17,6 +20,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
 import javafx.scene.text.TextFlow;
+import javafx.util.Duration;
 
 import java.util.stream.IntStream;
 
@@ -28,6 +32,10 @@ public class ChatController {
     private ListView<ChatMessageUi> messages;
     private ListChangeListener<ChatMessageUi> messageListener;
     private ChatMessageUi replyingTo;
+    private final BooleanProperty isTypingProperty = new SimpleBooleanProperty(false);
+
+    private final PauseTransition typingPause = new PauseTransition(Duration.seconds(2));
+    private boolean localTyping = false;
 
     private HBox replyBar;
     private Label replyUser;
@@ -44,6 +52,7 @@ public class ChatController {
         this.vm = vm;
         Label title = new Label(vm.getPeerId());
         title.setPadding(new Insets(5));
+        isTypingProperty.bind(vm.isTypingProperty());
 
         messages = new ListView<>();
         messages.setItems(vm.getMessages());
@@ -80,6 +89,24 @@ public class ChatController {
         input.getStyleClass().add("input-field");
         inputContainer.getChildren().addFirst(createReplyBar());
         inputContainer.getChildren().add(input);
+        typingPause.setOnFinished(e -> {
+            vm.sendIsTyping(false);
+            localTyping = false;
+        });
+
+        input.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal.isBlank()) {
+                vm.sendIsTyping(false);
+                localTyping = false;
+                typingPause.stop();
+            } else {
+                if (!localTyping) {
+                    vm.sendIsTyping(true);
+                    localTyping = true;
+                }
+                typingPause.playFromStart();
+            }
+        });
 
         Button send = new Button("Send");
         send.getStyleClass().add("button");
@@ -93,15 +120,18 @@ public class ChatController {
             }
         });
         send.setOnAction(e -> sendMessage(input));
-
-        HBox bottom = new HBox(10, inputContainer, send);
-        bottom.setPadding(new Insets(10));
+        Label typing = new Label(vm.getPeerId() + " is typing...");
+        typing.getStyleClass().add("typing-indicator");
+        typing.visibleProperty().bind(isTypingProperty);
+        HBox chatInputContainer = new HBox(10, inputContainer, send);
+        chatInputContainer.setPadding(new Insets(10));
         HBox.setHgrow(inputContainer, Priority.ALWAYS);
+        VBox chatFooter = new VBox(0, typing, chatInputContainer);
 
         BorderPane pane = new BorderPane();
         pane.setTop(title);
         pane.setCenter(messages);
-        pane.setBottom(bottom);
+        pane.setBottom(chatFooter);
 
         this.root = pane;
         this.root.applyCss();

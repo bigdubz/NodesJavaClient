@@ -50,6 +50,10 @@ public final class ChatStore implements ServerHandlers {
         listeners.forEach(l -> l.onMessageListUpdated(receiver));
     }
 
+    private void notifyTypingStatusUpdated(String receiver) {
+        listeners.forEach(l -> l.onTypingStatusUpdated(receiver));
+    }
+
     public void setActiveConversation(String peerId) {
         this.activeConversationPeerId = peerId;
     }
@@ -160,6 +164,10 @@ public final class ChatStore implements ServerHandlers {
                 .sorted(Comparator.comparingLong(m -> m.createdAt))
                 .map(ChatMessage::toUi)
                 .toList();
+    }
+
+    public boolean getIsTyping(String peerId) {
+        return presence.getOrDefault(peerId, new Presence(peerId)).isTyping;
     }
 
     public OptionalLong getOldestMessageTimestamp(String peerId) {
@@ -275,6 +283,12 @@ public final class ChatStore implements ServerHandlers {
                     p.fromUserId, Presence::new
             );
             pr.isTyping = p.isTyping;
+            conversations.computeIfPresent(p.fromUserId, (k, v) -> {
+                v.isTyping = p.isTyping;
+                return v;
+            });
+            notifyTypingStatusUpdated(p.fromUserId);
+            notifyConversationsUpdated();
         });
     }
 

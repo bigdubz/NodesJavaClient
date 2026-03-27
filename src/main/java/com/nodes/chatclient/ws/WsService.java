@@ -170,6 +170,15 @@ public final class WsService {
         sendAsync(msg);
     }
 
+    public void sendIsTypingAsync(
+            String toUserId,
+            boolean isTyping
+    ) {
+        if (webSocket == null) return;
+        ClientTypingMessage msg = new ClientTypingMessage(toUserId, isTyping);
+        sendAsync(msg);
+    }
+
     public void sendAsync(Object message) {
         if (state != State.AUTHENTICATED) return;
         try {

@@ -7,6 +7,8 @@ import com.nodes.chatclient.store.events.StoreListener;
 
 import com.nodes.chatclient.store.model.ChatMessageUi;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -25,6 +27,8 @@ public final class ChatViewModel implements StoreListener {
 
     private final ObservableList<ChatMessageUi> messages = FXCollections.observableArrayList();
     private HistoryPrependListener historyListener;
+
+    private final BooleanProperty isTypingProperty = new SimpleBooleanProperty(false);
 
     private volatile boolean disposed = false;
 
@@ -72,6 +76,17 @@ public final class ChatViewModel implements StoreListener {
         if (receiver.equals(this.peerId)) {
             reload();
         }
+    }
+
+    @Override
+    public void onTypingStatusUpdated(String receiver) {
+        if (receiver.equals(this.peerId)) {
+            isTypingProperty.set(store.getIsTyping(this.peerId));
+        }
+    }
+
+    public void sendIsTyping(boolean isTyping) {
+        ctx.wsService.sendIsTypingAsync(peerId, isTyping);
     }
 
     public void sendReaction(String messageId, String emoji) {
@@ -152,6 +167,10 @@ public final class ChatViewModel implements StoreListener {
         this.messages.clear();
         historyListener = null;
         store.removeListener(this);
+    }
+
+    public BooleanProperty isTypingProperty() {
+        return isTypingProperty;
     }
 
     public interface HistoryPrependListener {

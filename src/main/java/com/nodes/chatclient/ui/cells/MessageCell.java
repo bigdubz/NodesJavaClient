@@ -16,7 +16,6 @@ import javafx.scene.text.TextFlow;
 
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 
 public class MessageCell extends ListCell<ChatMessageUi> {
@@ -77,6 +76,7 @@ public class MessageCell extends ListCell<ChatMessageUi> {
             shouldBundle = TimeFormat.getShouldBundle(mOld, m);
         }
 
+        // context menu
         MenuItem reply = new MenuItem("Reply");
         reply.setOnAction(e -> this.onReplyRequested.accept(m));
 
@@ -97,20 +97,23 @@ public class MessageCell extends ListCell<ChatMessageUi> {
 
         contextMenu.getItems().addAll(reply, react, copy);
 
+        // message header
+        HBox bubbleHeader = new HBox(5);
         Label username = new Label(m.fromUserId);
         username.getStyleClass().add("msg-username");
         Label timestamp = new Label(TimeFormat.longToFormatted(m.createdAt, true));
         timestamp.getStyleClass().add("msg-time");
 
+        // message content
         TextFlow flow = Helper.textWithEmojiTextFlow(m.text, "msg-text");
         VBox bubble = new VBox(4);
         bubble.getStyleClass().add("msg-bubble");
         bubble.setMaxWidth(Region.USE_PREF_SIZE);
-        HBox bubbleHeader = new HBox(5);
         if (!shouldBundle) {
             bubble.getChildren().add(bubbleHeader);
         }
 
+        // reply box
         ChatMessageUi replied;
         if (m.replyingTo != null) {
             replied = getListView()
@@ -125,6 +128,8 @@ public class MessageCell extends ListCell<ChatMessageUi> {
             }
         }
         bubble.getChildren().add(flow);
+
+        // reaction box
         if (!m.reactions.isEmpty()) {
             HBox reactions = createReactions(m);
             bubble.getChildren().add(reactions);

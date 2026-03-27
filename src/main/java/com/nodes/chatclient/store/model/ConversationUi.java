@@ -6,10 +6,11 @@ public class ConversationUi {
 
     public final String peerId;
     public final Map<String, ChatMessage> messages;
-    public String lastMessage = "";
-    public long lastTimestamp = 0;
-    public int unreadCount = 0;
-    public boolean isOnline = false;
+    public String lastMessage;
+    public long lastTimestamp;
+    public int unreadCount;
+    public boolean isOnline;
+    public boolean isTyping;
 
     public ConversationUi(
             String peerId,
@@ -17,6 +18,7 @@ public class ConversationUi {
             long lastTimestamp,
             int unreadCount,
             boolean isOnline,
+            boolean isTyping,
             Map<String, ChatMessage> messages
     ) {
         this.peerId = peerId;
@@ -24,6 +26,7 @@ public class ConversationUi {
         this.lastTimestamp = lastTimestamp;
         this.unreadCount = unreadCount;
         this.isOnline = isOnline;
+        this.isTyping = isTyping;
         this.messages = messages;
     }
 }
