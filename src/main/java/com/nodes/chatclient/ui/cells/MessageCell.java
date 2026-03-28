@@ -3,7 +3,7 @@ package com.nodes.chatclient.ui.cells;
 import com.nodes.chatclient.store.model.ChatMessageUi;
 import com.nodes.chatclient.util.EmojiRegistry;
 import com.nodes.chatclient.util.Helper;
-import com.nodes.chatclient.util.TimeFormat;
+import com.nodes.chatclient.util.TimeUtils;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
@@ -71,9 +71,11 @@ public class MessageCell extends ListCell<ChatMessageUi> {
 
         boolean fromMe = m.fromUserId.equals(selfId);
         boolean shouldBundle = false;
+        boolean shouldShowDateSeparator = false;
         if (getIndex() - 1 >= 0) {
             ChatMessageUi mOld = getListView().getItems().get(getIndex() - 1);
-            shouldBundle = TimeFormat.getShouldBundle(mOld, m);
+            shouldBundle = TimeUtils.getShouldBundle(mOld, m);
+            shouldShowDateSeparator = TimeUtils.getShouldShowDateSeparator(mOld, m);
         }
 
         // context menu
@@ -97,18 +99,26 @@ public class MessageCell extends ListCell<ChatMessageUi> {
 
         contextMenu.getItems().addAll(reply, react, copy);
 
+        VBox row = new VBox(10);
+
         // message header
         HBox bubbleHeader = new HBox(5);
         Label username = new Label(m.fromUserId);
         username.getStyleClass().add("msg-username");
-        Label timestamp = new Label(TimeFormat.longToFormatted(m.createdAt, true));
+        Label timestamp = new Label(TimeUtils.longToFormatted(m.createdAt, true));
         timestamp.getStyleClass().add("msg-time");
 
         // message content
         TextFlow flow = Helper.textWithEmojiTextFlow(m.text, "msg-text");
-        VBox bubble = new VBox(4);
+        VBox bubble = new VBox(1);
         bubble.getStyleClass().add("msg-bubble");
         bubble.setMaxWidth(Region.USE_PREF_SIZE);
+
+        if (shouldShowDateSeparator) {
+            HBox separator = createDateSeparator(TimeUtils.getDate(m.createdAt));
+            row.getChildren().add(separator);
+        }
+
         if (!shouldBundle) {
             bubble.getChildren().add(bubbleHeader);
         }
@@ -136,9 +146,9 @@ public class MessageCell extends ListCell<ChatMessageUi> {
         }
 
         HBox.setHgrow(bubble, Priority.NEVER);
-        HBox row = new HBox(bubble);
+        row.getChildren().add(bubble);
         row.getStyleClass().add("msg-row");
-        row.setFillHeight(false);
+//        row.setFillHeight(false);
         row.setMaxWidth(Double.MAX_VALUE);
 
         if (fromMe) {
@@ -198,5 +208,23 @@ public class MessageCell extends ListCell<ChatMessageUi> {
         });
 
         return row;
+    }
+
+    private HBox createDateSeparator(String text) {
+        Label label = new Label(text);
+        label.getStyleClass().add("msg-date-separator");
+
+        Region leftLine = new Region();
+        leftLine.getStyleClass().add("msg-date-line");
+        HBox.setHgrow(leftLine, Priority.ALWAYS);
+
+        Region rightLine = new Region();
+        rightLine.getStyleClass().add("msg-date-line");
+        HBox.setHgrow(rightLine, Priority.ALWAYS);
+
+        HBox box = new HBox(10, leftLine, label, rightLine);
+        box.setAlignment(Pos.CENTER);
+        box.setMaxWidth(Double.MAX_VALUE);
+        return box;
     }
 }

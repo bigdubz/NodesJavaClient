@@ -49,6 +49,17 @@
     -fx-padding: 4 12;
 }
 
+.msg-date-separator {
+    -fx-text-alignment: center;
+    -fx-text-fill: -fx-text-muted;
+}
+
+.msg-date-line {
+    -fx-background-color: -fx-global-bg-lighter;
+    -fx-pref-height: 1px;
+    -fx-max-height: 1px;
+}
+
 .msg-text {
     -fx-background-color: transparent;
 
@@ -66,7 +77,7 @@
 }
 
 .msg-username {
-    -fx-text-fill: -fx-text-muted;
+    -fx-text-fill: white;
     -fx-font-size: 15px;
     -fx-font-weight: bold;
 

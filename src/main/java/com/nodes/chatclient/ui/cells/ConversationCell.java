@@ -1,7 +1,7 @@
 package com.nodes.chatclient.ui.cells;
 
 import com.nodes.chatclient.store.model.ConversationUi;
-import com.nodes.chatclient.util.TimeFormat;
+import com.nodes.chatclient.util.TimeUtils;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -40,7 +40,7 @@ public class ConversationCell extends ListCell<ConversationUi> {
         preview.setTextOverrun(OverrunStyle.ELLIPSIS);
         preview.setWrapText(false);
 
-        Label time = new Label(TimeFormat.longToFormatted(item.lastTimestamp, false));
+        Label time = new Label(TimeUtils.longToFormatted(item.lastTimestamp, false));
         time.getStyleClass().add("conversation-time");
 
         Region spacer = new Region();
