@@ -72,6 +72,8 @@ public class MessageCell extends ListCell<ChatMessageUi> {
         boolean fromMe = m.fromUserId.equals(selfId);
         boolean shouldBundle = false;
         boolean shouldShowDateSeparator = false;
+        boolean hasReactionFromMe = m.reactions.get(selfId) != null;
+
         if (getIndex() - 1 >= 0) {
             ChatMessageUi mOld = getListView().getItems().get(getIndex() - 1);
             shouldBundle = TimeUtils.getShouldBundle(mOld, m);
@@ -82,7 +84,6 @@ public class MessageCell extends ListCell<ChatMessageUi> {
         MenuItem reply = new MenuItem("Reply");
         reply.setOnAction(e -> this.onReplyRequested.accept(m));
 
-        boolean hasReactionFromMe = m.reactions.get(selfId) != null;
         MenuItem react = new MenuItem(hasReactionFromMe ? "Remove reaction" : "Add reaction");
         if (hasReactionFromMe) {
             react.setOnAction(e -> onRemoveReactionRequested.accept(m));
@@ -132,10 +133,13 @@ public class MessageCell extends ListCell<ChatMessageUi> {
                     .filter(repliedMsg -> repliedMsg.messageId.equals(m.replyingTo))
                     .findFirst()
                     .orElse(null);
+            VBox replyBox;
             if (replied != null) {
-                VBox replyBox = createReplyPreview(replied, fromMe);
-                bubble.getChildren().add(replyBox);
+                replyBox = createReplyPreview(replied.text, replied.fromUserId, fromMe);
+            } else {
+                replyBox = createReplyPreview("Message not loaded", "Unknown", fromMe);
             }
+            bubble.getChildren().add(replyBox);
         }
         bubble.getChildren().add(flow);
 
@@ -148,7 +152,6 @@ public class MessageCell extends ListCell<ChatMessageUi> {
         HBox.setHgrow(bubble, Priority.NEVER);
         row.getChildren().add(bubble);
         row.getStyleClass().add("msg-row");
-//        row.setFillHeight(false);
         row.setMaxWidth(Double.MAX_VALUE);
 
         if (fromMe) {
@@ -175,17 +178,19 @@ public class MessageCell extends ListCell<ChatMessageUi> {
         setGraphic(row);
     }
 
-    private VBox createReplyPreview(ChatMessageUi replied, boolean fromMe) {
-        Label replyUser = new Label(replied.fromUserId);
+    private VBox createReplyPreview(String text, String fromUserId, boolean fromMe) {
+        Label replyUser = new Label(fromUserId);
         replyUser.getStyleClass().add("msg-reply-username");
 
-        TextFlow flow = Helper.textWithEmojiTextFlow(replied.text, "msg-text");
+        TextFlow flow = Helper.textWithEmojiTextFlow(text, "msg-text");
         flow.getStyleClass().add("msg-reply-text");
         flow.setMaxWidth(500);
         flow.setMaxHeight(100);
 
         VBox box = new VBox(1, replyUser, flow);
         box.getStyleClass().add("msg-reply-box");
+        box.setMinWidth(100);
+        box.setMaxWidth(500);
         if (fromMe) box.getStyleClass().add("me");
         return box;
     }
