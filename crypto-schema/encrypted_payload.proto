@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+option java_package = "com.nodes.chatclient.e2ee.protos";
+option java_outer_classname = "ProtoEncryptedPayload";
+
+message EncryptedPayload {
+  string messageId = 1; // an ID for every single message for referencing and deduplication
+  int64 createdAt = 2;
+
+  oneof content {
+    TextMessage text = 3;
+    ReactionMessage reaction = 4;
+    ControlMessage control = 5;
+  }
+
+  message TextMessage {
+    string body = 1;
+    optional string referencedMessageId = 3;
+  }
+
+  message ReactionMessage {
+    string referencedMessageId = 1;
+    string reaction = 2;
+    bool isRemoved = 3;
+  }
+
+  message ControlMessage {
+    // intentional bad design
+    enum Type {
+      ACK = 0; // this shit is protocol-level while read_receipt is application-level, make sure to not get confused
+      TYPING = 1;
+      READ_RECEIPT = 2;
+    }
+    Type type = 1;
+    optional string referencedMessageId = 2; // NOT OPTIONAL for READ_RECEIPT and ACK, must be enforced in code
+  }
+}

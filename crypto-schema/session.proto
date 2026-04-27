@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package org.example;
+
+option java_package = "com.nodes.chatclient.e2ee.protos";
+option java_outer_classname = "ProtoSession";
+
+message SessionProto {
+
+  // identity and versioning
+  uint32 session_version = 1;
+
+  string local_device_id = 2;
+  string remote_device_id = 3;
+
+  bool initiator = 4;
+
+  enum State {
+    INIT = 0;
+    ACTIVE = 1;
+    BROKEN = 2;
+  }
+  State state = 5;
+
+  // root/DH state
+  bytes root_key = 6;
+
+  bytes dh_private_key = 7;
+  bytes dh_public_key = 8;
+
+  optional bytes remote_dh_public_key = 9;
+  optional bytes previous_remote_dh_public_key = 10;
+  uint64 previousChainLength = 11; // previousSendingChainLength
+
+  // chain state
+  message ChainState {
+    bytes chain_key = 1;
+    uint64 message_number = 2;
+  }
+
+  ChainState sending_chain = 12;
+  ChainState receiving_chain = 13;
+
+  // skipped keys
+  message SkippedKey {
+    string ratchet_key_id = 1; // e.g. "dhPubHash:msgNum"
+    bytes key = 2;
+  }
+
+  repeated SkippedKey skipped_keys = 14;
+}

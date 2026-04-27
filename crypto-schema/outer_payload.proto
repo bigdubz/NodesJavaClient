@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option java_package = "com.nodes.chatclient.e2ee.protos";
+option java_outer_classname = "ProtoOuterPayload";
+
+message OuterPayload {
+  string fromUserId = 1;
+  string fromDeviceId = 2;
+  string toUserId = 3;
+  string toDeviceId = 4;
+
+  bytes dhPublicKey = 5;
+  uint64 messageNumber = 6;
+  uint64 previousChainLength = 7;
+
+  bytes iv = 8;
+  bytes ciphertext = 9;
+  bytes signature = 10;
+}
