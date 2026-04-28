@@ -21,7 +21,7 @@ public final class SchemaManager {
         }
 
         // for the future
-//         if (currentVersion < 2) { applySchema(conn, "db/schema_v2.sql"); setVersion(conn, 2); }
+//        if (currentVersion < 2) { applySchema(conn, "db/schema_v2.sql"); setVersion(conn, 2); }
     }
 
     private static void applySchema(Connection conn, String resourcePath) throws Exception {
