@@ -16,15 +16,26 @@ public class SessionMapper {
                         .setLocalDeviceId(session.localDeviceId)
                         .setRemoteDeviceId(session.remoteDeviceId)
                         .setInitiator(session.initiator)
-                        .setState(session.state != null ? session.state : ProtoSession.SessionProto.State.ACTIVE)
+                        .setState(session.state != null
+                                ? session.state
+                                : ProtoSession.SessionProto.State.ACTIVE)
                         .setRootKey(ByteString.copyFrom(session.rootKey))
                         .setDhPrivateKey(ByteString.copyFrom(session.dhPrivateKey))
                         .setDhPublicKey(ByteString.copyFrom(session.dhPublicKey))
-                        .setPreviousChainLength(session.previousChainLength);
+                        .setPreviousSendingChainLength(session.previousChainLength)
+                        .setSigningPrivateKey(ByteString.copyFrom(session.signingPrivateKey))
+                        .setSigningPublicKey(ByteString.copyFrom(session.signingPublicKey));
 
-        // Optional remote keys
+        if (session.remoteSigningPublicKey != null) {
+            builder.setRemoteSigningPublicKey(
+                    ByteString.copyFrom(session.remoteSigningPublicKey)
+            );
+        }
+
         if (session.remoteDHPublicKey != null) {
-            builder.setRemoteDhPublicKey(ByteString.copyFrom(session.remoteDHPublicKey));
+            builder.setRemoteDhPublicKey(
+                    ByteString.copyFrom(session.remoteDHPublicKey)
+            );
         }
 
         if (session.previousRemoteDHPublicKey != null) {
@@ -33,22 +44,24 @@ public class SessionMapper {
             );
         }
 
-        // Chain state
-        builder.setSendingChain(
-                ProtoSession.SessionProto.ChainState.newBuilder()
-                        .setChainKey(ByteString.copyFrom(session.sendingChainKey))
-                        .setMessageNumber(session.sendingMessageNumber)
-                        .build()
-        );
+        if (session.sendingChainKey != null) {
+            builder.setSendingChain(
+                    ProtoSession.SessionProto.ChainState.newBuilder()
+                            .setChainKey(ByteString.copyFrom(session.sendingChainKey))
+                            .setMessageNumber(session.sendingMessageNumber)
+                            .build()
+            );
+        }
 
-        builder.setReceivingChain(
-                ProtoSession.SessionProto.ChainState.newBuilder()
-                        .setChainKey(ByteString.copyFrom(session.receivingChainKey))
-                        .setMessageNumber(session.receivingMessageNumber)
-                        .build()
-        );
+        if (session.receivingChainKey != null) {
+            builder.setReceivingChain(
+                    ProtoSession.SessionProto.ChainState.newBuilder()
+                            .setChainKey(ByteString.copyFrom(session.receivingChainKey))
+                            .setMessageNumber(session.receivingMessageNumber)
+                            .build()
+            );
+        }
 
-        // Skipped keys
         for (Map.Entry<String, byte[]> entry : session.skippedKeys.entrySet()) {
             builder.addSkippedKeys(
                     ProtoSession.SessionProto.SkippedKey.newBuilder()

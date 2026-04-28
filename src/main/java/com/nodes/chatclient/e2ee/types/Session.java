@@ -10,6 +10,10 @@ public class Session {
     public byte[] sendingChainKey;
     public byte[] receivingChainKey;
 
+    public byte[] signingPrivateKey;
+    public byte[] signingPublicKey;
+    public byte[] remoteSigningPublicKey;
+
     public long sendingMessageNumber = 1;
     public long receivingMessageNumber = 1;
     public String remoteDeviceId;
@@ -24,9 +28,6 @@ public class Session {
     public long previousChainLength;
 
     public boolean initiator;
-    public boolean canRatchet = false;
-    public byte[] signingPrivateKey;
-    public byte[] remoteSigningPublicKey;
 
     public Session(byte[] rootKey, byte[] dhPrivateKey, byte[] dhPublicKey,
                    byte[] remotePub, String localDeviceId, boolean initiator) {
@@ -47,19 +48,36 @@ public class Session {
                 proto.getLocalDeviceId(),
                 proto.getInitiator()
         );
+
         session.state = proto.getState();
         session.sessionVersion = proto.getSessionVersion();
-        session.sendingChainKey = proto.getSendingChain().getChainKey().toByteArray();
-        session.receivingChainKey = proto.getReceivingChain().getChainKey().toByteArray();
-
-        session.sendingMessageNumber = proto.getSendingChain().getMessageNumber();
-        session.receivingMessageNumber = proto.getReceivingChain().getMessageNumber();
         session.remoteDeviceId = proto.getRemoteDeviceId();
-        if (proto.hasPreviousRemoteDhPublicKey()) {
-            session.previousRemoteDHPublicKey = proto.getPreviousRemoteDhPublicKey().toByteArray();
-        }
-        session.previousChainLength = proto.getPreviousChainLength();
 
+        session.signingPrivateKey = proto.getSigningPrivateKey().toByteArray();
+        session.signingPublicKey = proto.getSigningPublicKey().toByteArray();
+
+        if (proto.hasRemoteSigningPublicKey()) {
+            session.remoteSigningPublicKey = proto.getRemoteSigningPublicKey().toByteArray();
+        }
+
+        if (proto.hasSendingChain()) {
+            session.sendingChainKey = proto.getSendingChain().getChainKey().toByteArray();
+            session.sendingMessageNumber = proto.getSendingChain().getMessageNumber();
+        }
+
+        if (proto.hasReceivingChain()) {
+            session.receivingChainKey = proto.getReceivingChain().getChainKey().toByteArray();
+            session.receivingMessageNumber = proto.getReceivingChain().getMessageNumber();
+        }
+
+        if (proto.hasPreviousRemoteDhPublicKey()) {
+            session.previousRemoteDHPublicKey =
+                    proto.getPreviousRemoteDhPublicKey().toByteArray();
+        }
+
+        session.previousChainLength = proto.getPreviousSendingChainLength();
+
+        // Skipped keys
         for (ProtoSession.SessionProto.SkippedKey k : proto.getSkippedKeysList()) {
             session.skippedKeys.put(
                     k.getRatchetKeyId(),

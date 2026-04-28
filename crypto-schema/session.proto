@@ -7,7 +7,6 @@ option java_outer_classname = "ProtoSession";
 
 message SessionProto {
 
-  // identity and versioning
   uint32 session_version = 1;
 
   string local_device_id = 2;
@@ -22,15 +21,19 @@ message SessionProto {
   }
   State state = 5;
 
-  // root/DH state
   bytes root_key = 6;
 
   bytes dh_private_key = 7;
   bytes dh_public_key = 8;
 
-  optional bytes remote_dh_public_key = 9;
-  optional bytes previous_remote_dh_public_key = 10;
-  uint64 previousChainLength = 11; // previousSendingChainLength
+  bytes signing_private_key = 9;
+  bytes signing_public_key = 10;
+
+  optional bytes remote_signing_public_key = 11;
+  optional bytes remote_dh_public_key = 12;
+  optional bytes previous_remote_dh_public_key = 13;
+
+  uint64 previous_sending_chain_length = 14; // previousSendingChainLength
 
   // chain state
   message ChainState {
@@ -38,8 +41,8 @@ message SessionProto {
     uint64 message_number = 2;
   }
 
-  ChainState sending_chain = 12;
-  ChainState receiving_chain = 13;
+  optional ChainState sending_chain = 15;
+  optional ChainState receiving_chain = 16;
 
   // skipped keys
   message SkippedKey {
@@ -47,5 +50,5 @@ message SessionProto {
     bytes key = 2;
   }
 
-  repeated SkippedKey skipped_keys = 14;
+  repeated SkippedKey skipped_keys = 17;
 }

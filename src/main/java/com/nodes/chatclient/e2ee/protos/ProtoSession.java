@@ -31,10 +31,6 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <pre>
-     * identity and versioning
-     * </pre>
-     *
      * <code>uint32 session_version = 1;</code>
      * @return The sessionVersion.
      */
@@ -82,10 +78,6 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
     com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.State getState();
 
     /**
-     * <pre>
-     * root/DH state
-     * </pre>
-     *
      * <code>bytes root_key = 6;</code>
      * @return The rootKey.
      */
@@ -104,23 +96,46 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
     com.google.protobuf.ByteString getDhPublicKey();
 
     /**
-     * <code>optional bytes remote_dh_public_key = 9;</code>
+     * <code>bytes signing_private_key = 9;</code>
+     * @return The signingPrivateKey.
+     */
+    com.google.protobuf.ByteString getSigningPrivateKey();
+
+    /**
+     * <code>bytes signing_public_key = 10;</code>
+     * @return The signingPublicKey.
+     */
+    com.google.protobuf.ByteString getSigningPublicKey();
+
+    /**
+     * <code>optional bytes remote_signing_public_key = 11;</code>
+     * @return Whether the remoteSigningPublicKey field is set.
+     */
+    boolean hasRemoteSigningPublicKey();
+    /**
+     * <code>optional bytes remote_signing_public_key = 11;</code>
+     * @return The remoteSigningPublicKey.
+     */
+    com.google.protobuf.ByteString getRemoteSigningPublicKey();
+
+    /**
+     * <code>optional bytes remote_dh_public_key = 12;</code>
      * @return Whether the remoteDhPublicKey field is set.
      */
     boolean hasRemoteDhPublicKey();
     /**
-     * <code>optional bytes remote_dh_public_key = 9;</code>
+     * <code>optional bytes remote_dh_public_key = 12;</code>
      * @return The remoteDhPublicKey.
      */
     com.google.protobuf.ByteString getRemoteDhPublicKey();
 
     /**
-     * <code>optional bytes previous_remote_dh_public_key = 10;</code>
+     * <code>optional bytes previous_remote_dh_public_key = 13;</code>
      * @return Whether the previousRemoteDhPublicKey field is set.
      */
     boolean hasPreviousRemoteDhPublicKey();
     /**
-     * <code>optional bytes previous_remote_dh_public_key = 10;</code>
+     * <code>optional bytes previous_remote_dh_public_key = 13;</code>
      * @return The previousRemoteDhPublicKey.
      */
     com.google.protobuf.ByteString getPreviousRemoteDhPublicKey();
@@ -130,61 +145,61 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
      * previousSendingChainLength
      * </pre>
      *
-     * <code>uint64 previousChainLength = 11;</code>
-     * @return The previousChainLength.
+     * <code>uint64 previous_sending_chain_length = 14;</code>
+     * @return The previousSendingChainLength.
      */
-    long getPreviousChainLength();
+    long getPreviousSendingChainLength();
 
     /**
-     * <code>.org.example.SessionProto.ChainState sending_chain = 12;</code>
+     * <code>optional .org.example.SessionProto.ChainState sending_chain = 15;</code>
      * @return Whether the sendingChain field is set.
      */
     boolean hasSendingChain();
     /**
-     * <code>.org.example.SessionProto.ChainState sending_chain = 12;</code>
+     * <code>optional .org.example.SessionProto.ChainState sending_chain = 15;</code>
      * @return The sendingChain.
      */
     com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainState getSendingChain();
     /**
-     * <code>.org.example.SessionProto.ChainState sending_chain = 12;</code>
+     * <code>optional .org.example.SessionProto.ChainState sending_chain = 15;</code>
      */
     com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainStateOrBuilder getSendingChainOrBuilder();
 
     /**
-     * <code>.org.example.SessionProto.ChainState receiving_chain = 13;</code>
+     * <code>optional .org.example.SessionProto.ChainState receiving_chain = 16;</code>
      * @return Whether the receivingChain field is set.
      */
     boolean hasReceivingChain();
     /**
-     * <code>.org.example.SessionProto.ChainState receiving_chain = 13;</code>
+     * <code>optional .org.example.SessionProto.ChainState receiving_chain = 16;</code>
      * @return The receivingChain.
      */
     com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainState getReceivingChain();
     /**
-     * <code>.org.example.SessionProto.ChainState receiving_chain = 13;</code>
+     * <code>optional .org.example.SessionProto.ChainState receiving_chain = 16;</code>
      */
     com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainStateOrBuilder getReceivingChainOrBuilder();
 
     /**
-     * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 14;</code>
+     * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 17;</code>
      */
     java.util.List<com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKey> 
         getSkippedKeysList();
     /**
-     * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 14;</code>
+     * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 17;</code>
      */
     com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKey getSkippedKeys(int index);
     /**
-     * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 14;</code>
+     * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 17;</code>
      */
     int getSkippedKeysCount();
     /**
-     * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 14;</code>
+     * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 17;</code>
      */
     java.util.List<? extends com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKeyOrBuilder> 
         getSkippedKeysOrBuilderList();
     /**
-     * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 14;</code>
+     * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 17;</code>
      */
     com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKeyOrBuilder getSkippedKeysOrBuilder(
         int index);
@@ -217,6 +232,9 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
       rootKey_ = com.google.protobuf.ByteString.EMPTY;
       dhPrivateKey_ = com.google.protobuf.ByteString.EMPTY;
       dhPublicKey_ = com.google.protobuf.ByteString.EMPTY;
+      signingPrivateKey_ = com.google.protobuf.ByteString.EMPTY;
+      signingPublicKey_ = com.google.protobuf.ByteString.EMPTY;
+      remoteSigningPublicKey_ = com.google.protobuf.ByteString.EMPTY;
       remoteDhPublicKey_ = com.google.protobuf.ByteString.EMPTY;
       previousRemoteDhPublicKey_ = com.google.protobuf.ByteString.EMPTY;
       skippedKeys_ = java.util.Collections.emptyList();
@@ -1523,10 +1541,6 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
     public static final int SESSION_VERSION_FIELD_NUMBER = 1;
     private int sessionVersion_ = 0;
     /**
-     * <pre>
-     * identity and versioning
-     * </pre>
-     *
      * <code>uint32 session_version = 1;</code>
      * @return The sessionVersion.
      */
@@ -1645,10 +1659,6 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
     public static final int ROOT_KEY_FIELD_NUMBER = 6;
     private com.google.protobuf.ByteString rootKey_ = com.google.protobuf.ByteString.EMPTY;
     /**
-     * <pre>
-     * root/DH state
-     * </pre>
-     *
      * <code>bytes root_key = 6;</code>
      * @return The rootKey.
      */
@@ -1679,18 +1689,59 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
       return dhPublicKey_;
     }
 
-    public static final int REMOTE_DH_PUBLIC_KEY_FIELD_NUMBER = 9;
+    public static final int SIGNING_PRIVATE_KEY_FIELD_NUMBER = 9;
+    private com.google.protobuf.ByteString signingPrivateKey_ = com.google.protobuf.ByteString.EMPTY;
+    /**
+     * <code>bytes signing_private_key = 9;</code>
+     * @return The signingPrivateKey.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString getSigningPrivateKey() {
+      return signingPrivateKey_;
+    }
+
+    public static final int SIGNING_PUBLIC_KEY_FIELD_NUMBER = 10;
+    private com.google.protobuf.ByteString signingPublicKey_ = com.google.protobuf.ByteString.EMPTY;
+    /**
+     * <code>bytes signing_public_key = 10;</code>
+     * @return The signingPublicKey.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString getSigningPublicKey() {
+      return signingPublicKey_;
+    }
+
+    public static final int REMOTE_SIGNING_PUBLIC_KEY_FIELD_NUMBER = 11;
+    private com.google.protobuf.ByteString remoteSigningPublicKey_ = com.google.protobuf.ByteString.EMPTY;
+    /**
+     * <code>optional bytes remote_signing_public_key = 11;</code>
+     * @return Whether the remoteSigningPublicKey field is set.
+     */
+    @java.lang.Override
+    public boolean hasRemoteSigningPublicKey() {
+      return ((bitField0_ & 0x00000001) != 0);
+    }
+    /**
+     * <code>optional bytes remote_signing_public_key = 11;</code>
+     * @return The remoteSigningPublicKey.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString getRemoteSigningPublicKey() {
+      return remoteSigningPublicKey_;
+    }
+
+    public static final int REMOTE_DH_PUBLIC_KEY_FIELD_NUMBER = 12;
     private com.google.protobuf.ByteString remoteDhPublicKey_ = com.google.protobuf.ByteString.EMPTY;
     /**
-     * <code>optional bytes remote_dh_public_key = 9;</code>
+     * <code>optional bytes remote_dh_public_key = 12;</code>
      * @return Whether the remoteDhPublicKey field is set.
      */
     @java.lang.Override
     public boolean hasRemoteDhPublicKey() {
-      return ((bitField0_ & 0x00000001) != 0);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
-     * <code>optional bytes remote_dh_public_key = 9;</code>
+     * <code>optional bytes remote_dh_public_key = 12;</code>
      * @return The remoteDhPublicKey.
      */
     @java.lang.Override
@@ -1698,18 +1749,18 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
       return remoteDhPublicKey_;
     }
 
-    public static final int PREVIOUS_REMOTE_DH_PUBLIC_KEY_FIELD_NUMBER = 10;
+    public static final int PREVIOUS_REMOTE_DH_PUBLIC_KEY_FIELD_NUMBER = 13;
     private com.google.protobuf.ByteString previousRemoteDhPublicKey_ = com.google.protobuf.ByteString.EMPTY;
     /**
-     * <code>optional bytes previous_remote_dh_public_key = 10;</code>
+     * <code>optional bytes previous_remote_dh_public_key = 13;</code>
      * @return Whether the previousRemoteDhPublicKey field is set.
      */
     @java.lang.Override
     public boolean hasPreviousRemoteDhPublicKey() {
-      return ((bitField0_ & 0x00000002) != 0);
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
-     * <code>optional bytes previous_remote_dh_public_key = 10;</code>
+     * <code>optional bytes previous_remote_dh_public_key = 13;</code>
      * @return The previousRemoteDhPublicKey.
      */
     @java.lang.Override
@@ -1717,33 +1768,33 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
       return previousRemoteDhPublicKey_;
     }
 
-    public static final int PREVIOUSCHAINLENGTH_FIELD_NUMBER = 11;
-    private long previousChainLength_ = 0L;
+    public static final int PREVIOUS_SENDING_CHAIN_LENGTH_FIELD_NUMBER = 14;
+    private long previousSendingChainLength_ = 0L;
     /**
      * <pre>
      * previousSendingChainLength
      * </pre>
      *
-     * <code>uint64 previousChainLength = 11;</code>
-     * @return The previousChainLength.
+     * <code>uint64 previous_sending_chain_length = 14;</code>
+     * @return The previousSendingChainLength.
      */
     @java.lang.Override
-    public long getPreviousChainLength() {
-      return previousChainLength_;
+    public long getPreviousSendingChainLength() {
+      return previousSendingChainLength_;
     }
 
-    public static final int SENDING_CHAIN_FIELD_NUMBER = 12;
+    public static final int SENDING_CHAIN_FIELD_NUMBER = 15;
     private com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainState sendingChain_;
     /**
-     * <code>.org.example.SessionProto.ChainState sending_chain = 12;</code>
+     * <code>optional .org.example.SessionProto.ChainState sending_chain = 15;</code>
      * @return Whether the sendingChain field is set.
      */
     @java.lang.Override
     public boolean hasSendingChain() {
-      return ((bitField0_ & 0x00000004) != 0);
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
-     * <code>.org.example.SessionProto.ChainState sending_chain = 12;</code>
+     * <code>optional .org.example.SessionProto.ChainState sending_chain = 15;</code>
      * @return The sendingChain.
      */
     @java.lang.Override
@@ -1751,25 +1802,25 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
       return sendingChain_ == null ? com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainState.getDefaultInstance() : sendingChain_;
     }
     /**
-     * <code>.org.example.SessionProto.ChainState sending_chain = 12;</code>
+     * <code>optional .org.example.SessionProto.ChainState sending_chain = 15;</code>
      */
     @java.lang.Override
     public com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainStateOrBuilder getSendingChainOrBuilder() {
       return sendingChain_ == null ? com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainState.getDefaultInstance() : sendingChain_;
     }
 
-    public static final int RECEIVING_CHAIN_FIELD_NUMBER = 13;
+    public static final int RECEIVING_CHAIN_FIELD_NUMBER = 16;
     private com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainState receivingChain_;
     /**
-     * <code>.org.example.SessionProto.ChainState receiving_chain = 13;</code>
+     * <code>optional .org.example.SessionProto.ChainState receiving_chain = 16;</code>
      * @return Whether the receivingChain field is set.
      */
     @java.lang.Override
     public boolean hasReceivingChain() {
-      return ((bitField0_ & 0x00000008) != 0);
+      return ((bitField0_ & 0x00000010) != 0);
     }
     /**
-     * <code>.org.example.SessionProto.ChainState receiving_chain = 13;</code>
+     * <code>optional .org.example.SessionProto.ChainState receiving_chain = 16;</code>
      * @return The receivingChain.
      */
     @java.lang.Override
@@ -1777,25 +1828,25 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
       return receivingChain_ == null ? com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainState.getDefaultInstance() : receivingChain_;
     }
     /**
-     * <code>.org.example.SessionProto.ChainState receiving_chain = 13;</code>
+     * <code>optional .org.example.SessionProto.ChainState receiving_chain = 16;</code>
      */
     @java.lang.Override
     public com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainStateOrBuilder getReceivingChainOrBuilder() {
       return receivingChain_ == null ? com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainState.getDefaultInstance() : receivingChain_;
     }
 
-    public static final int SKIPPED_KEYS_FIELD_NUMBER = 14;
+    public static final int SKIPPED_KEYS_FIELD_NUMBER = 17;
     @SuppressWarnings("serial")
     private java.util.List<com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKey> skippedKeys_;
     /**
-     * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 14;</code>
+     * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 17;</code>
      */
     @java.lang.Override
     public java.util.List<com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKey> getSkippedKeysList() {
       return skippedKeys_;
     }
     /**
-     * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 14;</code>
+     * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 17;</code>
      */
     @java.lang.Override
     public java.util.List<? extends com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKeyOrBuilder> 
@@ -1803,21 +1854,21 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
       return skippedKeys_;
     }
     /**
-     * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 14;</code>
+     * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 17;</code>
      */
     @java.lang.Override
     public int getSkippedKeysCount() {
       return skippedKeys_.size();
     }
     /**
-     * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 14;</code>
+     * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 17;</code>
      */
     @java.lang.Override
     public com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKey getSkippedKeys(int index) {
       return skippedKeys_.get(index);
     }
     /**
-     * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 14;</code>
+     * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 17;</code>
      */
     @java.lang.Override
     public com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKeyOrBuilder getSkippedKeysOrBuilder(
@@ -1863,23 +1914,32 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
       if (!dhPublicKey_.isEmpty()) {
         output.writeBytes(8, dhPublicKey_);
       }
+      if (!signingPrivateKey_.isEmpty()) {
+        output.writeBytes(9, signingPrivateKey_);
+      }
+      if (!signingPublicKey_.isEmpty()) {
+        output.writeBytes(10, signingPublicKey_);
+      }
       if (((bitField0_ & 0x00000001) != 0)) {
-        output.writeBytes(9, remoteDhPublicKey_);
+        output.writeBytes(11, remoteSigningPublicKey_);
       }
       if (((bitField0_ & 0x00000002) != 0)) {
-        output.writeBytes(10, previousRemoteDhPublicKey_);
-      }
-      if (previousChainLength_ != 0L) {
-        output.writeUInt64(11, previousChainLength_);
+        output.writeBytes(12, remoteDhPublicKey_);
       }
       if (((bitField0_ & 0x00000004) != 0)) {
-        output.writeMessage(12, getSendingChain());
+        output.writeBytes(13, previousRemoteDhPublicKey_);
+      }
+      if (previousSendingChainLength_ != 0L) {
+        output.writeUInt64(14, previousSendingChainLength_);
       }
       if (((bitField0_ & 0x00000008) != 0)) {
-        output.writeMessage(13, getReceivingChain());
+        output.writeMessage(15, getSendingChain());
+      }
+      if (((bitField0_ & 0x00000010) != 0)) {
+        output.writeMessage(16, getReceivingChain());
       }
       for (int i = 0; i < skippedKeys_.size(); i++) {
-        output.writeMessage(14, skippedKeys_.get(i));
+        output.writeMessage(17, skippedKeys_.get(i));
       }
       getUnknownFields().writeTo(output);
     }
@@ -1920,25 +1980,37 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(8, dhPublicKey_);
       }
+      if (!signingPrivateKey_.isEmpty()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(9, signingPrivateKey_);
+      }
+      if (!signingPublicKey_.isEmpty()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(10, signingPublicKey_);
+      }
       if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(9, remoteDhPublicKey_);
+          .computeBytesSize(11, remoteSigningPublicKey_);
       }
       if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(10, previousRemoteDhPublicKey_);
-      }
-      if (previousChainLength_ != 0L) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeUInt64Size(11, previousChainLength_);
+          .computeBytesSize(12, remoteDhPublicKey_);
       }
       if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(12, getSendingChain());
+          .computeBytesSize(13, previousRemoteDhPublicKey_);
+      }
+      if (previousSendingChainLength_ != 0L) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt64Size(14, previousSendingChainLength_);
       }
       if (((bitField0_ & 0x00000008) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(13, getReceivingChain());
+          .computeMessageSize(15, getSendingChain());
+      }
+      if (((bitField0_ & 0x00000010) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(16, getReceivingChain());
       }
 
           {
@@ -1947,7 +2019,7 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
               size += com.google.protobuf.CodedOutputStream
                 .computeMessageSizeNoTag(skippedKeys_.get(i));
             }
-            size += 1 * count;
+            size += 2 * count;
           }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
@@ -1979,6 +2051,15 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
           .equals(other.getDhPrivateKey())) return false;
       if (!getDhPublicKey()
           .equals(other.getDhPublicKey())) return false;
+      if (!getSigningPrivateKey()
+          .equals(other.getSigningPrivateKey())) return false;
+      if (!getSigningPublicKey()
+          .equals(other.getSigningPublicKey())) return false;
+      if (hasRemoteSigningPublicKey() != other.hasRemoteSigningPublicKey()) return false;
+      if (hasRemoteSigningPublicKey()) {
+        if (!getRemoteSigningPublicKey()
+            .equals(other.getRemoteSigningPublicKey())) return false;
+      }
       if (hasRemoteDhPublicKey() != other.hasRemoteDhPublicKey()) return false;
       if (hasRemoteDhPublicKey()) {
         if (!getRemoteDhPublicKey()
@@ -1989,8 +2070,8 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         if (!getPreviousRemoteDhPublicKey()
             .equals(other.getPreviousRemoteDhPublicKey())) return false;
       }
-      if (getPreviousChainLength()
-          != other.getPreviousChainLength()) return false;
+      if (getPreviousSendingChainLength()
+          != other.getPreviousSendingChainLength()) return false;
       if (hasSendingChain() != other.hasSendingChain()) return false;
       if (hasSendingChain()) {
         if (!getSendingChain()
@@ -2031,6 +2112,14 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
       hash = (53 * hash) + getDhPrivateKey().hashCode();
       hash = (37 * hash) + DH_PUBLIC_KEY_FIELD_NUMBER;
       hash = (53 * hash) + getDhPublicKey().hashCode();
+      hash = (37 * hash) + SIGNING_PRIVATE_KEY_FIELD_NUMBER;
+      hash = (53 * hash) + getSigningPrivateKey().hashCode();
+      hash = (37 * hash) + SIGNING_PUBLIC_KEY_FIELD_NUMBER;
+      hash = (53 * hash) + getSigningPublicKey().hashCode();
+      if (hasRemoteSigningPublicKey()) {
+        hash = (37 * hash) + REMOTE_SIGNING_PUBLIC_KEY_FIELD_NUMBER;
+        hash = (53 * hash) + getRemoteSigningPublicKey().hashCode();
+      }
       if (hasRemoteDhPublicKey()) {
         hash = (37 * hash) + REMOTE_DH_PUBLIC_KEY_FIELD_NUMBER;
         hash = (53 * hash) + getRemoteDhPublicKey().hashCode();
@@ -2039,9 +2128,9 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         hash = (37 * hash) + PREVIOUS_REMOTE_DH_PUBLIC_KEY_FIELD_NUMBER;
         hash = (53 * hash) + getPreviousRemoteDhPublicKey().hashCode();
       }
-      hash = (37 * hash) + PREVIOUSCHAINLENGTH_FIELD_NUMBER;
+      hash = (37 * hash) + PREVIOUS_SENDING_CHAIN_LENGTH_FIELD_NUMBER;
       hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
-          getPreviousChainLength());
+          getPreviousSendingChainLength());
       if (hasSendingChain()) {
         hash = (37 * hash) + SENDING_CHAIN_FIELD_NUMBER;
         hash = (53 * hash) + getSendingChain().hashCode();
@@ -2201,9 +2290,12 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         rootKey_ = com.google.protobuf.ByteString.EMPTY;
         dhPrivateKey_ = com.google.protobuf.ByteString.EMPTY;
         dhPublicKey_ = com.google.protobuf.ByteString.EMPTY;
+        signingPrivateKey_ = com.google.protobuf.ByteString.EMPTY;
+        signingPublicKey_ = com.google.protobuf.ByteString.EMPTY;
+        remoteSigningPublicKey_ = com.google.protobuf.ByteString.EMPTY;
         remoteDhPublicKey_ = com.google.protobuf.ByteString.EMPTY;
         previousRemoteDhPublicKey_ = com.google.protobuf.ByteString.EMPTY;
-        previousChainLength_ = 0L;
+        previousSendingChainLength_ = 0L;
         sendingChain_ = null;
         if (sendingChainBuilder_ != null) {
           sendingChainBuilder_.dispose();
@@ -2220,7 +2312,7 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
           skippedKeys_ = null;
           skippedKeysBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00002000);
+        bitField0_ = (bitField0_ & ~0x00010000);
         return this;
       }
 
@@ -2255,9 +2347,9 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
 
       private void buildPartialRepeatedFields(com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto result) {
         if (skippedKeysBuilder_ == null) {
-          if (((bitField0_ & 0x00002000) != 0)) {
+          if (((bitField0_ & 0x00010000) != 0)) {
             skippedKeys_ = java.util.Collections.unmodifiableList(skippedKeys_);
-            bitField0_ = (bitField0_ & ~0x00002000);
+            bitField0_ = (bitField0_ & ~0x00010000);
           }
           result.skippedKeys_ = skippedKeys_;
         } else {
@@ -2291,29 +2383,39 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         if (((from_bitField0_ & 0x00000080) != 0)) {
           result.dhPublicKey_ = dhPublicKey_;
         }
-        int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000100) != 0)) {
-          result.remoteDhPublicKey_ = remoteDhPublicKey_;
-          to_bitField0_ |= 0x00000001;
+          result.signingPrivateKey_ = signingPrivateKey_;
         }
         if (((from_bitField0_ & 0x00000200) != 0)) {
-          result.previousRemoteDhPublicKey_ = previousRemoteDhPublicKey_;
-          to_bitField0_ |= 0x00000002;
+          result.signingPublicKey_ = signingPublicKey_;
         }
+        int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000400) != 0)) {
-          result.previousChainLength_ = previousChainLength_;
+          result.remoteSigningPublicKey_ = remoteSigningPublicKey_;
+          to_bitField0_ |= 0x00000001;
         }
         if (((from_bitField0_ & 0x00000800) != 0)) {
+          result.remoteDhPublicKey_ = remoteDhPublicKey_;
+          to_bitField0_ |= 0x00000002;
+        }
+        if (((from_bitField0_ & 0x00001000) != 0)) {
+          result.previousRemoteDhPublicKey_ = previousRemoteDhPublicKey_;
+          to_bitField0_ |= 0x00000004;
+        }
+        if (((from_bitField0_ & 0x00002000) != 0)) {
+          result.previousSendingChainLength_ = previousSendingChainLength_;
+        }
+        if (((from_bitField0_ & 0x00004000) != 0)) {
           result.sendingChain_ = sendingChainBuilder_ == null
               ? sendingChain_
               : sendingChainBuilder_.build();
-          to_bitField0_ |= 0x00000004;
+          to_bitField0_ |= 0x00000008;
         }
-        if (((from_bitField0_ & 0x00001000) != 0)) {
+        if (((from_bitField0_ & 0x00008000) != 0)) {
           result.receivingChain_ = receivingChainBuilder_ == null
               ? receivingChain_
               : receivingChainBuilder_.build();
-          to_bitField0_ |= 0x00000008;
+          to_bitField0_ |= 0x00000010;
         }
         result.bitField0_ |= to_bitField0_;
       }
@@ -2358,14 +2460,23 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         if (!other.getDhPublicKey().isEmpty()) {
           setDhPublicKey(other.getDhPublicKey());
         }
+        if (!other.getSigningPrivateKey().isEmpty()) {
+          setSigningPrivateKey(other.getSigningPrivateKey());
+        }
+        if (!other.getSigningPublicKey().isEmpty()) {
+          setSigningPublicKey(other.getSigningPublicKey());
+        }
+        if (other.hasRemoteSigningPublicKey()) {
+          setRemoteSigningPublicKey(other.getRemoteSigningPublicKey());
+        }
         if (other.hasRemoteDhPublicKey()) {
           setRemoteDhPublicKey(other.getRemoteDhPublicKey());
         }
         if (other.hasPreviousRemoteDhPublicKey()) {
           setPreviousRemoteDhPublicKey(other.getPreviousRemoteDhPublicKey());
         }
-        if (other.getPreviousChainLength() != 0L) {
-          setPreviousChainLength(other.getPreviousChainLength());
+        if (other.getPreviousSendingChainLength() != 0L) {
+          setPreviousSendingChainLength(other.getPreviousSendingChainLength());
         }
         if (other.hasSendingChain()) {
           mergeSendingChain(other.getSendingChain());
@@ -2377,7 +2488,7 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
           if (!other.skippedKeys_.isEmpty()) {
             if (skippedKeys_.isEmpty()) {
               skippedKeys_ = other.skippedKeys_;
-              bitField0_ = (bitField0_ & ~0x00002000);
+              bitField0_ = (bitField0_ & ~0x00010000);
             } else {
               ensureSkippedKeysIsMutable();
               skippedKeys_.addAll(other.skippedKeys_);
@@ -2390,7 +2501,7 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
               skippedKeysBuilder_.dispose();
               skippedKeysBuilder_ = null;
               skippedKeys_ = other.skippedKeys_;
-              bitField0_ = (bitField0_ & ~0x00002000);
+              bitField0_ = (bitField0_ & ~0x00010000);
               skippedKeysBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    internalGetSkippedKeysFieldBuilder() : null;
@@ -2466,35 +2577,50 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
                 break;
               } // case 66
               case 74: {
-                remoteDhPublicKey_ = input.readBytes();
+                signingPrivateKey_ = input.readBytes();
                 bitField0_ |= 0x00000100;
                 break;
               } // case 74
               case 82: {
-                previousRemoteDhPublicKey_ = input.readBytes();
+                signingPublicKey_ = input.readBytes();
                 bitField0_ |= 0x00000200;
                 break;
               } // case 82
-              case 88: {
-                previousChainLength_ = input.readUInt64();
+              case 90: {
+                remoteSigningPublicKey_ = input.readBytes();
                 bitField0_ |= 0x00000400;
                 break;
-              } // case 88
+              } // case 90
               case 98: {
-                input.readMessage(
-                    internalGetSendingChainFieldBuilder().getBuilder(),
-                    extensionRegistry);
+                remoteDhPublicKey_ = input.readBytes();
                 bitField0_ |= 0x00000800;
                 break;
               } // case 98
               case 106: {
-                input.readMessage(
-                    internalGetReceivingChainFieldBuilder().getBuilder(),
-                    extensionRegistry);
+                previousRemoteDhPublicKey_ = input.readBytes();
                 bitField0_ |= 0x00001000;
                 break;
               } // case 106
-              case 114: {
+              case 112: {
+                previousSendingChainLength_ = input.readUInt64();
+                bitField0_ |= 0x00002000;
+                break;
+              } // case 112
+              case 122: {
+                input.readMessage(
+                    internalGetSendingChainFieldBuilder().getBuilder(),
+                    extensionRegistry);
+                bitField0_ |= 0x00004000;
+                break;
+              } // case 122
+              case 130: {
+                input.readMessage(
+                    internalGetReceivingChainFieldBuilder().getBuilder(),
+                    extensionRegistry);
+                bitField0_ |= 0x00008000;
+                break;
+              } // case 130
+              case 138: {
                 com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKey m =
                     input.readMessage(
                         com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKey.parser(),
@@ -2506,7 +2632,7 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
                   skippedKeysBuilder_.addMessage(m);
                 }
                 break;
-              } // case 114
+              } // case 138
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -2526,10 +2652,6 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
 
       private int sessionVersion_ ;
       /**
-       * <pre>
-       * identity and versioning
-       * </pre>
-       *
        * <code>uint32 session_version = 1;</code>
        * @return The sessionVersion.
        */
@@ -2538,10 +2660,6 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         return sessionVersion_;
       }
       /**
-       * <pre>
-       * identity and versioning
-       * </pre>
-       *
        * <code>uint32 session_version = 1;</code>
        * @param value The sessionVersion to set.
        * @return This builder for chaining.
@@ -2554,10 +2672,6 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         return this;
       }
       /**
-       * <pre>
-       * identity and versioning
-       * </pre>
-       *
        * <code>uint32 session_version = 1;</code>
        * @return This builder for chaining.
        */
@@ -2798,10 +2912,6 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
 
       private com.google.protobuf.ByteString rootKey_ = com.google.protobuf.ByteString.EMPTY;
       /**
-       * <pre>
-       * root/DH state
-       * </pre>
-       *
        * <code>bytes root_key = 6;</code>
        * @return The rootKey.
        */
@@ -2810,10 +2920,6 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         return rootKey_;
       }
       /**
-       * <pre>
-       * root/DH state
-       * </pre>
-       *
        * <code>bytes root_key = 6;</code>
        * @param value The rootKey to set.
        * @return This builder for chaining.
@@ -2826,10 +2932,6 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         return this;
       }
       /**
-       * <pre>
-       * root/DH state
-       * </pre>
-       *
        * <code>bytes root_key = 6;</code>
        * @return This builder for chaining.
        */
@@ -2904,17 +3006,121 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         return this;
       }
 
+      private com.google.protobuf.ByteString signingPrivateKey_ = com.google.protobuf.ByteString.EMPTY;
+      /**
+       * <code>bytes signing_private_key = 9;</code>
+       * @return The signingPrivateKey.
+       */
+      @java.lang.Override
+      public com.google.protobuf.ByteString getSigningPrivateKey() {
+        return signingPrivateKey_;
+      }
+      /**
+       * <code>bytes signing_private_key = 9;</code>
+       * @param value The signingPrivateKey to set.
+       * @return This builder for chaining.
+       */
+      public Builder setSigningPrivateKey(com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        signingPrivateKey_ = value;
+        bitField0_ |= 0x00000100;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>bytes signing_private_key = 9;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearSigningPrivateKey() {
+        bitField0_ = (bitField0_ & ~0x00000100);
+        signingPrivateKey_ = getDefaultInstance().getSigningPrivateKey();
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.ByteString signingPublicKey_ = com.google.protobuf.ByteString.EMPTY;
+      /**
+       * <code>bytes signing_public_key = 10;</code>
+       * @return The signingPublicKey.
+       */
+      @java.lang.Override
+      public com.google.protobuf.ByteString getSigningPublicKey() {
+        return signingPublicKey_;
+      }
+      /**
+       * <code>bytes signing_public_key = 10;</code>
+       * @param value The signingPublicKey to set.
+       * @return This builder for chaining.
+       */
+      public Builder setSigningPublicKey(com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        signingPublicKey_ = value;
+        bitField0_ |= 0x00000200;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>bytes signing_public_key = 10;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearSigningPublicKey() {
+        bitField0_ = (bitField0_ & ~0x00000200);
+        signingPublicKey_ = getDefaultInstance().getSigningPublicKey();
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.ByteString remoteSigningPublicKey_ = com.google.protobuf.ByteString.EMPTY;
+      /**
+       * <code>optional bytes remote_signing_public_key = 11;</code>
+       * @return Whether the remoteSigningPublicKey field is set.
+       */
+      @java.lang.Override
+      public boolean hasRemoteSigningPublicKey() {
+        return ((bitField0_ & 0x00000400) != 0);
+      }
+      /**
+       * <code>optional bytes remote_signing_public_key = 11;</code>
+       * @return The remoteSigningPublicKey.
+       */
+      @java.lang.Override
+      public com.google.protobuf.ByteString getRemoteSigningPublicKey() {
+        return remoteSigningPublicKey_;
+      }
+      /**
+       * <code>optional bytes remote_signing_public_key = 11;</code>
+       * @param value The remoteSigningPublicKey to set.
+       * @return This builder for chaining.
+       */
+      public Builder setRemoteSigningPublicKey(com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        remoteSigningPublicKey_ = value;
+        bitField0_ |= 0x00000400;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bytes remote_signing_public_key = 11;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearRemoteSigningPublicKey() {
+        bitField0_ = (bitField0_ & ~0x00000400);
+        remoteSigningPublicKey_ = getDefaultInstance().getRemoteSigningPublicKey();
+        onChanged();
+        return this;
+      }
+
       private com.google.protobuf.ByteString remoteDhPublicKey_ = com.google.protobuf.ByteString.EMPTY;
       /**
-       * <code>optional bytes remote_dh_public_key = 9;</code>
+       * <code>optional bytes remote_dh_public_key = 12;</code>
        * @return Whether the remoteDhPublicKey field is set.
        */
       @java.lang.Override
       public boolean hasRemoteDhPublicKey() {
-        return ((bitField0_ & 0x00000100) != 0);
+        return ((bitField0_ & 0x00000800) != 0);
       }
       /**
-       * <code>optional bytes remote_dh_public_key = 9;</code>
+       * <code>optional bytes remote_dh_public_key = 12;</code>
        * @return The remoteDhPublicKey.
        */
       @java.lang.Override
@@ -2922,23 +3128,23 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         return remoteDhPublicKey_;
       }
       /**
-       * <code>optional bytes remote_dh_public_key = 9;</code>
+       * <code>optional bytes remote_dh_public_key = 12;</code>
        * @param value The remoteDhPublicKey to set.
        * @return This builder for chaining.
        */
       public Builder setRemoteDhPublicKey(com.google.protobuf.ByteString value) {
         if (value == null) { throw new NullPointerException(); }
         remoteDhPublicKey_ = value;
-        bitField0_ |= 0x00000100;
+        bitField0_ |= 0x00000800;
         onChanged();
         return this;
       }
       /**
-       * <code>optional bytes remote_dh_public_key = 9;</code>
+       * <code>optional bytes remote_dh_public_key = 12;</code>
        * @return This builder for chaining.
        */
       public Builder clearRemoteDhPublicKey() {
-        bitField0_ = (bitField0_ & ~0x00000100);
+        bitField0_ = (bitField0_ & ~0x00000800);
         remoteDhPublicKey_ = getDefaultInstance().getRemoteDhPublicKey();
         onChanged();
         return this;
@@ -2946,15 +3152,15 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
 
       private com.google.protobuf.ByteString previousRemoteDhPublicKey_ = com.google.protobuf.ByteString.EMPTY;
       /**
-       * <code>optional bytes previous_remote_dh_public_key = 10;</code>
+       * <code>optional bytes previous_remote_dh_public_key = 13;</code>
        * @return Whether the previousRemoteDhPublicKey field is set.
        */
       @java.lang.Override
       public boolean hasPreviousRemoteDhPublicKey() {
-        return ((bitField0_ & 0x00000200) != 0);
+        return ((bitField0_ & 0x00001000) != 0);
       }
       /**
-       * <code>optional bytes previous_remote_dh_public_key = 10;</code>
+       * <code>optional bytes previous_remote_dh_public_key = 13;</code>
        * @return The previousRemoteDhPublicKey.
        */
       @java.lang.Override
@@ -2962,54 +3168,54 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         return previousRemoteDhPublicKey_;
       }
       /**
-       * <code>optional bytes previous_remote_dh_public_key = 10;</code>
+       * <code>optional bytes previous_remote_dh_public_key = 13;</code>
        * @param value The previousRemoteDhPublicKey to set.
        * @return This builder for chaining.
        */
       public Builder setPreviousRemoteDhPublicKey(com.google.protobuf.ByteString value) {
         if (value == null) { throw new NullPointerException(); }
         previousRemoteDhPublicKey_ = value;
-        bitField0_ |= 0x00000200;
+        bitField0_ |= 0x00001000;
         onChanged();
         return this;
       }
       /**
-       * <code>optional bytes previous_remote_dh_public_key = 10;</code>
+       * <code>optional bytes previous_remote_dh_public_key = 13;</code>
        * @return This builder for chaining.
        */
       public Builder clearPreviousRemoteDhPublicKey() {
-        bitField0_ = (bitField0_ & ~0x00000200);
+        bitField0_ = (bitField0_ & ~0x00001000);
         previousRemoteDhPublicKey_ = getDefaultInstance().getPreviousRemoteDhPublicKey();
         onChanged();
         return this;
       }
 
-      private long previousChainLength_ ;
+      private long previousSendingChainLength_ ;
       /**
        * <pre>
        * previousSendingChainLength
        * </pre>
        *
-       * <code>uint64 previousChainLength = 11;</code>
-       * @return The previousChainLength.
+       * <code>uint64 previous_sending_chain_length = 14;</code>
+       * @return The previousSendingChainLength.
        */
       @java.lang.Override
-      public long getPreviousChainLength() {
-        return previousChainLength_;
+      public long getPreviousSendingChainLength() {
+        return previousSendingChainLength_;
       }
       /**
        * <pre>
        * previousSendingChainLength
        * </pre>
        *
-       * <code>uint64 previousChainLength = 11;</code>
-       * @param value The previousChainLength to set.
+       * <code>uint64 previous_sending_chain_length = 14;</code>
+       * @param value The previousSendingChainLength to set.
        * @return This builder for chaining.
        */
-      public Builder setPreviousChainLength(long value) {
+      public Builder setPreviousSendingChainLength(long value) {
 
-        previousChainLength_ = value;
-        bitField0_ |= 0x00000400;
+        previousSendingChainLength_ = value;
+        bitField0_ |= 0x00002000;
         onChanged();
         return this;
       }
@@ -3018,12 +3224,12 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
        * previousSendingChainLength
        * </pre>
        *
-       * <code>uint64 previousChainLength = 11;</code>
+       * <code>uint64 previous_sending_chain_length = 14;</code>
        * @return This builder for chaining.
        */
-      public Builder clearPreviousChainLength() {
-        bitField0_ = (bitField0_ & ~0x00000400);
-        previousChainLength_ = 0L;
+      public Builder clearPreviousSendingChainLength() {
+        bitField0_ = (bitField0_ & ~0x00002000);
+        previousSendingChainLength_ = 0L;
         onChanged();
         return this;
       }
@@ -3032,14 +3238,14 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
       private com.google.protobuf.SingleFieldBuilder<
           com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainState, com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainState.Builder, com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainStateOrBuilder> sendingChainBuilder_;
       /**
-       * <code>.org.example.SessionProto.ChainState sending_chain = 12;</code>
+       * <code>optional .org.example.SessionProto.ChainState sending_chain = 15;</code>
        * @return Whether the sendingChain field is set.
        */
       public boolean hasSendingChain() {
-        return ((bitField0_ & 0x00000800) != 0);
+        return ((bitField0_ & 0x00004000) != 0);
       }
       /**
-       * <code>.org.example.SessionProto.ChainState sending_chain = 12;</code>
+       * <code>optional .org.example.SessionProto.ChainState sending_chain = 15;</code>
        * @return The sendingChain.
        */
       public com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainState getSendingChain() {
@@ -3050,7 +3256,7 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         }
       }
       /**
-       * <code>.org.example.SessionProto.ChainState sending_chain = 12;</code>
+       * <code>optional .org.example.SessionProto.ChainState sending_chain = 15;</code>
        */
       public Builder setSendingChain(com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainState value) {
         if (sendingChainBuilder_ == null) {
@@ -3061,12 +3267,12 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         } else {
           sendingChainBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000800;
+        bitField0_ |= 0x00004000;
         onChanged();
         return this;
       }
       /**
-       * <code>.org.example.SessionProto.ChainState sending_chain = 12;</code>
+       * <code>optional .org.example.SessionProto.ChainState sending_chain = 15;</code>
        */
       public Builder setSendingChain(
           com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainState.Builder builderForValue) {
@@ -3075,16 +3281,16 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         } else {
           sendingChainBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000800;
+        bitField0_ |= 0x00004000;
         onChanged();
         return this;
       }
       /**
-       * <code>.org.example.SessionProto.ChainState sending_chain = 12;</code>
+       * <code>optional .org.example.SessionProto.ChainState sending_chain = 15;</code>
        */
       public Builder mergeSendingChain(com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainState value) {
         if (sendingChainBuilder_ == null) {
-          if (((bitField0_ & 0x00000800) != 0) &&
+          if (((bitField0_ & 0x00004000) != 0) &&
             sendingChain_ != null &&
             sendingChain_ != com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainState.getDefaultInstance()) {
             getSendingChainBuilder().mergeFrom(value);
@@ -3095,16 +3301,16 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
           sendingChainBuilder_.mergeFrom(value);
         }
         if (sendingChain_ != null) {
-          bitField0_ |= 0x00000800;
+          bitField0_ |= 0x00004000;
           onChanged();
         }
         return this;
       }
       /**
-       * <code>.org.example.SessionProto.ChainState sending_chain = 12;</code>
+       * <code>optional .org.example.SessionProto.ChainState sending_chain = 15;</code>
        */
       public Builder clearSendingChain() {
-        bitField0_ = (bitField0_ & ~0x00000800);
+        bitField0_ = (bitField0_ & ~0x00004000);
         sendingChain_ = null;
         if (sendingChainBuilder_ != null) {
           sendingChainBuilder_.dispose();
@@ -3114,15 +3320,15 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         return this;
       }
       /**
-       * <code>.org.example.SessionProto.ChainState sending_chain = 12;</code>
+       * <code>optional .org.example.SessionProto.ChainState sending_chain = 15;</code>
        */
       public com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainState.Builder getSendingChainBuilder() {
-        bitField0_ |= 0x00000800;
+        bitField0_ |= 0x00004000;
         onChanged();
         return internalGetSendingChainFieldBuilder().getBuilder();
       }
       /**
-       * <code>.org.example.SessionProto.ChainState sending_chain = 12;</code>
+       * <code>optional .org.example.SessionProto.ChainState sending_chain = 15;</code>
        */
       public com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainStateOrBuilder getSendingChainOrBuilder() {
         if (sendingChainBuilder_ != null) {
@@ -3133,7 +3339,7 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         }
       }
       /**
-       * <code>.org.example.SessionProto.ChainState sending_chain = 12;</code>
+       * <code>optional .org.example.SessionProto.ChainState sending_chain = 15;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
           com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainState, com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainState.Builder, com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainStateOrBuilder> 
@@ -3153,14 +3359,14 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
       private com.google.protobuf.SingleFieldBuilder<
           com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainState, com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainState.Builder, com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainStateOrBuilder> receivingChainBuilder_;
       /**
-       * <code>.org.example.SessionProto.ChainState receiving_chain = 13;</code>
+       * <code>optional .org.example.SessionProto.ChainState receiving_chain = 16;</code>
        * @return Whether the receivingChain field is set.
        */
       public boolean hasReceivingChain() {
-        return ((bitField0_ & 0x00001000) != 0);
+        return ((bitField0_ & 0x00008000) != 0);
       }
       /**
-       * <code>.org.example.SessionProto.ChainState receiving_chain = 13;</code>
+       * <code>optional .org.example.SessionProto.ChainState receiving_chain = 16;</code>
        * @return The receivingChain.
        */
       public com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainState getReceivingChain() {
@@ -3171,7 +3377,7 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         }
       }
       /**
-       * <code>.org.example.SessionProto.ChainState receiving_chain = 13;</code>
+       * <code>optional .org.example.SessionProto.ChainState receiving_chain = 16;</code>
        */
       public Builder setReceivingChain(com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainState value) {
         if (receivingChainBuilder_ == null) {
@@ -3182,12 +3388,12 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         } else {
           receivingChainBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00001000;
+        bitField0_ |= 0x00008000;
         onChanged();
         return this;
       }
       /**
-       * <code>.org.example.SessionProto.ChainState receiving_chain = 13;</code>
+       * <code>optional .org.example.SessionProto.ChainState receiving_chain = 16;</code>
        */
       public Builder setReceivingChain(
           com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainState.Builder builderForValue) {
@@ -3196,16 +3402,16 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         } else {
           receivingChainBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00001000;
+        bitField0_ |= 0x00008000;
         onChanged();
         return this;
       }
       /**
-       * <code>.org.example.SessionProto.ChainState receiving_chain = 13;</code>
+       * <code>optional .org.example.SessionProto.ChainState receiving_chain = 16;</code>
        */
       public Builder mergeReceivingChain(com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainState value) {
         if (receivingChainBuilder_ == null) {
-          if (((bitField0_ & 0x00001000) != 0) &&
+          if (((bitField0_ & 0x00008000) != 0) &&
             receivingChain_ != null &&
             receivingChain_ != com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainState.getDefaultInstance()) {
             getReceivingChainBuilder().mergeFrom(value);
@@ -3216,16 +3422,16 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
           receivingChainBuilder_.mergeFrom(value);
         }
         if (receivingChain_ != null) {
-          bitField0_ |= 0x00001000;
+          bitField0_ |= 0x00008000;
           onChanged();
         }
         return this;
       }
       /**
-       * <code>.org.example.SessionProto.ChainState receiving_chain = 13;</code>
+       * <code>optional .org.example.SessionProto.ChainState receiving_chain = 16;</code>
        */
       public Builder clearReceivingChain() {
-        bitField0_ = (bitField0_ & ~0x00001000);
+        bitField0_ = (bitField0_ & ~0x00008000);
         receivingChain_ = null;
         if (receivingChainBuilder_ != null) {
           receivingChainBuilder_.dispose();
@@ -3235,15 +3441,15 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         return this;
       }
       /**
-       * <code>.org.example.SessionProto.ChainState receiving_chain = 13;</code>
+       * <code>optional .org.example.SessionProto.ChainState receiving_chain = 16;</code>
        */
       public com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainState.Builder getReceivingChainBuilder() {
-        bitField0_ |= 0x00001000;
+        bitField0_ |= 0x00008000;
         onChanged();
         return internalGetReceivingChainFieldBuilder().getBuilder();
       }
       /**
-       * <code>.org.example.SessionProto.ChainState receiving_chain = 13;</code>
+       * <code>optional .org.example.SessionProto.ChainState receiving_chain = 16;</code>
        */
       public com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainStateOrBuilder getReceivingChainOrBuilder() {
         if (receivingChainBuilder_ != null) {
@@ -3254,7 +3460,7 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         }
       }
       /**
-       * <code>.org.example.SessionProto.ChainState receiving_chain = 13;</code>
+       * <code>optional .org.example.SessionProto.ChainState receiving_chain = 16;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
           com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainState, com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainState.Builder, com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.ChainStateOrBuilder> 
@@ -3273,9 +3479,9 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
       private java.util.List<com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKey> skippedKeys_ =
         java.util.Collections.emptyList();
       private void ensureSkippedKeysIsMutable() {
-        if (!((bitField0_ & 0x00002000) != 0)) {
+        if (!((bitField0_ & 0x00010000) != 0)) {
           skippedKeys_ = new java.util.ArrayList<com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKey>(skippedKeys_);
-          bitField0_ |= 0x00002000;
+          bitField0_ |= 0x00010000;
          }
       }
 
@@ -3283,7 +3489,7 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
           com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKey, com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKey.Builder, com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKeyOrBuilder> skippedKeysBuilder_;
 
       /**
-       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 14;</code>
+       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 17;</code>
        */
       public java.util.List<com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKey> getSkippedKeysList() {
         if (skippedKeysBuilder_ == null) {
@@ -3293,7 +3499,7 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         }
       }
       /**
-       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 14;</code>
+       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 17;</code>
        */
       public int getSkippedKeysCount() {
         if (skippedKeysBuilder_ == null) {
@@ -3303,7 +3509,7 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         }
       }
       /**
-       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 14;</code>
+       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 17;</code>
        */
       public com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKey getSkippedKeys(int index) {
         if (skippedKeysBuilder_ == null) {
@@ -3313,7 +3519,7 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         }
       }
       /**
-       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 14;</code>
+       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 17;</code>
        */
       public Builder setSkippedKeys(
           int index, com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKey value) {
@@ -3330,7 +3536,7 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         return this;
       }
       /**
-       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 14;</code>
+       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 17;</code>
        */
       public Builder setSkippedKeys(
           int index, com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKey.Builder builderForValue) {
@@ -3344,7 +3550,7 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         return this;
       }
       /**
-       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 14;</code>
+       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 17;</code>
        */
       public Builder addSkippedKeys(com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKey value) {
         if (skippedKeysBuilder_ == null) {
@@ -3360,7 +3566,7 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         return this;
       }
       /**
-       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 14;</code>
+       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 17;</code>
        */
       public Builder addSkippedKeys(
           int index, com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKey value) {
@@ -3377,7 +3583,7 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         return this;
       }
       /**
-       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 14;</code>
+       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 17;</code>
        */
       public Builder addSkippedKeys(
           com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKey.Builder builderForValue) {
@@ -3391,7 +3597,7 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         return this;
       }
       /**
-       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 14;</code>
+       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 17;</code>
        */
       public Builder addSkippedKeys(
           int index, com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKey.Builder builderForValue) {
@@ -3405,7 +3611,7 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         return this;
       }
       /**
-       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 14;</code>
+       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 17;</code>
        */
       public Builder addAllSkippedKeys(
           java.lang.Iterable<? extends com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKey> values) {
@@ -3420,12 +3626,12 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         return this;
       }
       /**
-       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 14;</code>
+       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 17;</code>
        */
       public Builder clearSkippedKeys() {
         if (skippedKeysBuilder_ == null) {
           skippedKeys_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00002000);
+          bitField0_ = (bitField0_ & ~0x00010000);
           onChanged();
         } else {
           skippedKeysBuilder_.clear();
@@ -3433,7 +3639,7 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         return this;
       }
       /**
-       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 14;</code>
+       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 17;</code>
        */
       public Builder removeSkippedKeys(int index) {
         if (skippedKeysBuilder_ == null) {
@@ -3446,14 +3652,14 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         return this;
       }
       /**
-       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 14;</code>
+       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 17;</code>
        */
       public com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKey.Builder getSkippedKeysBuilder(
           int index) {
         return internalGetSkippedKeysFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 14;</code>
+       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 17;</code>
        */
       public com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKeyOrBuilder getSkippedKeysOrBuilder(
           int index) {
@@ -3463,7 +3669,7 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         }
       }
       /**
-       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 14;</code>
+       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 17;</code>
        */
       public java.util.List<? extends com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKeyOrBuilder> 
            getSkippedKeysOrBuilderList() {
@@ -3474,14 +3680,14 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         }
       }
       /**
-       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 14;</code>
+       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 17;</code>
        */
       public com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKey.Builder addSkippedKeysBuilder() {
         return internalGetSkippedKeysFieldBuilder().addBuilder(
             com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKey.getDefaultInstance());
       }
       /**
-       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 14;</code>
+       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 17;</code>
        */
       public com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKey.Builder addSkippedKeysBuilder(
           int index) {
@@ -3489,7 +3695,7 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
             index, com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKey.getDefaultInstance());
       }
       /**
-       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 14;</code>
+       * <code>repeated .org.example.SessionProto.SkippedKey skipped_keys = 17;</code>
        */
       public java.util.List<com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKey.Builder> 
            getSkippedKeysBuilderList() {
@@ -3502,7 +3708,7 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
           skippedKeysBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
               com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKey, com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKey.Builder, com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKeyOrBuilder>(
                   skippedKeys_,
-                  ((bitField0_ & 0x00002000) != 0),
+                  ((bitField0_ & 0x00010000) != 0),
                   getParentForChildren(),
                   isClean());
           skippedKeys_ = null;
@@ -3586,26 +3792,31 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
   static {
     java.lang.String[] descriptorData = {
       "\n\033crypto-schema/session.proto\022\013org.examp" +
-      "le\"\324\005\n\014SessionProto\022\027\n\017session_version\030\001" +
+      "le\"\215\007\n\014SessionProto\022\027\n\017session_version\030\001" +
       " \001(\r\022\027\n\017local_device_id\030\002 \001(\t\022\030\n\020remote_" +
       "device_id\030\003 \001(\t\022\021\n\tinitiator\030\004 \001(\010\022.\n\005st" +
       "ate\030\005 \001(\0162\037.org.example.SessionProto.Sta" +
       "te\022\020\n\010root_key\030\006 \001(\014\022\026\n\016dh_private_key\030\007" +
-      " \001(\014\022\025\n\rdh_public_key\030\010 \001(\014\022!\n\024remote_dh" +
-      "_public_key\030\t \001(\014H\000\210\001\001\022*\n\035previous_remot" +
-      "e_dh_public_key\030\n \001(\014H\001\210\001\001\022\033\n\023previousCh" +
-      "ainLength\030\013 \001(\004\022;\n\rsending_chain\030\014 \001(\0132$" +
-      ".org.example.SessionProto.ChainState\022=\n\017" +
-      "receiving_chain\030\r \001(\0132$.org.example.Sess" +
-      "ionProto.ChainState\022:\n\014skipped_keys\030\016 \003(" +
-      "\0132$.org.example.SessionProto.SkippedKey\032" +
-      "7\n\nChainState\022\021\n\tchain_key\030\001 \001(\014\022\026\n\016mess" +
-      "age_number\030\002 \001(\004\0321\n\nSkippedKey\022\026\n\016ratche" +
-      "t_key_id\030\001 \001(\t\022\013\n\003key\030\002 \001(\014\")\n\005State\022\010\n\004" +
-      "INIT\020\000\022\n\n\006ACTIVE\020\001\022\n\n\006BROKEN\020\002B\027\n\025_remot" +
-      "e_dh_public_keyB \n\036_previous_remote_dh_p" +
-      "ublic_keyB0\n com.nodes.chatclient.e2ee.p" +
-      "rotosB\014ProtoSessionb\006proto3"
+      " \001(\014\022\025\n\rdh_public_key\030\010 \001(\014\022\033\n\023signing_p" +
+      "rivate_key\030\t \001(\014\022\032\n\022signing_public_key\030\n" +
+      " \001(\014\022&\n\031remote_signing_public_key\030\013 \001(\014H" +
+      "\000\210\001\001\022!\n\024remote_dh_public_key\030\014 \001(\014H\001\210\001\001\022" +
+      "*\n\035previous_remote_dh_public_key\030\r \001(\014H\002" +
+      "\210\001\001\022%\n\035previous_sending_chain_length\030\016 \001" +
+      "(\004\022@\n\rsending_chain\030\017 \001(\0132$.org.example." +
+      "SessionProto.ChainStateH\003\210\001\001\022B\n\017receivin" +
+      "g_chain\030\020 \001(\0132$.org.example.SessionProto" +
+      ".ChainStateH\004\210\001\001\022:\n\014skipped_keys\030\021 \003(\0132$" +
+      ".org.example.SessionProto.SkippedKey\0327\n\n" +
+      "ChainState\022\021\n\tchain_key\030\001 \001(\014\022\026\n\016message" +
+      "_number\030\002 \001(\004\0321\n\nSkippedKey\022\026\n\016ratchet_k" +
+      "ey_id\030\001 \001(\t\022\013\n\003key\030\002 \001(\014\")\n\005State\022\010\n\004INI" +
+      "T\020\000\022\n\n\006ACTIVE\020\001\022\n\n\006BROKEN\020\002B\034\n\032_remote_s" +
+      "igning_public_keyB\027\n\025_remote_dh_public_k" +
+      "eyB \n\036_previous_remote_dh_public_keyB\020\n\016" +
+      "_sending_chainB\022\n\020_receiving_chainB0\n co" +
+      "m.nodes.chatclient.e2ee.protosB\014ProtoSes" +
+      "sionb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -3616,7 +3827,7 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
     internal_static_org_example_SessionProto_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_org_example_SessionProto_descriptor,
-        new java.lang.String[] { "SessionVersion", "LocalDeviceId", "RemoteDeviceId", "Initiator", "State", "RootKey", "DhPrivateKey", "DhPublicKey", "RemoteDhPublicKey", "PreviousRemoteDhPublicKey", "PreviousChainLength", "SendingChain", "ReceivingChain", "SkippedKeys", });
+        new java.lang.String[] { "SessionVersion", "LocalDeviceId", "RemoteDeviceId", "Initiator", "State", "RootKey", "DhPrivateKey", "DhPublicKey", "SigningPrivateKey", "SigningPublicKey", "RemoteSigningPublicKey", "RemoteDhPublicKey", "PreviousRemoteDhPublicKey", "PreviousSendingChainLength", "SendingChain", "ReceivingChain", "SkippedKeys", });
     internal_static_org_example_SessionProto_ChainState_descriptor =
       internal_static_org_example_SessionProto_descriptor.getNestedType(0);
     internal_static_org_example_SessionProto_ChainState_fieldAccessorTable = new
