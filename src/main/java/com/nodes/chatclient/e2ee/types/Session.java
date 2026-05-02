@@ -14,8 +14,8 @@ public class Session {
     public byte[] signingPublicKey;
     public byte[] remoteSigningPublicKey;
 
-    public long sendingMessageNumber = 1;
-    public long receivingMessageNumber = 1;
+    public long sendingMessageNumber = 0;
+    public long receivingMessageNumber = 0;
     public String remoteDeviceId;
     public String localDeviceId;
 
@@ -28,6 +28,34 @@ public class Session {
     public long previousChainLength;
 
     public boolean initiator;
+
+    public Session() { }
+
+    public static Session createInitial(
+            byte[] rootKey,
+            byte[] dhPrivateKey,
+            byte[] dhPublicKey,
+            byte[] remoteDHPublicKey,
+            String localDeviceId,
+            String remoteDeviceId,
+            boolean initiator
+    ) {
+        Session s = new Session();
+
+        s.rootKey = rootKey;
+        s.dhPrivateKey = dhPrivateKey;
+        s.dhPublicKey = dhPublicKey;
+        s.remoteDHPublicKey = remoteDHPublicKey;
+        s.localDeviceId = localDeviceId;
+        s.remoteDeviceId = remoteDeviceId;
+        s.initiator = initiator;
+
+        s.sendingMessageNumber = 0;
+        s.receivingMessageNumber = 0;
+        s.previousChainLength = 0;
+
+        return s;
+    }
 
     public Session(byte[] rootKey, byte[] dhPrivateKey, byte[] dhPublicKey,
                    byte[] remotePub, String localDeviceId, boolean initiator) {
@@ -86,5 +114,9 @@ public class Session {
         }
 
         return session;
+    }
+
+    public void clearSkippedKeys() {
+        skippedKeys.clear();
     }
 }
