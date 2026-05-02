@@ -2,6 +2,7 @@ package com.nodes.chatclient.ws;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nodes.chatclient.config.ClientConfig;
+import com.nodes.chatclient.e2ee.types.InternalMessage;
 import com.nodes.chatclient.ws.messages.*;
 
 import java.net.http.HttpClient;
@@ -10,9 +11,12 @@ import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.Queue;
+import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+
+import static com.nodes.chatclient.e2ee.protos.ProtoEncryptedPayload.EncryptedPayload.ControlMessage.Type.*;
 
 public final class WsService {
     public enum State {
@@ -140,6 +144,13 @@ public final class WsService {
                 replyingTo
         );
 
+//        InternalMessage msgi = InternalMessage.text(
+//                UUID.randomUUID().toString(),
+//                System.currentTimeMillis(),
+//                text,
+//                replyingTo
+//        );
+
         sendAsync(msg);
     }
 
@@ -150,6 +161,15 @@ public final class WsService {
     ) {
         if (webSocket == null) return;
         ClientAddReaction msg = new ClientAddReaction(messageId, emoji, toUserId);
+
+//        InternalMessage msgi = InternalMessage.reaction(
+//                UUID.randomUUID().toString(),
+//                System.currentTimeMillis(),
+//                messageId,
+//                emoji,
+//                false
+//        );
+
         sendAsync(msg);
     }
 
@@ -159,6 +179,15 @@ public final class WsService {
     ) {
         if (webSocket == null) return;
         ClientRemoveReaction msg = new ClientRemoveReaction(messageId, toUserId);
+
+//        InternalMessage msgi = InternalMessage.reaction(
+//            UUID.randomUUID().toString(),
+//            System.currentTimeMillis(),
+//            messageId,
+//            null, // seems wrong
+//            true
+//        );
+
         sendAsync(msg);
     }
 
@@ -167,6 +196,14 @@ public final class WsService {
     ) {
         if (webSocket == null) return;
         ClientMessageSeen msg = new ClientMessageSeen(messageId);
+
+//        InternalMessage msgi = InternalMessage.control(
+//                UUID.randomUUID().toString(),
+//                System.currentTimeMillis(),
+//                READ_RECEIPT,
+//                messageId
+//        );
+
         sendAsync(msg);
     }
 
@@ -176,6 +213,14 @@ public final class WsService {
     ) {
         if (webSocket == null) return;
         ClientTypingMessage msg = new ClientTypingMessage(toUserId, isTyping);
+
+//        InternalMessage msgi = InternalMessage.control(
+//                UUID.randomUUID().toString(),
+//                System.currentTimeMillis(),
+//                TYPING,
+//                null
+//        );
+
         sendAsync(msg);
     }
 
