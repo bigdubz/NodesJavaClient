@@ -1,67 +1,35 @@
 package com.nodes.chatclient.e2ee.types;
 
-public final class LocalIdentity {
+import java.util.Arrays;
 
-    private final String userId;
-    private final String deviceId;
-    private final int registrationId;
+public record LocalIdentity(String userId, String deviceId, int registrationId, byte[] identityPublicKey,
+                            byte[] identityPrivateKey, byte[] signingPublicKey, byte[] signingPrivateKey,
+                            long createdAt) {
 
-    private final byte[] identityPublicKey;
-    private final byte[] identityPrivateKey;
-
-    private final byte[] signingPublicKey;
-    private final byte[] signingPrivateKey;
-
-    private final long createdAt;
-
-    // constructor + getters
-    public LocalIdentity(String userId,
-                         String deviceId,
-                         int registrationId,
-                         byte[] identityPublicKey,
-                         byte[] identityPrivateKey,
-                         byte[] signingPublicKey,
-                         byte[] signingPrivateKey,
-                         long createdAt) {
-        this.userId = userId;
-        this.deviceId = deviceId;
-        this.registrationId = registrationId;
-        this.identityPublicKey = identityPublicKey;
-        this.identityPrivateKey = identityPrivateKey;
-        this.signingPublicKey = signingPublicKey;
-        this.signingPrivateKey = signingPrivateKey;
-        this.createdAt = createdAt;
+    public LocalIdentity {
+        identityPublicKey = copy(identityPublicKey);
+        identityPrivateKey = copy(identityPrivateKey);
+        signingPublicKey = copy(signingPublicKey);
+        signingPrivateKey = copy(signingPrivateKey);
     }
 
-    public String getUserId() {
-        return userId;
+    public byte[] identityPublicKey() {
+        return copy(identityPublicKey);
     }
 
-    public String getDeviceId() {
-        return deviceId;
+    public byte[] identityPrivateKey() {
+        return copy(identityPrivateKey);
     }
 
-    public int getRegistrationId() {
-        return registrationId;
+    public byte[] signingPublicKey() {
+        return copy(signingPublicKey);
     }
 
-    public byte[] getIdentityPublicKey() {
-        return identityPublicKey;
+    public byte[] signingPrivateKey() {
+        return copy(signingPrivateKey);
     }
 
-    public byte[] getIdentityPrivateKey() {
-        return identityPrivateKey;
-    }
-
-    public byte[] getSigningPublicKey() {
-        return signingPublicKey;
-    }
-
-    public byte[] getSigningPrivateKey() {
-        return signingPrivateKey;
-    }
-
-    public long getCreatedAt() {
-        return createdAt;
+    private static byte[] copy(byte[] bytes) {
+        return bytes == null ? null : Arrays.copyOf(bytes, bytes.length);
     }
 }

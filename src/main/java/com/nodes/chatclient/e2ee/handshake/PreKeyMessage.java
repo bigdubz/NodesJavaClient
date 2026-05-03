@@ -2,16 +2,8 @@ package com.nodes.chatclient.e2ee.handshake;
 
 import java.util.Arrays;
 
-public class PreKeyMessage {
-    private final String fromUserId;
-    private final String fromDeviceId;
-
-    private final byte[] senderIdentityKey;
-    private final byte[] senderEphemeralKey;
-
-    private final int signedPreKeyId;
-    private final Integer oneTimePreKeyId;
-
+public record PreKeyMessage(String fromUserId, String fromDeviceId, byte[] senderIdentityKey, byte[] senderEphemeralKey,
+                            int signedPreKeyId, Integer oneTimePreKeyId) {
     public PreKeyMessage(
             String fromUserId,
             String fromDeviceId,
@@ -28,28 +20,14 @@ public class PreKeyMessage {
         this.oneTimePreKeyId = oneTimePreKeyId;
     }
 
-    public String getFromUserId() {
-        return fromUserId;
-    }
-
-    public String getFromDeviceId() {
-        return fromDeviceId;
-    }
-
-    public byte[] getSenderIdentityKey() {
+    @Override
+    public byte[] senderIdentityKey() {
         return copy(senderIdentityKey);
     }
 
-    public byte[] getSenderEphemeralKey() {
+    @Override
+    public byte[] senderEphemeralKey() {
         return copy(senderEphemeralKey);
-    }
-
-    public int getSignedPreKeyId() {
-        return signedPreKeyId;
-    }
-
-    public Integer getOneTimePreKeyId() {
-        return oneTimePreKeyId;
     }
 
     public boolean hasOneTimePreKey() {

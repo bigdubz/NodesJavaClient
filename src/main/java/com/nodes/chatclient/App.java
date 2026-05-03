@@ -2,6 +2,8 @@ package com.nodes.chatclient;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nodes.chatclient.config.ClientConfig;
+import com.nodes.chatclient.e2ee.db.DatabaseManager;
+import com.nodes.chatclient.e2ee.identity.LocalIdentityService;
 import com.nodes.chatclient.http.AuthApi;
 import com.nodes.chatclient.http.ChatApi;
 import com.nodes.chatclient.http.HttpClientFactory;
@@ -19,7 +21,9 @@ import java.util.Objects;
 public class App extends Application {
 
     @Override
-    public void start(Stage stage) {
+    public void start(Stage stage) throws Exception {
+        DatabaseManager.init();
+
         ClientConfig config = ClientConfig.localDev();
         AppContext ctx = getAppContext(config);
 
@@ -55,6 +59,7 @@ public class App extends Application {
 
         AuthApi authApi = new AuthApi(config, httpClient, mapper);
         ChatApi chatApi = new ChatApi(config, httpClient, mapper);
+        LocalIdentityService localIdentityService = LocalIdentityService.from(DatabaseManager.get());
 
         WsMessageRouter router = new WsMessageRouter(mapper);
         WsService wsService = new WsService(config, httpClient, mapper, router);
@@ -64,6 +69,7 @@ public class App extends Application {
                 httpFactory,
                 authApi,
                 chatApi,
+                localIdentityService,
                 wsService,
                 router
         );

@@ -43,11 +43,10 @@ public final class LocalIdentityStore {
                     rs.getString("deviceId"),
                     rs.getInt("registrationId"),
 
-                    rs.getBytes("signingPublicKey"),
-                    rs.getBytes("signingPrivateKey"),
-
                     rs.getBytes("identityPublicKey"),
                     rs.getBytes("identityPrivateKey"),
+                    rs.getBytes("signingPublicKey"),
+                    rs.getBytes("signingPrivateKey"),
                     rs.getLong("createdAt")
             );
 
@@ -125,16 +124,16 @@ public final class LocalIdentityStore {
 
 
     private void bind(PreparedStatement ps, LocalIdentity identity) throws SQLException {
-        ps.setString(1, identity.getUserId());
-        ps.setString(2, identity.getDeviceId());
-        ps.setInt(3, identity.getRegistrationId());
+        ps.setString(1, identity.userId());
+        ps.setString(2, identity.deviceId());
+        ps.setInt(3, identity.registrationId());
 
-        ps.setBytes(4, identity.getSigningPublicKey());
-        ps.setBytes(5, identity.getSigningPrivateKey());
+        ps.setBytes(4, identity.signingPublicKey());
+        ps.setBytes(5, identity.signingPrivateKey());
 
-        ps.setBytes(6, identity.getIdentityPublicKey());
-        ps.setBytes(7, identity.getIdentityPrivateKey());
+        ps.setBytes(6, identity.identityPublicKey());
+        ps.setBytes(7, identity.identityPrivateKey());
 
-        ps.setLong(8, identity.getCreatedAt());
+        ps.setLong(8, identity.createdAt());
     }
 }

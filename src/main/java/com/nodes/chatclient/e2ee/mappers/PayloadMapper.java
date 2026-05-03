@@ -15,8 +15,8 @@ public class PayloadMapper {
                 EncryptedPayload.TextMessage.Builder tb = EncryptedPayload.TextMessage.newBuilder()
                                 .setBody(msg.body);
 
-                if (msg.replyingTo != null) {
-                    tb.setReferencedMessageId(msg.replyingTo);
+                if (msg.referencedMessageId != null) {
+                    tb.setReferencedMessageId(msg.referencedMessageId);
                 }
                 payload.setText(tb.build());
                 break;
