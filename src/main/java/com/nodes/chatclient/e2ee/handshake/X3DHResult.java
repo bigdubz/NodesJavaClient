@@ -5,24 +5,24 @@ import com.nodes.chatclient.e2ee.types.Session;
 public class X3DHResult {
 
     private final Session session;
-    private final PreKeyMessage preKeyMessage;
-    private final boolean usedOneTimePreKey;
+    private final PrekeyMessage prekeyMessage;
+    private final boolean usedOneTimePrekey;
 
-    public X3DHResult(Session session, PreKeyMessage preKeyMessage, boolean usedOneTimePreKey) {
+    public X3DHResult(Session session, PrekeyMessage prekeyMessage, boolean usedOneTimePrekey) {
         this.session = session;
-        this.preKeyMessage = preKeyMessage;
-        this.usedOneTimePreKey = usedOneTimePreKey;
+        this.prekeyMessage = prekeyMessage;
+        this.usedOneTimePrekey = usedOneTimePrekey;
     }
 
     public Session getSession() {
         return session;
     }
 
-    public PreKeyMessage getPreKeyMessage() {
-        return preKeyMessage;
+    public PrekeyMessage getPrekeyMessage() {
+        return prekeyMessage;
     }
 
-    public boolean isUsedOneTimePreKey() {
-        return usedOneTimePreKey;
+    public boolean isUsedOneTimePrekey() {
+        return usedOneTimePrekey;
     }
 }

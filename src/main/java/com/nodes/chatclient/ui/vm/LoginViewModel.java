@@ -1,7 +1,7 @@
 package com.nodes.chatclient.ui.vm;
 
 import com.nodes.chatclient.AppContext;
-import com.nodes.chatclient.http.AuthApi;
+import com.nodes.chatclient.http.api.AuthApi;
 import com.nodes.chatclient.http.dto.LoginResponse;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;

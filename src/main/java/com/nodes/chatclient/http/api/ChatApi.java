@@ -1,4 +1,4 @@
-package com.nodes.chatclient.http;
+package com.nodes.chatclient.http.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -117,8 +117,9 @@ public final class ChatApi {
     private List<ConversationRowDto> handleConversationsResponse(
             HttpResponse<String> response
     ) {
-        if (response.statusCode() != 200) {
-            throw new RuntimeException("Failed to fetch conversations: HTTP " + response.statusCode());
+        int status = response.statusCode();
+        if (status != 200) {
+            throw new RuntimeException("Failed to fetch conversations (HTTP " + status + "): " + response.body());
         }
 
         try {
@@ -134,8 +135,9 @@ public final class ChatApi {
     private List<MessageRowDto> handleHistoryResponse(
             HttpResponse<String> response
     ) {
-        if (response.statusCode() != 200) {
-            throw new RuntimeException("Failed to fetch history: HTTP " + response.statusCode());
+        int status = response.statusCode();
+        if (status != 200) {
+            throw new RuntimeException("Failed to fetch history (HTTP " + status + "): " + response.body());
         }
 
         try {

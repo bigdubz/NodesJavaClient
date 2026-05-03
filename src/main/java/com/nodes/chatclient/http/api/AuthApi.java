@@ -1,4 +1,4 @@
-package com.nodes.chatclient.http;
+package com.nodes.chatclient.http.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nodes.chatclient.config.ClientConfig;
@@ -76,7 +76,6 @@ public final class AuthApi {
 
     private LoginResponse handleLoginResponse(HttpResponse<String> response) {
         int status = response.statusCode();
-
         if (status != 200) {
             throw new RuntimeException("Login failed (HTTP " + status + "): " + response.body());
         }

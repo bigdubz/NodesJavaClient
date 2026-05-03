@@ -2,22 +2,22 @@ package com.nodes.chatclient.e2ee.handshake;
 
 import java.util.Arrays;
 
-public record PreKeyMessage(String fromUserId, String fromDeviceId, byte[] senderIdentityKey, byte[] senderEphemeralKey,
-                            int signedPreKeyId, Integer oneTimePreKeyId) {
-    public PreKeyMessage(
+public record PrekeyMessage(String fromUserId, String fromDeviceId, byte[] senderIdentityKey, byte[] senderEphemeralKey,
+                            int signedPrekeyId, Integer oneTimePrekeyId) {
+    public PrekeyMessage(
             String fromUserId,
             String fromDeviceId,
             byte[] senderIdentityKey,
             byte[] senderEphemeralKey,
-            int signedPreKeyId,
-            Integer oneTimePreKeyId
+            int signedPrekeyId,
+            Integer oneTimePrekeyId
     ) {
         this.fromUserId = fromUserId;
         this.fromDeviceId = fromDeviceId;
         this.senderIdentityKey = copy(senderIdentityKey);
         this.senderEphemeralKey = copy(senderEphemeralKey);
-        this.signedPreKeyId = signedPreKeyId;
-        this.oneTimePreKeyId = oneTimePreKeyId;
+        this.signedPrekeyId = signedPrekeyId;
+        this.oneTimePrekeyId = oneTimePrekeyId;
     }
 
     @Override
@@ -30,8 +30,8 @@ public record PreKeyMessage(String fromUserId, String fromDeviceId, byte[] sende
         return copy(senderEphemeralKey);
     }
 
-    public boolean hasOneTimePreKey() {
-        return oneTimePreKeyId != null;
+    public boolean hasOneTimePrekey() {
+        return oneTimePrekeyId != null;
     }
 
     private static byte[] copy(byte[] input) {

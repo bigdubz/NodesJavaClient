@@ -11,12 +11,12 @@ public class X3DHService {
     public X3DHResult initiateHandshake(LocalIdentity self, RemoteUserKeyBundle remoteBundle) throws Exception {
         BundleVerifier.requireValid(remoteBundle);
 
-        byte[] remoteOneTimePreKey = null;
-        boolean usedOneTimePreKey = false;
+        byte[] remoteOneTimePrekey = null;
+        boolean usedOneTimePrekey = false;
 
         if (remoteBundle.oneTimePrekey() != null) {
-            remoteOneTimePreKey = remoteBundle.oneTimePrekey();
-            usedOneTimePreKey = true;
+            remoteOneTimePrekey = remoteBundle.oneTimePrekey();
+            usedOneTimePrekey = true;
         }
 
         byte[][] eph = CryptoUtils.generateKeyPair();
@@ -37,8 +37,8 @@ public class X3DHService {
         byte[] dh2 = CryptoUtils.dh(ephPrivateKey, remoteBundle.identityPublicKey());
         byte[] dh3 = CryptoUtils.dh(ephPrivateKey, remoteBundle.signedPrekey());
 
-        if (usedOneTimePreKey) {
-            byte[] dh4 = CryptoUtils.dh(ephPrivateKey, remoteOneTimePreKey);
+        if (usedOneTimePrekey) {
+            byte[] dh4 = CryptoUtils.dh(ephPrivateKey, remoteOneTimePrekey);
             secret = CryptoUtils.concat(CryptoUtils.concat(dh1, dh2), CryptoUtils.concat(dh3, dh4));
 
         } else {
@@ -56,16 +56,16 @@ public class X3DHService {
                 remoteBundle.signedPrekey()
         );
 
-        PreKeyMessage preKeyMessage = new PreKeyMessage(
+        PrekeyMessage prekeyMessage = new PrekeyMessage(
                 self.userId(),
                 self.deviceId(),
                 self.identityPublicKey(),
                 ephPublicKey,
                 0,
-                usedOneTimePreKey ? 0 : null
+                usedOneTimePrekey ? 0 : null
         );
 
-        return  new X3DHResult(session, preKeyMessage, usedOneTimePreKey);
+        return new X3DHResult(session, prekeyMessage, usedOneTimePrekey);
     }
 
     private Session createInitialSession(LocalIdentity self,

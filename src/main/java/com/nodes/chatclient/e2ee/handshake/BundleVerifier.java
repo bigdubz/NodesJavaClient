@@ -10,18 +10,18 @@ public class BundleVerifier {
 
     private BundleVerifier() { }
 
-    public static boolean verifySignedPreKey(RemoteUserKeyBundle bundle) {
+    public static boolean verifySignedPrekey(RemoteUserKeyBundle bundle) {
         if (bundle == null) {
             return false;
         }
 
         try {
             byte[] signingPublicKey = Base64.getDecoder().decode(bundle.signingPublicKey());
-            byte[] signedPreKey = Base64.getDecoder().decode(bundle.signedPrekey());
+            byte[] signedPrekey = Base64.getDecoder().decode(bundle.signedPrekey());
             byte[] signature = Base64.getDecoder().decode(bundle.signedPrekeySignature());
 
             return CryptoUtils.verify(
-                    signedPreKey,
+                    signedPrekey,
                     signature,
                     signingPublicKey
             );
@@ -32,7 +32,7 @@ public class BundleVerifier {
     }
 
     public static void requireValid(RemoteUserKeyBundle bundle) {
-        if (!verifySignedPreKey(bundle)) {
+        if (!verifySignedPrekey(bundle)) {
             throw new IllegalArgumentException("Invalid signed pre-key bundle");
         }
     }
