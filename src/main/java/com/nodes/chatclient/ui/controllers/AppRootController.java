@@ -34,9 +34,23 @@ public final class AppRootController {
         ctx.router.clearHandlers();
         ctx.router.registerServerHandlers(store);
 
-        ctx.wsService.setAuth(userId, ctx.jwt);
+        String deviceId;
+        try {
+            deviceId = ctx.localIdentity.deviceId();
+            if (deviceId == null || deviceId.isBlank()) {
+                throw new IllegalStateException("Local identity has no device id");
+            }
+            ctx.wsService.setAuth(userId, deviceId, ctx.jwt);
+        } catch (Exception e) {
+            System.err.println("Failed to load local identity: " + e.getMessage());
+            return;
+        }
+
         ctx.wsService.connectThenWaitAuth()
-                .thenCompose(v -> ctx.chatApi.getConversationsAsync(ctx.jwt))
+                .thenCompose(v -> {
+                    ctx.jwt = ctx.wsService.deviceToken();
+                    return ctx.chatApi.getConversationsAsync(ctx.jwt);
+                })
                 .thenAccept(store::mergeConversations)
                 .thenRun(() -> {
                     ctx.wsService.enableRoutingAndFlush();

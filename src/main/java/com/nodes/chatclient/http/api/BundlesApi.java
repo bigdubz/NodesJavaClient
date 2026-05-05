@@ -26,12 +26,10 @@ public final class BundlesApi {
     }
 
     public CompletableFuture<BundleStatusResponse> getBundleStatusAsync(
-            String jwt,
-            String userId,
-            String deviceId
+            String jwt
     ) {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(bundleStateUri(userId, deviceId))
+                .uri(bundleStateUri())
                 .timeout(config.httpRequestTimeout())
                 .header("Authorization", "Bearer " + jwt)
                 .GET()
@@ -60,10 +58,8 @@ public final class BundlesApi {
         }
     }
 
-    private URI bundleStateUri(String userId, String deviceId) {
-        String qs = "?userId=" + url(userId) +
-                    "&deviceId=" + url(deviceId);
-        return config.httpBaseUri().resolve("/e2ee/bundle-status" + qs);
+    private URI bundleStateUri() {
+        return config.httpBaseUri().resolve("/e2ee/bundle-status");
     }
 
     private String url(String value) {

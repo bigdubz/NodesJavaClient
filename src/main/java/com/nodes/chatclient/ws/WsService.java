@@ -42,8 +42,10 @@ public final class WsService {
     private volatile WebSocket webSocket;
     private volatile State state = State.DISCONNECTED;
 
-    private volatile String jwt;
+    private volatile String bootstrapJwt;
+    private volatile String deviceToken;
     private volatile String userId;
+    private volatile String deviceId;
 
     private final AtomicInteger reconnectAttempts = new AtomicInteger(0);
     private final AtomicLong generation = new AtomicLong(0);
@@ -73,14 +75,33 @@ public final class WsService {
         router.onCore("AUTH_ERROR", ServerAuthError.Payload.class, this::handleAuthError);
     }
 
-    public void setAuth(String userId, String jwt) {
+    public void setAuth(String userId, String deviceId, String bootstrapJwt) {
         this.userId = userId;
-        this.jwt = jwt;
+        this.deviceId = deviceId;
+        this.bootstrapJwt = bootstrapJwt;
+        this.deviceToken = null;
+    }
+
+    public String deviceToken() {
+        return deviceToken;
     }
 
     private void handleAuthOk(ServerAuthOk.Payload p) {
-        state = State.AUTHENTICATED;
+        if (p == null) {
+            failAuth("Authentication failed: empty AUTH_OK payload.");
+            return;
+        }
+        if (!Objects.equals(userId, p.userId) || !Objects.equals(deviceId, p.deviceId)) {
+            failAuth("Authentication failed: server identity echo did not match.");
+            return;
+        }
+        if (isBlank(p.deviceToken)) {
+            failAuth("Authentication failed: server did not return a device token.");
+            return;
+        }
 
+        deviceToken = p.deviceToken;
+        state = State.AUTHENTICATED;
         if (authFuture != null && !authFuture.isDone()) {
             authFuture.complete(null);
         }
@@ -101,10 +122,13 @@ public final class WsService {
     }
 
     private void handleAuthError(ServerAuthError.Payload p) {
+        failAuth("Authentication failed.");
+    }
+
+    private void failAuth(String message) {
+        state = State.CONNECTED;
         if (authFuture != null && !authFuture.isDone()) {
-            authFuture.completeExceptionally(
-                    new RuntimeException("Authentication failed.")
-            );
+            authFuture.completeExceptionally(new RuntimeException(message));
         }
     }
 
@@ -276,12 +300,20 @@ public final class WsService {
     }
 
     private void sendAuth() {
-        if (jwt == null || userId == null) return;
+        if (bootstrapJwt == null || userId == null || deviceId == null) return;
 
         try {
-            ClientAuthMessage msg = new ClientAuthMessage(userId, jwt);
+            ClientAuthMessage msg = new ClientAuthMessage(userId, deviceId, bootstrapJwt);
             webSocket.sendText(mapper.writeValueAsString(msg), true).join();
         } catch (Exception ignored) {}
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
+    }
+
+    private boolean isAuthResponse(WsEnvelope env) {
+        return ServerAuthOk.type.equals(env.type) || ServerAuthError.type.equals(env.type);
     }
 
     private void startHeartbeat(long gen) {
@@ -331,7 +363,7 @@ public final class WsService {
                 try {
                     WsEnvelope env = mapper.readValue(buffer.toString(), WsEnvelope.class);
                     buffer.setLength(0);
-                    if (!env.type.equals(ServerAuthOk.type) && (state != State.AUTHENTICATED || !routingEnabled)) {
+                    if (!isAuthResponse(env) && (state != State.AUTHENTICATED || !routingEnabled)) {
                         System.out.println("QUEUED: " + data);
                         messageQueue.add(env);
                     } else {
