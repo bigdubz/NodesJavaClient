@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nodes.chatclient.config.ClientConfig;
 import com.nodes.chatclient.e2ee.db.DatabaseManager;
 import com.nodes.chatclient.e2ee.identity.LocalIdentityService;
-import com.nodes.chatclient.http.api.AuthApi;
+import com.nodes.chatclient.http.api.LoginApi;
 import com.nodes.chatclient.http.api.BundlesApi;
 import com.nodes.chatclient.http.api.ChatApi;
 import com.nodes.chatclient.http.HttpClientFactory;
@@ -24,6 +24,8 @@ public class App extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         DatabaseManager.init();
+//        System.setProperty("jdk.httpclient.HttpClient.log", "all");
+        System.setProperty("java.net.preferIPv6Addresses", "true");
 
         ClientConfig config = ClientConfig.localDev();
         AppContext ctx = getAppContext(config);
@@ -58,7 +60,7 @@ public class App extends Application {
         HttpClientFactory httpFactory = new HttpClientFactory(config);
         HttpClient httpClient = httpFactory.create();
 
-        AuthApi authApi = new AuthApi(config, httpClient, mapper);
+        LoginApi loginApi = new LoginApi(config, httpClient, mapper);
         ChatApi chatApi = new ChatApi(config, httpClient, mapper);
         BundlesApi bundlesApi = new BundlesApi(config, httpClient, mapper);
         LocalIdentityService localIdentityService = LocalIdentityService.from(DatabaseManager.get());
@@ -69,7 +71,7 @@ public class App extends Application {
         return new AppContext(
                 config,
                 httpFactory,
-                authApi,
+                loginApi,
                 chatApi,
                 bundlesApi,
                 localIdentityService,

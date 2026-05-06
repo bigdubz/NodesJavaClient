@@ -12,12 +12,12 @@ import java.net.http.HttpResponse;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
-public final class AuthApi {
+public final class LoginApi {
     private final ClientConfig config;
     private final HttpClient httpClient;
     private final ObjectMapper mapper;
 
-    public AuthApi(
+    public LoginApi(
             ClientConfig config,
             HttpClient httpClient,
             ObjectMapper objectMapper
@@ -32,15 +32,17 @@ public final class AuthApi {
             String password
     ) {
         try {
-            LoginRequest body = new LoginRequest(userId, password);
+            LoginRequest body = new LoginRequest(normalizeUserId(userId), password);
+            String json = mapper.writeValueAsString(body);
+            logLoginRequest(body, json);
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(loginUri())
                     .timeout(config.httpRequestTimeout())
+                    .header("Accept", "application/json")
                     .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(
-                            mapper.writeValueAsString(body)
-                    ))
+                    .header("User-Agent", "NodesJavaClient")
+                    .POST(HttpRequest.BodyPublishers.ofString(json))
                     .build();
 
             return httpClient
@@ -55,15 +57,17 @@ public final class AuthApi {
             String userId,
             String password
     ) throws Exception {
-        LoginRequest body = new LoginRequest(userId, password);
+        LoginRequest body = new LoginRequest(normalizeUserId(userId), password);
+        String json = mapper.writeValueAsString(body);
+        logLoginRequest(body, json);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(loginUri())
                 .timeout(config.httpRequestTimeout())
+                .header("Accept", "application/json")
                 .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(
-                        mapper.writeValueAsString(body)
-                ))
+                .header("User-Agent", "Mozilla/5.0")
+                .POST(HttpRequest.BodyPublishers.ofString(json))
                 .build();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
@@ -74,9 +78,25 @@ public final class AuthApi {
         return config.httpBaseUri().resolve("/login");
     }
 
+    private String normalizeUserId(String userId) {
+        return userId == null ? null : userId.trim();
+    }
+
+    private void logLoginRequest(LoginRequest body, String json) {
+        int passwordLength = body.password == null ? -1 : body.password.length();
+        System.err.println(
+                "POST " + loginUri()
+                        + " login payload keys=[userId,password]"
+                        + " userId='" + body.userId + "'"
+                        + " passwordLength=" + passwordLength
+                        + " jsonBytes=" + json.length()
+        );
+    }
+
     private LoginResponse handleLoginResponse(HttpResponse<String> response) {
         int status = response.statusCode();
         if (status != 200) {
+            System.err.println("POST " + loginUri() + " returned HTTP " + status + ": " + response.body());
             throw new RuntimeException("Login failed (HTTP " + status + "): " + response.body());
         }
 

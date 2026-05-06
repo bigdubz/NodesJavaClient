@@ -345,7 +345,6 @@ public final class WsService {
         pongWatchdog = null;
     }
 
-
     private final class Listener implements WebSocket.Listener {
         private final long gen;
         private final StringBuilder buffer = new StringBuilder();

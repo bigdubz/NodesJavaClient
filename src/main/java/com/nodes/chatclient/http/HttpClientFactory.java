@@ -27,7 +27,7 @@ public final class HttpClientFactory {
         return HttpClient.newBuilder()
                 .connectTimeout(config.httpConnectTimeout())
                 .executor(executor)
-                .version(HttpClient.Version.HTTP_1_1)
+                .version(HttpClient.Version.HTTP_2)
                 .build();
     }
 

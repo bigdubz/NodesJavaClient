@@ -1,0 +1,13 @@
+package com.nodes.chatclient.e2ee.types;
+
+public record RemoteUserBundle(
+        String userId,
+        String deviceId,
+        int registrationId,
+        byte[] signingPublicKey,
+        byte[] identityPublicKey,
+        byte[] signedPrekey,
+        byte[] signedPrekeySignature,
+        byte[] oneTimePrekey
+) {
+}

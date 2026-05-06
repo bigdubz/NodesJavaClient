@@ -3,12 +3,12 @@ package com.nodes.chatclient.e2ee.handshake;
 import com.nodes.chatclient.e2ee.protos.ProtoSession;
 import com.nodes.chatclient.e2ee.types.LocalIdentity;
 import com.nodes.chatclient.e2ee.types.Session;
-import com.nodes.chatclient.e2ee.types.RemoteUserKeyBundle;
+import com.nodes.chatclient.e2ee.types.RemoteUserBundle;
 import com.nodes.chatclient.e2ee.utils.CryptoUtils;
 
 public class X3DHService {
 
-    public X3DHResult initiateHandshake(LocalIdentity self, RemoteUserKeyBundle remoteBundle) throws Exception {
+    public X3DHResult initiateHandshake(LocalIdentity self, RemoteUserBundle remoteBundle) throws Exception {
         BundleVerifier.requireValid(remoteBundle);
 
         byte[] remoteOneTimePrekey = null;
@@ -69,7 +69,7 @@ public class X3DHService {
     }
 
     private Session createInitialSession(LocalIdentity self,
-                                         RemoteUserKeyBundle remoteBundle,
+                                         RemoteUserBundle remoteBundle,
                                          byte[] rootKey,
                                          byte[] localDhPrivateKey,
                                          byte[] localDhPublicKey,

@@ -4,7 +4,6 @@ public class BundleStatusResponse {
     public String userId;
     public String deviceId;
     public boolean bundleMissing;
-    public boolean identityKeyMismatch;
 
     public int oneTimePrekeyCount;
     public int oneTimePrekeyTarget;

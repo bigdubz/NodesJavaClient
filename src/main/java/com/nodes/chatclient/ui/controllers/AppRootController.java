@@ -1,11 +1,17 @@
 package com.nodes.chatclient.ui.controllers;
 
 import com.nodes.chatclient.AppContext;
+import com.nodes.chatclient.e2ee.db.DatabaseManager;
+import com.nodes.chatclient.e2ee.stores.OneTimePrekeyStore;
+import com.nodes.chatclient.e2ee.stores.SignedPrekeyStore;
+import com.nodes.chatclient.e2ee.utils.BundleProvisioningService;
 import com.nodes.chatclient.store.ChatStore;
 import javafx.application.Platform;
 import javafx.scene.Parent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+
+import java.util.concurrent.CompletionException;
 
 public final class AppRootController {
     private final StackPane root = new StackPane();
@@ -46,12 +52,23 @@ public final class AppRootController {
             return;
         }
 
+        ctx.bundleProvisioningService = new BundleProvisioningService(
+                ctx.bundlesApi,
+                ctx.localIdentity,
+                new SignedPrekeyStore(DatabaseManager.get()),
+                new OneTimePrekeyStore(DatabaseManager.get())
+        );
+
         ctx.wsService.connectThenWaitAuth()
                 .thenCompose(v -> {
                     ctx.jwt = ctx.wsService.deviceToken();
-                    return ctx.chatApi.getConversationsAsync(ctx.jwt);
+                    return ctx.bundleProvisioningService.ensureBundleUploadedAsync(ctx.jwt);
                 })
-                .thenAccept(store::mergeConversations)
+//                .thenCompose(v -> {
+//                    ctx.jwt = ctx.wsService.deviceToken();
+//                    return ctx.chatApi.getConversationsAsync(ctx.jwt);
+//                })
+//                .thenAccept(store::mergeConversations)
                 .thenRun(() -> {
                     ctx.wsService.enableRoutingAndFlush();
                     Platform.runLater(() -> {
@@ -66,9 +83,21 @@ public final class AppRootController {
                     });
                 })
                 .exceptionally(err -> {
-                    Platform.runLater(() -> System.err.println("WS auth failed: " + err.getMessage()));
+                    Platform.runLater(() -> System.err.println(
+                            "Post-login startup failed: " + rootCauseMessage(err)
+                    ));
                     return null;
                 });
+    }
+
+    private String rootCauseMessage(Throwable err) {
+        Throwable current = err;
+
+        while (current instanceof CompletionException && current.getCause() != null) {
+            current = current.getCause();
+        }
+
+        return current == null ? "unknown error" : current.getMessage();
     }
 
     private void logout() {

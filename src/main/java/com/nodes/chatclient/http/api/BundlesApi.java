@@ -2,6 +2,7 @@ package com.nodes.chatclient.http.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nodes.chatclient.config.ClientConfig;
+import com.nodes.chatclient.e2ee.types.LocalUserBundle;
 import com.nodes.chatclient.http.dto.BundleStatusResponse;
 
 import java.net.URI;
@@ -40,7 +41,30 @@ public final class BundlesApi {
                 .thenApply(this::handleBundleStatusResponse);
     }
 
-    public BundleStatusResponse handleBundleStatusResponse(
+    public CompletableFuture<Void> uploadBundleAsync(
+            String jwt,
+            LocalUserBundle body
+    ) {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(uploadBundleUri())
+                    .timeout(config.httpRequestTimeout())
+                    .header("Authorization", "Bearer " + jwt)
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(
+                            mapper.writeValueAsString(body.toMap())
+                    ))
+                    .build();
+
+            return httpClient
+                    .sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                    .thenApply(this::handleUploadBundleResponse);
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+
+    private BundleStatusResponse handleBundleStatusResponse(
             HttpResponse<String> response
     ) {
         int status = response.statusCode();
@@ -58,8 +82,24 @@ public final class BundlesApi {
         }
     }
 
+    private Void handleUploadBundleResponse(HttpResponse<String> response) {
+        int status = response.statusCode();
+
+        if (status != 200 && status != 201 && status != 204) {
+            throw new RuntimeException(
+                    "Failed to upload bundle (HTTP " + status + "): " + response.body()
+            );
+        }
+
+        return null;
+    }
+
     private URI bundleStateUri() {
-        return config.httpBaseUri().resolve("/e2ee/bundle-status");
+        return config.httpBaseUri().resolve("/e2ee/bundle/status");
+    }
+
+    private URI uploadBundleUri() {
+        return config.httpBaseUri().resolve("/e2ee/bundle/upload");
     }
 
     private String url(String value) {

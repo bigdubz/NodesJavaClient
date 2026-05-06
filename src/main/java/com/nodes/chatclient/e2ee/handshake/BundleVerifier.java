@@ -1,6 +1,6 @@
 package com.nodes.chatclient.e2ee.handshake;
 
-import com.nodes.chatclient.e2ee.types.RemoteUserKeyBundle;
+import com.nodes.chatclient.e2ee.types.RemoteUserBundle;
 import com.nodes.chatclient.e2ee.utils.CryptoUtils;
 
 import java.util.Base64;
@@ -10,7 +10,7 @@ public class BundleVerifier {
 
     private BundleVerifier() { }
 
-    public static boolean verifySignedPrekey(RemoteUserKeyBundle bundle) {
+    public static boolean verifySignedPrekey(RemoteUserBundle bundle) {
         if (bundle == null) {
             return false;
         }
@@ -31,7 +31,7 @@ public class BundleVerifier {
         }
     }
 
-    public static void requireValid(RemoteUserKeyBundle bundle) {
+    public static void requireValid(RemoteUserBundle bundle) {
         if (!verifySignedPrekey(bundle)) {
             throw new IllegalArgumentException("Invalid signed pre-key bundle");
         }
