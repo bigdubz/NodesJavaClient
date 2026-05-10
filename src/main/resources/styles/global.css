@@ -71,6 +71,41 @@
     -fx-font-size: 14px;
 }
 
+.input-field-transparent {
+    -fx-background-color: transparent;
+}
+
+.dim-background {
+    -fx-background-color: rgba(0, 0, 0, 0.6);
+}
+
+.close-button {
+    -fx-padding: 2 6;
+    -fx-font-size: 11px;
+    -fx-min-width: 24;
+    -fx-min-height: 24;
+    -fx-pref-width: 24;
+    -fx-pref-height: 24;
+    -fx-max-width: 24;
+    -fx-max-height: 24;
+    -fx-background-color: -fx-nodes-red;
+}
+
+.close-button:hover {
+    -fx-background-color: derive(-fx-nodes-red, 15%);
+}
+
+.add-contact-box {
+    -fx-background-color: -fx-global-bg-dark;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-padding: 12 18 22 18;
+    -fx-spacing: 12;
+    -fx-min-width: 320;
+    -fx-max-width: 320;
+    -fx-max-height: 20%;
+}
+
 .input-field:focused {
     -fx-border-color: -fx-nodes-purple;
     -fx-border-width: 1.5;

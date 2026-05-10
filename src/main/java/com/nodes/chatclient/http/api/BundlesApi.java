@@ -3,6 +3,7 @@ package com.nodes.chatclient.http.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nodes.chatclient.config.ClientConfig;
 import com.nodes.chatclient.e2ee.types.LocalUserBundle;
+import com.nodes.chatclient.e2ee.types.RemoteUserBundle;
 import com.nodes.chatclient.http.dto.BundleStatusResponse;
 
 import java.net.URI;
@@ -29,16 +30,20 @@ public final class BundlesApi {
     public CompletableFuture<BundleStatusResponse> getBundleStatusAsync(
             String jwt
     ) {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(bundleStateUri())
-                .timeout(config.httpRequestTimeout())
-                .header("Authorization", "Bearer " + jwt)
-                .GET()
-                .build();
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(bundleStateUri())
+                    .timeout(config.httpRequestTimeout())
+                    .header("Authorization", "Bearer " + jwt)
+                    .GET()
+                    .build();
 
-        return httpClient
-                .sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .thenApply(this::handleBundleStatusResponse);
+            return httpClient
+                    .sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                    .thenApply(this::handleBundleStatusResponse);
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
     public CompletableFuture<Void> uploadBundleAsync(
@@ -59,6 +64,26 @@ public final class BundlesApi {
             return httpClient
                     .sendAsync(request, HttpResponse.BodyHandlers.ofString())
                     .thenApply(this::handleUploadBundleResponse);
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+
+    public CompletableFuture<RemoteUserBundle> downloadBundleAsync(
+            String jwt,
+            String userId
+    ) {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(downloadBundleUri(userId))
+                    .timeout(config.httpRequestTimeout())
+                    .header("Authorization", "Bearer " + jwt)
+                    .GET()
+                    .build();
+
+            return httpClient
+                    .sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                    .thenApply(this::handleDownloadBundleResponse);
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);
         }
@@ -94,12 +119,33 @@ public final class BundlesApi {
         return null;
     }
 
+    private RemoteUserBundle handleDownloadBundleResponse(HttpResponse<String> response) {
+        int status = response.statusCode();
+
+        if (status != 200) {
+            throw new RuntimeException("Failed to download bundle (HTTP " + status + "): " + response.body());
+        }
+
+        try {
+            return mapper.readValue(
+                    response.body(),
+                    RemoteUserBundle.class
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid bundle download response", e);
+        }
+    }
+
     private URI bundleStateUri() {
         return config.httpBaseUri().resolve("/e2ee/bundle/status");
     }
 
     private URI uploadBundleUri() {
         return config.httpBaseUri().resolve("/e2ee/bundle/upload");
+    }
+
+    private URI downloadBundleUri(String userId) {
+        return config.httpBaseUri().resolve("/e2ee/bundle/download" + "?userId=" + url(userId));
     }
 
     private String url(String value) {

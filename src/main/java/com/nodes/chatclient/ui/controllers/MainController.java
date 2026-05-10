@@ -9,12 +9,14 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.*;
 
 public final class MainController {
 
-    private final BorderPane root = new BorderPane();
+    private final StackPane root = new StackPane();
+    private final BorderPane layout = new BorderPane();
 
     private final ConversationsViewModel conversationsVM;
     private final ChatViewModel activeChatVM;
@@ -38,7 +40,8 @@ public final class MainController {
         ConversationsController conversationsController =
                 new ConversationsController(
                         conversationsVM,
-                        this::openChat
+                        this::openChat,
+                        this::showAddContactOverlay
                 );
 
         Button logoutBtn = new Button("Logout");
@@ -49,8 +52,10 @@ public final class MainController {
         topBar.setAlignment(Pos.CENTER_RIGHT);
         topBar.setPadding(new Insets(10));
 
-        root.setLeft(conversationsController.getRoot());
-        root.setTop(topBar);
+        layout.setLeft(conversationsController.getRoot());
+        layout.setTop(topBar);
+
+        root.getChildren().add(layout);
     }
 
     private void openChat(String peerId) {
@@ -70,7 +75,52 @@ public final class MainController {
                 .getHistoryAsync(ctx.jwt, peerId, cursor, defaultMessageLimit)
                 .thenAccept(rows -> store.mergeHistory(peerId, rows));
 
-        Platform.runLater(() -> root.setCenter(chatController.getRoot()));
+        Platform.runLater(() -> layout.setCenter(chatController.getRoot()));
+    }
+
+    private void showAddContactOverlay() {
+        Region dimBackground = new Region();
+        dimBackground.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        dimBackground.getStyleClass().add("dim-background");
+
+        Label boxLabel = new Label("Add New Contact by Username");
+        boxLabel.setAlignment(Pos.CENTER_LEFT);
+        boxLabel.getStyleClass().add("box-label");
+
+        TextField usernameField = new TextField();
+        usernameField.setPromptText("Username");
+        usernameField.getStyleClass().add("input-field");
+
+        Button closeButton = new Button("X");
+        closeButton.getStyleClass().addAll("button", "close-button");
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        HBox closeRow = new HBox(10, boxLabel, spacer, closeButton);
+        closeRow.setAlignment(Pos.CENTER_LEFT);
+
+        VBox fieldBox = new VBox(usernameField);
+        fieldBox.setAlignment(Pos.CENTER_LEFT);
+
+        Button addButton = new Button("Add Contact");
+        addButton.getStyleClass().addAll("button");
+        addButton.setOnAction(e -> {
+            String username = usernameField.getText();
+            ctx.bundleProvisioningService.addContact(ctx.jwt, username);
+        });
+
+        VBox addContactBox = new VBox(12, closeRow, fieldBox, addButton);
+        addContactBox.getStyleClass().add("add-contact-box");
+        addContactBox.setAlignment(Pos.CENTER);
+
+        StackPane overlay = new StackPane(dimBackground, addContactBox);
+
+        closeButton.setOnAction(e -> root.getChildren().remove(overlay));
+
+        root.getChildren().add(overlay);
+
+        usernameField.requestFocus();
     }
 
     public Parent getRoot() {
@@ -78,7 +128,7 @@ public final class MainController {
     }
 
     public void reset() {
-        root.setCenter(null);
+        layout.setCenter(null);
         conversationsVM.reset();
         store.setActiveConversation(null);
     }

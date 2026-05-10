@@ -24,8 +24,6 @@ public class App extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         DatabaseManager.init();
-//        System.setProperty("jdk.httpclient.HttpClient.log", "all");
-        System.setProperty("java.net.preferIPv6Addresses", "true");
 
         ClientConfig config = ClientConfig.localDev();
         AppContext ctx = getAppContext(config);

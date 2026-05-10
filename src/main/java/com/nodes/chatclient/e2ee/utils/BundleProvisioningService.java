@@ -6,6 +6,7 @@ import com.nodes.chatclient.e2ee.stores.OneTimePrekeyStore;
 import com.nodes.chatclient.e2ee.stores.SignedPrekeyStore;
 import com.nodes.chatclient.e2ee.types.LocalIdentity;
 import com.nodes.chatclient.e2ee.types.LocalUserBundle;
+import com.nodes.chatclient.e2ee.types.RemoteUserBundle;
 import com.nodes.chatclient.http.api.BundlesApi;
 import com.nodes.chatclient.http.dto.BundleStatusResponse;
 
@@ -95,6 +96,11 @@ public class BundleProvisioningService {
 
                     return uploadBundleAsync(jwt, status);
                 });
+    }
+
+    public CompletableFuture<Void> addContact(String jwt, String userId) {
+        return bundlesApi.downloadBundleAsync(jwt, userId)
+                .thenAccept(bundle -> {});
     }
 
     private boolean needsUpload(BundleStatusResponse status) {

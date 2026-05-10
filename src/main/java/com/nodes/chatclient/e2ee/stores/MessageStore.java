@@ -77,7 +77,21 @@ public class MessageStore {
 
     // fetch conversation
     private static final String GET_CONVO_SQL = """
-        SELECT * FROM messages
+        SELECT messageId,
+                conversationId,
+                senderUserId,
+                senderDeviceId,
+                createdAt,
+                receivedAt,
+                isOutgoing,
+                type,
+                deliveryStatus,
+                controlType,
+                body,
+                reaction,
+                reactionIsRemoved,
+                referencedMessageId
+        FROM messages
         WHERE conversationId = ?
         ORDER BY createdAt;
     """;
