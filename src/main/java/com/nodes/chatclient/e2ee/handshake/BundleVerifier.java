@@ -16,9 +16,9 @@ public class BundleVerifier {
         }
 
         try {
-            byte[] signingPublicKey = Base64.getDecoder().decode(bundle.signingPublicKey());
-            byte[] signedPrekey = Base64.getDecoder().decode(bundle.signedPrekey());
-            byte[] signature = Base64.getDecoder().decode(bundle.signedPrekeySignature());
+            byte[] signingPublicKey = Base64.getDecoder().decode(bundle.sk());
+            byte[] signedPrekey = Base64.getDecoder().decode(bundle.spk());
+            byte[] signature = Base64.getDecoder().decode(bundle.spkSignature());
 
             return CryptoUtils.verify(
                     signedPrekey,

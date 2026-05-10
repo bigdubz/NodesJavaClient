@@ -14,8 +14,8 @@ public class X3DHService {
         byte[] remoteOneTimePrekey = null;
         boolean usedOneTimePrekey = false;
 
-        if (remoteBundle.oneTimePrekey() != null) {
-            remoteOneTimePrekey = remoteBundle.oneTimePrekey();
+        if (remoteBundle.opk() != null) {
+            remoteOneTimePrekey = remoteBundle.opk().publicKey;
             usedOneTimePrekey = true;
         }
 
@@ -33,9 +33,9 @@ public class X3DHService {
          */
 
         byte[] secret;
-        byte[] dh1 = CryptoUtils.dh(self.identityPrivateKey(), remoteBundle.signedPrekey());
-        byte[] dh2 = CryptoUtils.dh(ephPrivateKey, remoteBundle.identityPublicKey());
-        byte[] dh3 = CryptoUtils.dh(ephPrivateKey, remoteBundle.signedPrekey());
+        byte[] dh1 = CryptoUtils.dh(self.identityPrivateKey(), remoteBundle.spk());
+        byte[] dh2 = CryptoUtils.dh(ephPrivateKey, remoteBundle.ik());
+        byte[] dh3 = CryptoUtils.dh(ephPrivateKey, remoteBundle.spk());
 
         if (usedOneTimePrekey) {
             byte[] dh4 = CryptoUtils.dh(ephPrivateKey, remoteOneTimePrekey);
@@ -53,7 +53,7 @@ public class X3DHService {
                 rootKey,
                 ephPrivateKey,
                 ephPublicKey,
-                remoteBundle.signedPrekey()
+                remoteBundle.spk()
         );
 
         PrekeyMessage prekeyMessage = new PrekeyMessage(
@@ -90,7 +90,7 @@ public class X3DHService {
         session.signingPrivateKey = self.signingPrivateKey();
         session.signingPublicKey = self.signingPublicKey();
 
-        session.remoteSigningPublicKey = remoteBundle.identityPublicKey();
+        session.remoteSigningPublicKey = remoteBundle.ik();
 
         session.sendingChainKey = null;
         session.receivingChainKey = null;

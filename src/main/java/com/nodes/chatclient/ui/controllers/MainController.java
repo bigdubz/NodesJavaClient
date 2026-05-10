@@ -13,6 +13,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
 
+import java.util.Objects;
+
 public final class MainController {
 
     private final StackPane root = new StackPane();
@@ -85,7 +87,7 @@ public final class MainController {
 
         Label boxLabel = new Label("Add New Contact by Username");
         boxLabel.setAlignment(Pos.CENTER_LEFT);
-        boxLabel.getStyleClass().add("box-label");
+//        boxLabel.getStyleClass().add("box-label");
 
         TextField usernameField = new TextField();
         usernameField.setPromptText("Username");
@@ -97,20 +99,40 @@ public final class MainController {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        HBox closeRow = new HBox(10, boxLabel, spacer, closeButton);
-        closeRow.setAlignment(Pos.CENTER_LEFT);
+        HBox topRow = new HBox(10, boxLabel, spacer, closeButton);
+        topRow.setAlignment(Pos.CENTER_LEFT);
 
-        VBox fieldBox = new VBox(usernameField);
+        Label messageLabel = new Label();
+        messageLabel.setAlignment(Pos.CENTER);
+        messageLabel.setVisible(false);
+
+        VBox fieldBox = new VBox(5, usernameField, messageLabel);
         fieldBox.setAlignment(Pos.CENTER_LEFT);
 
         Button addButton = new Button("Add Contact");
         addButton.getStyleClass().addAll("button");
         addButton.setOnAction(e -> {
             String username = usernameField.getText();
-            ctx.bundleProvisioningService.addContact(ctx.jwt, username);
+            if (Objects.equals(username, ctx.userId)) {
+                messageLabel.setText("Cannot add yourself!");
+                messageLabel.getStyleClass().add("error");
+                messageLabel.setVisible(true);
+                return;
+            }
+            ctx.bundleProvisioningService.addContact(ctx.jwt, username)
+                    .thenAccept(res -> Platform.runLater(() -> {
+                        if (res) {
+                            messageLabel.setText(username + " added to contacts!");
+                            messageLabel.getStyleClass().remove("error");
+                        } else {
+                            messageLabel.setText(username + " is not a registered user.");
+                            messageLabel.getStyleClass().add("error");
+                        }
+                        messageLabel.setVisible(true);
+                    }));
         });
 
-        VBox addContactBox = new VBox(12, closeRow, fieldBox, addButton);
+        VBox addContactBox = new VBox(12, topRow, fieldBox, addButton);
         addContactBox.getStyleClass().add("add-contact-box");
         addContactBox.setAlignment(Pos.CENTER);
 

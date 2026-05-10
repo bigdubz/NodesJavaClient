@@ -2,6 +2,7 @@ package com.nodes.chatclient.ui.controllers;
 
 import com.nodes.chatclient.AppContext;
 import com.nodes.chatclient.e2ee.db.DatabaseManager;
+import com.nodes.chatclient.e2ee.stores.ContactStore;
 import com.nodes.chatclient.e2ee.stores.OneTimePrekeyStore;
 import com.nodes.chatclient.e2ee.stores.SignedPrekeyStore;
 import com.nodes.chatclient.e2ee.utils.BundleProvisioningService;
@@ -56,7 +57,8 @@ public final class AppRootController {
                 ctx.bundlesApi,
                 ctx.localIdentity,
                 new SignedPrekeyStore(DatabaseManager.get()),
-                new OneTimePrekeyStore(DatabaseManager.get())
+                new OneTimePrekeyStore(DatabaseManager.get()),
+                new ContactStore(DatabaseManager.get())
         );
 
         ctx.wsService.connectThenWaitAuth()

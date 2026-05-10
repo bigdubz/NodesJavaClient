@@ -3,7 +3,7 @@ package com.nodes.chatclient.http.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nodes.chatclient.config.ClientConfig;
 import com.nodes.chatclient.e2ee.types.LocalUserBundle;
-import com.nodes.chatclient.e2ee.types.RemoteUserBundle;
+import com.nodes.chatclient.http.dto.BundleDownloadResponse;
 import com.nodes.chatclient.http.dto.BundleStatusResponse;
 
 import java.net.URI;
@@ -69,7 +69,7 @@ public final class BundlesApi {
         }
     }
 
-    public CompletableFuture<RemoteUserBundle> downloadBundleAsync(
+    public CompletableFuture<BundleDownloadResponse> downloadBundleAsync(
             String jwt,
             String userId
     ) {
@@ -119,7 +119,7 @@ public final class BundlesApi {
         return null;
     }
 
-    private RemoteUserBundle handleDownloadBundleResponse(HttpResponse<String> response) {
+    private BundleDownloadResponse handleDownloadBundleResponse(HttpResponse<String> response) {
         int status = response.statusCode();
 
         if (status != 200) {
@@ -129,9 +129,10 @@ public final class BundlesApi {
         try {
             return mapper.readValue(
                     response.body(),
-                    RemoteUserBundle.class
+                    BundleDownloadResponse.class
             );
         } catch (Exception e) {
+            System.out.println(response.body());
             throw new RuntimeException("Invalid bundle download response", e);
         }
     }

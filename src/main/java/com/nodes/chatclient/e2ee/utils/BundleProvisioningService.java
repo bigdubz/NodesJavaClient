@@ -1,7 +1,9 @@
 package com.nodes.chatclient.e2ee.utils;
 
+import com.nodes.chatclient.e2ee.records.ContactRecord;
 import com.nodes.chatclient.e2ee.records.OneTimePrekeyRecord;
 import com.nodes.chatclient.e2ee.records.SignedPrekeyRecord;
+import com.nodes.chatclient.e2ee.stores.ContactStore;
 import com.nodes.chatclient.e2ee.stores.OneTimePrekeyStore;
 import com.nodes.chatclient.e2ee.stores.SignedPrekeyStore;
 import com.nodes.chatclient.e2ee.types.LocalIdentity;
@@ -28,6 +30,7 @@ public class BundleProvisioningService {
     private final LocalIdentity localIdentity;
     private final SignedPrekeyStore signedPrekeyStore;
     private final OneTimePrekeyStore oneTimePrekeyStore;
+    private final ContactStore contactStore;
     private final Clock clock;
     private final SecureRandom secureRandom;
     private final int oneTimePrekeyTarget;
@@ -37,6 +40,7 @@ public class BundleProvisioningService {
         this(
                 bundlesApi,
                 localIdentity,
+                null,
                 null,
                 null,
                 DEFAULT_ONE_TIME_PREKEY_TARGET,
@@ -57,6 +61,23 @@ public class BundleProvisioningService {
                 localIdentity,
                 signedPrekeyStore,
                 oneTimePrekeyStore,
+                null
+        );
+    }
+
+    public BundleProvisioningService(
+            BundlesApi bundlesApi,
+            LocalIdentity localIdentity,
+            SignedPrekeyStore signedPrekeyStore,
+            OneTimePrekeyStore oneTimePrekeyStore,
+            ContactStore contactStore
+    ) {
+        this(
+                bundlesApi,
+                localIdentity,
+                signedPrekeyStore,
+                oneTimePrekeyStore,
+                contactStore,
                 DEFAULT_ONE_TIME_PREKEY_TARGET,
                 DEFAULT_MAX_ONE_TIME_PREKEYS_PER_UPLOAD,
                 Clock.systemUTC(),
@@ -74,10 +95,35 @@ public class BundleProvisioningService {
             Clock clock,
             SecureRandom secureRandom
     ) {
+        this(
+                bundlesApi,
+                localIdentity,
+                signedPrekeyStore,
+                oneTimePrekeyStore,
+                null,
+                oneTimePrekeyTarget,
+                maxOneTimePrekeysPerUpload,
+                clock,
+                secureRandom
+        );
+    }
+
+    public BundleProvisioningService(
+            BundlesApi bundlesApi,
+            LocalIdentity localIdentity,
+            SignedPrekeyStore signedPrekeyStore,
+            OneTimePrekeyStore oneTimePrekeyStore,
+            ContactStore contactStore,
+            int oneTimePrekeyTarget,
+            int maxOneTimePrekeysPerUpload,
+            Clock clock,
+            SecureRandom secureRandom
+    ) {
         this.bundlesApi = Objects.requireNonNull(bundlesApi, "bundlesApi");
         this.localIdentity = Objects.requireNonNull(localIdentity, "localIdentity");
         this.signedPrekeyStore = signedPrekeyStore;
         this.oneTimePrekeyStore = oneTimePrekeyStore;
+        this.contactStore = contactStore;
         this.clock = Objects.requireNonNull(clock, "clock");
         this.secureRandom = Objects.requireNonNull(secureRandom, "secureRandom");
         this.oneTimePrekeyTarget = requirePositive(oneTimePrekeyTarget, "oneTimePrekeyTarget");
@@ -98,9 +144,47 @@ public class BundleProvisioningService {
                 });
     }
 
-    public CompletableFuture<Void> addContact(String jwt, String userId) {
+    public CompletableFuture<Boolean> addContact(String jwt, String userId) {
         return bundlesApi.downloadBundleAsync(jwt, userId)
-                .thenAccept(bundle -> {});
+                .thenApply(bundles -> {
+                    if (bundles == null || bundles.payload == null || bundles.payload.length == 0) {
+                        return false;
+                    }
+
+                    return persistContacts(bundles.payload);
+                })
+                .exceptionally(throwable -> false);
+    }
+
+    private boolean persistContacts(RemoteUserBundle[] bundles) {
+        List<ContactRecord> contacts = new ArrayList<>();
+        for (RemoteUserBundle bundle : bundles) {
+            if (bundle == null || bundle.userId() == null || bundle.deviceId() == null) {
+                continue;
+            }
+
+            contacts.add(new ContactRecord(
+                    bundle.userId(),
+                    bundle.deviceId(),
+                    bundle.ik(),
+                    bundle.sk()
+            ));
+        }
+
+        if (contacts.isEmpty()) {
+            return false;
+        }
+
+        if (contactStore == null) {
+            return true;
+        }
+
+        try {
+            contactStore.saveAll(contacts);
+            return true;
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to persist contacts", e);
+        }
     }
 
     private boolean needsUpload(BundleStatusResponse status) {
