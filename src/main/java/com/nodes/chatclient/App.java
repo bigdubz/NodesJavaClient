@@ -6,7 +6,6 @@ import com.nodes.chatclient.e2ee.db.DatabaseManager;
 import com.nodes.chatclient.e2ee.identity.LocalIdentityService;
 import com.nodes.chatclient.http.api.LoginApi;
 import com.nodes.chatclient.http.api.BundlesApi;
-import com.nodes.chatclient.http.api.ChatApi;
 import com.nodes.chatclient.http.HttpClientFactory;
 import com.nodes.chatclient.ui.controllers.AppRootController;
 import com.nodes.chatclient.ws.WsMessageRouter;
@@ -59,7 +58,6 @@ public class App extends Application {
         HttpClient httpClient = httpFactory.create();
 
         LoginApi loginApi = new LoginApi(config, httpClient, mapper);
-        ChatApi chatApi = new ChatApi(config, httpClient, mapper);
         BundlesApi bundlesApi = new BundlesApi(config, httpClient, mapper);
         LocalIdentityService localIdentityService = LocalIdentityService.from(DatabaseManager.get());
 
@@ -70,7 +68,6 @@ public class App extends Application {
                 config,
                 httpFactory,
                 loginApi,
-                chatApi,
                 bundlesApi,
                 localIdentityService,
                 wsService,

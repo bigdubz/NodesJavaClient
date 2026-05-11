@@ -70,12 +70,7 @@ public final class MainController {
         activeChatVM.setPeer(peerId);
         chatController.setVm(activeChatVM);
 
-        long cursor = Long.MAX_VALUE;
-
-        int defaultMessageLimit = 50;
-        ctx.chatApi
-                .getHistoryAsync(ctx.jwt, peerId, cursor, defaultMessageLimit)
-                .thenAccept(rows -> store.mergeHistory(peerId, rows));
+        store.loadLocalHistory(peerId);
 
         Platform.runLater(() -> layout.setCenter(chatController.getRoot()));
     }
@@ -124,6 +119,7 @@ public final class MainController {
                         if (res) {
                             messageLabel.setText(username + " added to contacts!");
                             messageLabel.getStyleClass().remove("error");
+                            store.loadLocalConversations();
                         } else {
                             messageLabel.setText(username + " is not a registered user.");
                             messageLabel.getStyleClass().add("error");

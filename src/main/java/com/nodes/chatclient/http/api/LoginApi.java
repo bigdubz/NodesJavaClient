@@ -34,7 +34,6 @@ public final class LoginApi {
         try {
             LoginRequest body = new LoginRequest(normalizeUserId(userId), password);
             String json = mapper.writeValueAsString(body);
-            logLoginRequest(body, json);
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(loginUri())
@@ -59,7 +58,6 @@ public final class LoginApi {
     ) throws Exception {
         LoginRequest body = new LoginRequest(normalizeUserId(userId), password);
         String json = mapper.writeValueAsString(body);
-        logLoginRequest(body, json);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(loginUri())
@@ -80,17 +78,6 @@ public final class LoginApi {
 
     private String normalizeUserId(String userId) {
         return userId == null ? null : userId.trim();
-    }
-
-    private void logLoginRequest(LoginRequest body, String json) {
-        int passwordLength = body.password == null ? -1 : body.password.length();
-        System.err.println(
-                "POST " + loginUri()
-                        + " login payload keys=[userId,password]"
-                        + " userId='" + body.userId + "'"
-                        + " passwordLength=" + passwordLength
-                        + " jsonBytes=" + json.length()
-        );
     }
 
     private LoginResponse handleLoginResponse(HttpResponse<String> response) {

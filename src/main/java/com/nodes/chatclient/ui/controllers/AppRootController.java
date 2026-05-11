@@ -3,6 +3,7 @@ package com.nodes.chatclient.ui.controllers;
 import com.nodes.chatclient.AppContext;
 import com.nodes.chatclient.e2ee.db.DatabaseManager;
 import com.nodes.chatclient.e2ee.stores.ContactStore;
+import com.nodes.chatclient.e2ee.stores.MessageStore;
 import com.nodes.chatclient.e2ee.stores.OneTimePrekeyStore;
 import com.nodes.chatclient.e2ee.stores.SignedPrekeyStore;
 import com.nodes.chatclient.e2ee.utils.BundleProvisioningService;
@@ -36,7 +37,12 @@ public final class AppRootController {
     }
     
     private void showMain(Stage stage, String userId) {
-        ChatStore store = new ChatStore(userId);
+        ChatStore store = new ChatStore(
+                userId,
+                new ContactStore(DatabaseManager.get()),
+                new MessageStore(DatabaseManager.get())
+        );
+        store.loadLocalConversations();
         
         ctx.router.clearHandlers();
         ctx.router.registerServerHandlers(store);
@@ -66,11 +72,6 @@ public final class AppRootController {
                     ctx.jwt = ctx.wsService.deviceToken();
                     return ctx.bundleProvisioningService.ensureBundleUploadedAsync(ctx.jwt);
                 })
-//                .thenCompose(v -> {
-//                    ctx.jwt = ctx.wsService.deviceToken();
-//                    return ctx.chatApi.getConversationsAsync(ctx.jwt);
-//                })
-//                .thenAccept(store::mergeConversations)
                 .thenRun(() -> {
                     ctx.wsService.enableRoutingAndFlush();
                     Platform.runLater(() -> {

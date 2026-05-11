@@ -13,7 +13,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 import java.util.List;
-import java.util.OptionalLong;
 
 public final class ChatViewModel implements StoreListener {
 
@@ -117,22 +116,7 @@ public final class ChatViewModel implements StoreListener {
     }
 
     public void loadOlderHistory() {
-        if (loadingHistory || !hasMoreHistory) return;
-
-        loadingHistory = true;
-
-        OptionalLong cursorOpt = store.getOldestMessageTimestamp(peerId);
-        long cursor = cursorOpt.orElse(Long.MAX_VALUE);
-
-        ctx.chatApi
-                .getHistoryAsync(ctx.jwt, peerId, cursor, 50)
-                .thenAccept(rows -> {
-                    if (rows.isEmpty()) {
-                        hasMoreHistory = false;
-                    } else {
-                        store.mergeHistory(peerId, rows);
-                    }
-                });
+        hasMoreHistory = false;
     }
 
     public void markVisibleMessagesAsSeen() {

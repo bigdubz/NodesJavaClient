@@ -19,11 +19,8 @@ public final class ConversationsViewModel implements StoreListener {
     public ConversationsViewModel(ChatStore store) {
         this.store = store;
 
-        // bootstrap
-        updateFromStore();
-
-        // register listener
         store.addListener(this);
+        updateFromStore();
     }
 
     public ObservableList<ConversationUi> getConversations() {

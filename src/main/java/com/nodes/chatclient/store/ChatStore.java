@@ -1,13 +1,16 @@
 package com.nodes.chatclient.store;
 
-import com.nodes.chatclient.http.dto.ConversationRowDto;
-import com.nodes.chatclient.http.dto.MessageRowDto;
+import com.nodes.chatclient.e2ee.records.ContactRecord;
+import com.nodes.chatclient.e2ee.records.MessageRecord;
+import com.nodes.chatclient.e2ee.stores.ContactStore;
+import com.nodes.chatclient.e2ee.stores.MessageStore;
 import com.nodes.chatclient.store.events.StoreListener;
 import com.nodes.chatclient.util.Pair;
 import com.nodes.chatclient.ws.ServerHandlers;
 import com.nodes.chatclient.ws.messages.*;
 import com.nodes.chatclient.store.model.*;
 
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -23,6 +26,8 @@ public final class ChatStore implements ServerHandlers {
     );
 
     private final String selfUserId;
+    private final ContactStore contactStore;
+    private final MessageStore messageStore;
 
     private final Map<String, Conversation> conversations = new HashMap<>();
     private final Map<String, Presence> presence = new HashMap<>();
@@ -30,8 +35,10 @@ public final class ChatStore implements ServerHandlers {
 
     private final List<StoreListener> listeners = new ArrayList<>();
 
-    public ChatStore(String selfUserId) {
+    public ChatStore(String selfUserId, ContactStore contactStore, MessageStore messageStore) {
         this.selfUserId = Objects.requireNonNull(selfUserId, "selfUserId");
+        this.contactStore = Objects.requireNonNull(contactStore, "contactStore");
+        this.messageStore = Objects.requireNonNull(messageStore, "messageStore");
     }
 
     public void addListener(StoreListener listener) {
@@ -62,65 +69,49 @@ public final class ChatStore implements ServerHandlers {
         return Optional.ofNullable(conversations.get(peerId));
     }
 
-    public void mergeConversations(List<ConversationRowDto> rows) {
+    public void loadLocalConversations() {
         storeExecutor.execute(() -> {
-            for (ConversationRowDto row : rows) {
-                Conversation convo = conversations.computeIfAbsent(
-                        row.peerId,
-                        Conversation::new
-                );
+            try {
+                for (ContactRecord contact : contactStore.getAll()) {
+                    Conversation convo = conversations.computeIfAbsent(
+                            contact.userId(),
+                            Conversation::new
+                    );
 
-                convo.lastMessage = row.lastMessage;
-                convo.lastTimestamp = Math.max(convo.lastTimestamp, row.lastTimestamp);
+                    applyLastMessage(convo);
+                }
 
-                Presence pr = presence.computeIfAbsent(
-                        row.peerId,
-                        Presence::new
-                );
-
-                pr.online = row.isOnline;
+                notifyConversationsUpdated();
+            } catch (SQLException e) {
+                throw new RuntimeException("Failed to load contacts from local database", e);
             }
-            notifyConversationsUpdated();
         });
     }
 
-    public void mergeHistory(String receiver, List<MessageRowDto> rows) {
+    public void loadLocalHistory(String peerId) {
         storeExecutor.execute(() -> {
-            Conversation convo = conversations.computeIfAbsent(
-                    receiver,
-                    Conversation::new
-            );
-
-            for (MessageRowDto row : rows) {
-                if (convo.messages.containsKey(row.messageId)) {
-                    continue;
-                }
-
-                ChatMessage msg = ChatMessage.fromHistory(
-                        row.messageId,
-                        row.fromUserId,
-                        row.toUserId,
-                        row.text,
-                        row.createdAt,
-                        row.replyingTo
+            try {
+                Conversation convo = conversations.computeIfAbsent(
+                        peerId,
+                        Conversation::new
                 );
 
-                msg.delivered = row.delivered == 1;
-                msg.read = row.seen == 1;
+                convo.messages.clear();
+                for (MessageRecord row : messageStore.getConversation(peerId)) {
+                    if (row.type != 0) {
+                        continue;
+                    }
 
-                if (row.reactions != null) {
-                    msg.reactions.putAll(row.reactions);
+                    ChatMessage msg = fromMessageRecord(peerId, row);
+                    convo.messages.put(msg.messageId, msg);
                 }
 
-                convo.messages.put(msg.messageId, msg);
-
-                if (msg.createdAt > convo.lastTimestamp) {
-                    convo.lastTimestamp = msg.createdAt;
-                    convo.lastMessage = msg.text;
-                }
+                applyLastMessage(convo);
+                notifyMessageListUpdated(peerId);
+                notifyConversationsUpdated();
+            } catch (SQLException e) {
+                throw new RuntimeException("Failed to load chat history from local database", e);
             }
-
-            notifyMessageListUpdated(receiver);
         });
     }
 
@@ -199,6 +190,39 @@ public final class ChatStore implements ServerHandlers {
     public void resetChat(String peerId) {
         if (conversations.containsKey(peerId)) {
             conversations.get(peerId).messages.clear();
+        }
+    }
+
+    private ChatMessage fromMessageRecord(String peerId, MessageRecord row) {
+        ChatMessage msg = ChatMessage.fromHistory(
+                row.messageId,
+                row.senderUserId,
+                row.isOutgoing ? peerId : selfUserId,
+                row.body,
+                row.createdAt,
+                row.referencedMessageId
+        );
+
+        msg.delivered = row.deliveryStatus >= 1;
+        msg.read = row.deliveryStatus >= 2;
+
+        return msg;
+    }
+
+    private void applyLastMessage(Conversation convo) throws SQLException {
+        convo.lastMessage = "";
+        convo.lastTimestamp = 0;
+
+        List<MessageRecord> rows = messageStore.getConversation(convo.peerId);
+        for (MessageRecord row : rows) {
+            if (row.type != 0) {
+                continue;
+            }
+
+            if (row.createdAt >= convo.lastTimestamp) {
+                convo.lastTimestamp = row.createdAt;
+                convo.lastMessage = row.body;
+            }
         }
     }
 
