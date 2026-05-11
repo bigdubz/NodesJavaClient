@@ -114,7 +114,7 @@ public final class MainController {
                 messageLabel.setVisible(true);
                 return;
             }
-            ctx.bundleProvisioningService.addContact(ctx.jwt, username)
+            ctx.contactProvisioningService.addContact(ctx.jwt, username)
                     .thenAccept(res -> Platform.runLater(() -> {
                         if (res) {
                             messageLabel.setText(username + " added to contacts!");

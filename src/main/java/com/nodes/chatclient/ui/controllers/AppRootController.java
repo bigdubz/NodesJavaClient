@@ -7,6 +7,7 @@ import com.nodes.chatclient.e2ee.stores.MessageStore;
 import com.nodes.chatclient.e2ee.stores.OneTimePrekeyStore;
 import com.nodes.chatclient.e2ee.stores.SignedPrekeyStore;
 import com.nodes.chatclient.e2ee.utils.BundleProvisioningService;
+import com.nodes.chatclient.e2ee.utils.ContactProvisioningService;
 import com.nodes.chatclient.store.ChatStore;
 import javafx.application.Platform;
 import javafx.scene.Parent;
@@ -63,7 +64,11 @@ public final class AppRootController {
                 ctx.bundlesApi,
                 ctx.localIdentity,
                 new SignedPrekeyStore(DatabaseManager.get()),
-                new OneTimePrekeyStore(DatabaseManager.get()),
+                new OneTimePrekeyStore(DatabaseManager.get())
+        );
+
+        ctx.contactProvisioningService = new ContactProvisioningService(
+                ctx.contactsApi,
                 new ContactStore(DatabaseManager.get())
         );
 

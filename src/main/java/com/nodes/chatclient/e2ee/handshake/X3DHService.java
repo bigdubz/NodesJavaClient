@@ -3,7 +3,7 @@ package com.nodes.chatclient.e2ee.handshake;
 import com.nodes.chatclient.e2ee.protos.ProtoSession;
 import com.nodes.chatclient.e2ee.types.LocalIdentity;
 import com.nodes.chatclient.e2ee.types.Session;
-import com.nodes.chatclient.e2ee.types.RemoteUserBundle;
+import com.nodes.chatclient.http.dto.RemoteUserBundle;
 import com.nodes.chatclient.e2ee.utils.CryptoUtils;
 
 public class X3DHService {
@@ -15,7 +15,7 @@ public class X3DHService {
         boolean usedOneTimePrekey = false;
 
         if (remoteBundle.opk() != null) {
-            remoteOneTimePrekey = remoteBundle.opk().publicKey;
+            remoteOneTimePrekey = remoteBundle.opk().publicKey();
             usedOneTimePrekey = true;
         }
 

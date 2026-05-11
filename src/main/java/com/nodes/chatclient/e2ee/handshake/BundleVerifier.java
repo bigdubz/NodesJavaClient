@@ -1,6 +1,6 @@
 package com.nodes.chatclient.e2ee.handshake;
 
-import com.nodes.chatclient.e2ee.types.RemoteUserBundle;
+import com.nodes.chatclient.http.dto.RemoteUserBundle;
 import com.nodes.chatclient.e2ee.utils.CryptoUtils;
 
 import java.util.Base64;

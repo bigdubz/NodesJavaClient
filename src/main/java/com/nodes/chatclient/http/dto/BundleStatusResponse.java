@@ -1,18 +1,7 @@
 package com.nodes.chatclient.http.dto;
 
-public class BundleStatusResponse {
-    public String userId;
-    public String deviceId;
-    public boolean bundleMissing;
-
-    public int oneTimePrekeyCount;
-    public int oneTimePrekeyTarget;
-    public int maxOneTimePrekeysPerUpload;
-
-    public boolean signedPrekeyStale;
-    public Integer signedPrekeyId;
-    public long signedPrekeyCreatedAt;
-
-    public long lastBundleUploadAt;
-    public long serverTime;
+public record BundleStatusResponse(String userId, String deviceId, boolean bundleMissing, int oneTimePrekeyCount,
+                                   int oneTimePrekeyTarget, int maxOneTimePrekeysPerUpload, boolean signedPrekeyStale,
+                                   Integer signedPrekeyId, long signedPrekeyCreatedAt, long lastBundleUploadAt,
+                                   long serverTime) {
 }

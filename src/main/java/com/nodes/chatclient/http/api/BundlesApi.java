@@ -132,7 +132,6 @@ public final class BundlesApi {
                     BundleDownloadResponse.class
             );
         } catch (Exception e) {
-            System.out.println(response.body());
             throw new RuntimeException("Invalid bundle download response", e);
         }
     }

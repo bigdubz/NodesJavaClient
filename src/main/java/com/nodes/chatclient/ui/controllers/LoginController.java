@@ -75,14 +75,14 @@ public final class LoginController {
         vm.loginAsync().thenAccept(res -> {
             if (res != null) {
                 try {
-                    LocalIdentity identity = ctx.localIdentityService.getOrCreate(res.userId);
+                    LocalIdentity identity = ctx.localIdentityService.getOrCreate(res.userId());
 
-                    ctx.userId = res.userId;
+                    ctx.userId = res.userId();
                     ctx.deviceId = identity.deviceId();
-                    ctx.jwt = res.token;
+                    ctx.jwt = res.token();
                     ctx.localIdentity = identity;
 
-                    Platform.runLater(() -> onSuccess.accept(res.userId));
+                    Platform.runLater(() -> onSuccess.accept(res.userId()));
                 } catch (Exception e) {
                     Platform.runLater(() -> vm.errorMessageProperty().set(e.getMessage()));
                 }

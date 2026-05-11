@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nodes.chatclient.config.ClientConfig;
 import com.nodes.chatclient.e2ee.db.DatabaseManager;
 import com.nodes.chatclient.e2ee.identity.LocalIdentityService;
+import com.nodes.chatclient.http.api.ContactsApi;
 import com.nodes.chatclient.http.api.LoginApi;
 import com.nodes.chatclient.http.api.BundlesApi;
 import com.nodes.chatclient.http.HttpClientFactory;
@@ -59,6 +60,7 @@ public class App extends Application {
 
         LoginApi loginApi = new LoginApi(config, httpClient, mapper);
         BundlesApi bundlesApi = new BundlesApi(config, httpClient, mapper);
+        ContactsApi contactsApi = new ContactsApi(config, httpClient, mapper);
         LocalIdentityService localIdentityService = LocalIdentityService.from(DatabaseManager.get());
 
         WsMessageRouter router = new WsMessageRouter(mapper);
@@ -69,6 +71,7 @@ public class App extends Application {
                 httpFactory,
                 loginApi,
                 bundlesApi,
+                contactsApi,
                 localIdentityService,
                 wsService,
                 router

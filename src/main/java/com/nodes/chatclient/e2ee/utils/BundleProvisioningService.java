@@ -1,14 +1,11 @@
 package com.nodes.chatclient.e2ee.utils;
 
-import com.nodes.chatclient.e2ee.records.ContactRecord;
 import com.nodes.chatclient.e2ee.records.OneTimePrekeyRecord;
 import com.nodes.chatclient.e2ee.records.SignedPrekeyRecord;
-import com.nodes.chatclient.e2ee.stores.ContactStore;
 import com.nodes.chatclient.e2ee.stores.OneTimePrekeyStore;
 import com.nodes.chatclient.e2ee.stores.SignedPrekeyStore;
 import com.nodes.chatclient.e2ee.types.LocalIdentity;
 import com.nodes.chatclient.e2ee.types.LocalUserBundle;
-import com.nodes.chatclient.e2ee.types.RemoteUserBundle;
 import com.nodes.chatclient.http.api.BundlesApi;
 import com.nodes.chatclient.http.dto.BundleStatusResponse;
 
@@ -30,25 +27,11 @@ public class BundleProvisioningService {
     private final LocalIdentity localIdentity;
     private final SignedPrekeyStore signedPrekeyStore;
     private final OneTimePrekeyStore oneTimePrekeyStore;
-    private final ContactStore contactStore;
     private final Clock clock;
     private final SecureRandom secureRandom;
     private final int oneTimePrekeyTarget;
     private final int maxOneTimePrekeysPerUpload;
 
-    public BundleProvisioningService(BundlesApi bundlesApi, LocalIdentity localIdentity) {
-        this(
-                bundlesApi,
-                localIdentity,
-                null,
-                null,
-                null,
-                DEFAULT_ONE_TIME_PREKEY_TARGET,
-                DEFAULT_MAX_ONE_TIME_PREKEYS_PER_UPLOAD,
-                Clock.systemUTC(),
-                new SecureRandom()
-        );
-    }
 
     public BundleProvisioningService(
             BundlesApi bundlesApi,
@@ -61,23 +44,6 @@ public class BundleProvisioningService {
                 localIdentity,
                 signedPrekeyStore,
                 oneTimePrekeyStore,
-                null
-        );
-    }
-
-    public BundleProvisioningService(
-            BundlesApi bundlesApi,
-            LocalIdentity localIdentity,
-            SignedPrekeyStore signedPrekeyStore,
-            OneTimePrekeyStore oneTimePrekeyStore,
-            ContactStore contactStore
-    ) {
-        this(
-                bundlesApi,
-                localIdentity,
-                signedPrekeyStore,
-                oneTimePrekeyStore,
-                contactStore,
                 DEFAULT_ONE_TIME_PREKEY_TARGET,
                 DEFAULT_MAX_ONE_TIME_PREKEYS_PER_UPLOAD,
                 Clock.systemUTC(),
@@ -95,35 +61,10 @@ public class BundleProvisioningService {
             Clock clock,
             SecureRandom secureRandom
     ) {
-        this(
-                bundlesApi,
-                localIdentity,
-                signedPrekeyStore,
-                oneTimePrekeyStore,
-                null,
-                oneTimePrekeyTarget,
-                maxOneTimePrekeysPerUpload,
-                clock,
-                secureRandom
-        );
-    }
-
-    public BundleProvisioningService(
-            BundlesApi bundlesApi,
-            LocalIdentity localIdentity,
-            SignedPrekeyStore signedPrekeyStore,
-            OneTimePrekeyStore oneTimePrekeyStore,
-            ContactStore contactStore,
-            int oneTimePrekeyTarget,
-            int maxOneTimePrekeysPerUpload,
-            Clock clock,
-            SecureRandom secureRandom
-    ) {
         this.bundlesApi = Objects.requireNonNull(bundlesApi, "bundlesApi");
         this.localIdentity = Objects.requireNonNull(localIdentity, "localIdentity");
         this.signedPrekeyStore = signedPrekeyStore;
         this.oneTimePrekeyStore = oneTimePrekeyStore;
-        this.contactStore = contactStore;
         this.clock = Objects.requireNonNull(clock, "clock");
         this.secureRandom = Objects.requireNonNull(secureRandom, "secureRandom");
         this.oneTimePrekeyTarget = requirePositive(oneTimePrekeyTarget, "oneTimePrekeyTarget");
@@ -144,57 +85,14 @@ public class BundleProvisioningService {
                 });
     }
 
-    public CompletableFuture<Boolean> addContact(String jwt, String userId) {
-        return bundlesApi.downloadBundleAsync(jwt, userId)
-                .thenApply(bundles -> {
-                    if (bundles == null || bundles.payload == null || bundles.payload.length == 0) {
-                        return false;
-                    }
-
-                    return persistContacts(bundles.payload);
-                })
-                .exceptionally(throwable -> false);
-    }
-
-    private boolean persistContacts(RemoteUserBundle[] bundles) {
-        List<ContactRecord> contacts = new ArrayList<>();
-        for (RemoteUserBundle bundle : bundles) {
-            if (bundle == null || bundle.userId() == null || bundle.deviceId() == null) {
-                continue;
-            }
-
-            contacts.add(new ContactRecord(
-                    bundle.userId(),
-                    bundle.deviceId(),
-                    bundle.ik(),
-                    bundle.sk()
-            ));
-        }
-
-        if (contacts.isEmpty()) {
-            return false;
-        }
-
-        if (contactStore == null) {
-            return true;
-        }
-
-        try {
-            contactStore.saveAll(contacts);
-            return true;
-        } catch (SQLException e) {
-            throw new RuntimeException("Failed to persist contacts", e);
-        }
-    }
-
     private boolean needsUpload(BundleStatusResponse status) {
         if (status == null) {
             return true;
         }
 
-        return status.bundleMissing
-                || status.signedPrekeyStale
-                || status.oneTimePrekeyCount < effectiveOneTimePrekeyTarget(status);
+        return status.bundleMissing()
+                || status.signedPrekeyStale()
+                || status.oneTimePrekeyCount() < effectiveOneTimePrekeyTarget(status);
     }
 
     private CompletableFuture<Void> uploadBundleAsync(String jwt, BundleStatusResponse status) {
@@ -265,10 +163,10 @@ public class BundleProvisioningService {
 
     private int oneTimePrekeysToUpload(BundleStatusResponse status) {
         int target = effectiveOneTimePrekeyTarget(status);
-        int currentCount = status == null ? 0 : Math.max(status.oneTimePrekeyCount, 0);
+        int currentCount = status == null ? 0 : Math.max(status.oneTimePrekeyCount(), 0);
         int missingCount = Math.max(target - currentCount, 0);
 
-        if (status != null && status.bundleMissing && missingCount == 0) {
+        if (status != null && status.bundleMissing() && missingCount == 0) {
             missingCount = target;
         }
 
@@ -276,16 +174,16 @@ public class BundleProvisioningService {
     }
 
     private int effectiveOneTimePrekeyTarget(BundleStatusResponse status) {
-        if (status != null && status.oneTimePrekeyTarget > 0) {
-            return status.oneTimePrekeyTarget;
+        if (status != null && status.oneTimePrekeyTarget() > 0) {
+            return status.oneTimePrekeyTarget();
         }
 
         return oneTimePrekeyTarget;
     }
 
     private int effectiveMaxOneTimePrekeysPerUpload(BundleStatusResponse status) {
-        if (status != null && status.maxOneTimePrekeysPerUpload > 0) {
-            return Math.min(status.maxOneTimePrekeysPerUpload, maxOneTimePrekeysPerUpload);
+        if (status != null && status.maxOneTimePrekeysPerUpload() > 0) {
+            return Math.min(status.maxOneTimePrekeysPerUpload(), maxOneTimePrekeysPerUpload);
         }
 
         return maxOneTimePrekeysPerUpload;

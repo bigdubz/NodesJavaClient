@@ -1,6 +1,4 @@
-package com.nodes.chatclient.e2ee.types;
-
-import com.nodes.chatclient.http.dto.OpkDto;
+package com.nodes.chatclient.http.dto;
 
 public record RemoteUserBundle(
         String userId,
