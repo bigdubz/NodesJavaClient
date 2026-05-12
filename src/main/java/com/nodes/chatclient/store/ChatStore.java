@@ -72,6 +72,7 @@ public final class ChatStore implements ServerHandlers {
     public void loadLocalConversations() {
         storeExecutor.execute(() -> {
             try {
+                conversations.clear();
                 for (ContactRecord contact : contactStore.getAll()) {
                     Conversation convo = conversations.computeIfAbsent(
                             contact.userId(),

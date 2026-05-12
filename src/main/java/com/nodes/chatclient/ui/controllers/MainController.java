@@ -35,7 +35,7 @@ public final class MainController {
         this.ctx = ctx;
         this.store = store;
 
-        conversationsVM = new ConversationsViewModel(store);
+        conversationsVM = new ConversationsViewModel(ctx, store);
         activeChatVM = new ChatViewModel(ctx, store);
         chatController = new ChatController();
 
@@ -43,7 +43,8 @@ public final class MainController {
                 new ConversationsController(
                         conversationsVM,
                         this::openChat,
-                        this::showAddContactOverlay
+                        this::showAddContactOverlay,
+                        this::onDeleteConversation
                 );
 
         Button logoutBtn = new Button("Logout");
@@ -75,6 +76,16 @@ public final class MainController {
         Platform.runLater(() -> layout.setCenter(chatController.getRoot()));
     }
 
+    private void onDeleteConversation(String peerId) {
+        if (Objects.equals(activeChatVM.getPeerId(), peerId)) {
+            store.setActiveConversation(null);
+            store.resetChat(peerId);
+            activeChatVM.reset();
+            chatController.reset();
+            Platform.runLater(() -> layout.setCenter(null));
+        }
+    }
+
     private void showAddContactOverlay() {
         Region dimBackground = new Region();
         dimBackground.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
@@ -82,7 +93,6 @@ public final class MainController {
 
         Label boxLabel = new Label("Add New Contact by Username");
         boxLabel.setAlignment(Pos.CENTER_LEFT);
-//        boxLabel.getStyleClass().add("box-label");
 
         TextField usernameField = new TextField();
         usernameField.setPromptText("Username");

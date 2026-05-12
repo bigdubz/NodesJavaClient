@@ -40,6 +40,15 @@ public class ContactProvisioningService {
                 });
     }
 
+    public boolean deleteContact(String conversationId) {
+        try {
+            contactStore.deleteUser(conversationId);
+            return true;
+        } catch (SQLException e) {
+            return false;
+        }
+    }
+
     private boolean persistContacts(Contact[] bundles) {
         List<ContactRecord> contacts = new ArrayList<>();
         for (Contact contact : bundles) {

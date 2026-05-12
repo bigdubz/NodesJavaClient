@@ -3,12 +3,22 @@ package com.nodes.chatclient.ui.cells;
 import com.nodes.chatclient.store.model.ConversationUi;
 import com.nodes.chatclient.util.TimeUtils;
 import javafx.geometry.Pos;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.OverrunStyle;
+import javafx.scene.control.*;
 import javafx.scene.layout.*;
 
+import java.util.function.Consumer;
+
 public class ConversationCell extends ListCell<ConversationUi> {
+
+    private final ContextMenu contextMenu = new ContextMenu();
+    private final Consumer<ConversationUi> onConversationDeleteRequested;
+
+    public ConversationCell(Consumer<ConversationUi> onConversationDeleteRequested) {
+        this.onConversationDeleteRequested = onConversationDeleteRequested;
+
+        contextMenu.getStyleClass().add("msg-context-menu");
+        setContextMenu(contextMenu);
+    }
 
     @Override
     protected void updateItem(ConversationUi item, boolean empty) {
@@ -16,7 +26,15 @@ public class ConversationCell extends ListCell<ConversationUi> {
         if (empty || item == null) {
             setGraphic(null);
             return;
+        } else {
+            contextMenu.getItems().clear();
+            setContextMenu(contextMenu);
         }
+
+        MenuItem markRead = new MenuItem("Mark as read");
+        MenuItem delete = new MenuItem("Delete contact and chat history");
+        delete.setOnAction(e -> onConversationDeleteRequested.accept(item));
+        contextMenu.getItems().addAll(markRead, delete);
 
         boolean unread = item.unreadCount > 0;
 

@@ -13,7 +13,6 @@ public record ServerChatMessage(Payload payload) implements ServerMessage {
         public String text;
         public String messageId;
         public long createdAt;
-        public boolean isOnline;
         public String replyingTo;
     }
 }
