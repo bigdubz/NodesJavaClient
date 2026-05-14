@@ -62,7 +62,7 @@ public class X3DHService {
                 self.identityPublicKey(),
                 ephPublicKey,
                 0,
-                usedOneTimePrekey ? 0 : null
+                usedOneTimePrekey ? remoteBundle.opk().keyId() : null
         );
 
         return new X3DHResult(session, prekeyMessage, usedOneTimePrekey);
@@ -90,7 +90,7 @@ public class X3DHService {
         session.signingPrivateKey = self.signingPrivateKey();
         session.signingPublicKey = self.signingPublicKey();
 
-        session.remoteSigningPublicKey = remoteBundle.ik();
+        session.remoteSigningPublicKey = remoteBundle.sk();
 
         session.sendingChainKey = null;
         session.receivingChainKey = null;

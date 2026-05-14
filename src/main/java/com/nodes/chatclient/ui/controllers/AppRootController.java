@@ -5,9 +5,11 @@ import com.nodes.chatclient.e2ee.db.DatabaseManager;
 import com.nodes.chatclient.e2ee.stores.ContactStore;
 import com.nodes.chatclient.e2ee.stores.MessageStore;
 import com.nodes.chatclient.e2ee.stores.OneTimePrekeyStore;
+import com.nodes.chatclient.e2ee.stores.SessionStore;
 import com.nodes.chatclient.e2ee.stores.SignedPrekeyStore;
 import com.nodes.chatclient.e2ee.utils.BundleProvisioningService;
 import com.nodes.chatclient.e2ee.utils.ContactProvisioningService;
+import com.nodes.chatclient.e2ee.utils.SessionProvisioningService;
 import com.nodes.chatclient.store.ChatStore;
 import javafx.application.Platform;
 import javafx.scene.Parent;
@@ -70,6 +72,13 @@ public final class AppRootController {
         ctx.contactProvisioningService = new ContactProvisioningService(
                 ctx.contactsApi,
                 new ContactStore(DatabaseManager.get())
+        );
+
+        ctx.sessionProvisioningService = new SessionProvisioningService(
+                ctx.bundlesApi,
+                ctx.localIdentity,
+                new ContactStore(DatabaseManager.get()),
+                new SessionStore(DatabaseManager.get())
         );
 
         ctx.wsService.connectThenWaitAuth()

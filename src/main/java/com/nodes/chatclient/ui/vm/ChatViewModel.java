@@ -98,21 +98,35 @@ public final class ChatViewModel implements StoreListener {
 
     public void sendMessage(String text, String replyingTo) {
         String clientId = clientIdGenerator();
+        long createdAt = System.currentTimeMillis();
         ChatMessage local = ChatMessage.outgoing(
                 clientId,
                 ctx.userId,
                 peerId,
                 text,
-                System.currentTimeMillis(),
+                createdAt,
                 replyingTo
         );
         store.addOutgoingMessage(peerId, local);
-        ctx.wsService.sendChatMessageAsync(
-                peerId,
-                text,
-                clientId,
-                replyingTo
-        );
+
+        ctx.sessionProvisioningService.ensureSessionsAsync(ctx.jwt, peerId)
+                .thenAccept(ready -> {
+                    if (!ready) {
+                        System.err.println("Unable to establish session with " + peerId);
+                        return;
+                    }
+
+                    ctx.wsService.sendChatMessageAsync(
+                            peerId,
+                            text,
+                            clientId,
+                            replyingTo
+                    );
+                })
+                .exceptionally(err -> {
+                    System.err.println("Failed to establish session with " + peerId + ": " + err.getMessage());
+                    return null;
+                });
     }
 
     public void loadOlderHistory() {

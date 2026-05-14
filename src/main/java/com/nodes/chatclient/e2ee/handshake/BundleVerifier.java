@@ -3,8 +3,6 @@ package com.nodes.chatclient.e2ee.handshake;
 import com.nodes.chatclient.http.dto.RemoteUserBundle;
 import com.nodes.chatclient.e2ee.utils.CryptoUtils;
 
-import java.util.Base64;
-
 public class BundleVerifier {
 
 
@@ -16,14 +14,10 @@ public class BundleVerifier {
         }
 
         try {
-            byte[] signingPublicKey = Base64.getDecoder().decode(bundle.sk());
-            byte[] signedPrekey = Base64.getDecoder().decode(bundle.spk());
-            byte[] signature = Base64.getDecoder().decode(bundle.spkSignature());
-
             return CryptoUtils.verify(
-                    signedPrekey,
-                    signature,
-                    signingPublicKey
+                    bundle.spk(),
+                    bundle.spkSignature(),
+                    bundle.sk()
             );
 
         } catch (IllegalArgumentException ex) {
