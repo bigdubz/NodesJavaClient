@@ -1,7 +1,7 @@
 package com.nodes.chatclient.e2ee.provisioning;
 
 import com.nodes.chatclient.e2ee.records.ContactRecord;
-import com.nodes.chatclient.e2ee.stores.ContactStore;
+import com.nodes.chatclient.e2ee.db.stores.ContactStore;
 import com.nodes.chatclient.http.api.ContactsApi;
 import com.nodes.chatclient.http.dto.Contact;
 

@@ -2,11 +2,11 @@ package com.nodes.chatclient.ui.controllers;
 
 import com.nodes.chatclient.AppContext;
 import com.nodes.chatclient.e2ee.db.DatabaseManager;
-import com.nodes.chatclient.e2ee.stores.ContactStore;
-import com.nodes.chatclient.e2ee.stores.MessageStore;
-import com.nodes.chatclient.e2ee.stores.OneTimePrekeyStore;
-import com.nodes.chatclient.e2ee.stores.SessionStore;
-import com.nodes.chatclient.e2ee.stores.SignedPrekeyStore;
+import com.nodes.chatclient.e2ee.db.stores.ContactStore;
+import com.nodes.chatclient.e2ee.db.stores.MessageStore;
+import com.nodes.chatclient.e2ee.db.stores.OneTimePrekeyStore;
+import com.nodes.chatclient.e2ee.db.stores.SessionStore;
+import com.nodes.chatclient.e2ee.db.stores.SignedPrekeyStore;
 import com.nodes.chatclient.e2ee.provisioning.BundleProvisioningService;
 import com.nodes.chatclient.e2ee.provisioning.ContactProvisioningService;
 import com.nodes.chatclient.e2ee.provisioning.MessageEncryptionService;

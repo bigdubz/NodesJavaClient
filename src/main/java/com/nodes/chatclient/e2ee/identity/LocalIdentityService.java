@@ -1,7 +1,7 @@
 package com.nodes.chatclient.e2ee.identity;
 
 import com.nodes.chatclient.e2ee.crypto.KeyMaterial;
-import com.nodes.chatclient.e2ee.stores.LocalIdentityStore;
+import com.nodes.chatclient.e2ee.db.stores.LocalIdentityStore;
 import com.nodes.chatclient.e2ee.types.LocalIdentity;
 
 import java.security.SecureRandom;

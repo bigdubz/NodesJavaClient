@@ -2,8 +2,8 @@ package com.nodes.chatclient.store;
 
 import com.nodes.chatclient.e2ee.records.ContactRecord;
 import com.nodes.chatclient.e2ee.records.MessageRecord;
-import com.nodes.chatclient.e2ee.stores.ContactStore;
-import com.nodes.chatclient.e2ee.stores.MessageStore;
+import com.nodes.chatclient.e2ee.db.stores.ContactStore;
+import com.nodes.chatclient.e2ee.db.stores.MessageStore;
 import com.nodes.chatclient.store.events.StoreListener;
 import com.nodes.chatclient.util.Pair;
 import com.nodes.chatclient.ws.ServerHandlers;

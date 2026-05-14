@@ -1,4 +1,4 @@
-package com.nodes.chatclient.e2ee.stores;
+package com.nodes.chatclient.e2ee.db.stores;
 
 import com.nodes.chatclient.e2ee.mappers.SessionMapper;
 import com.nodes.chatclient.e2ee.protos.ProtoSession;
