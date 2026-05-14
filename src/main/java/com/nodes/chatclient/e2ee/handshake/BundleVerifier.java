@@ -1,9 +1,9 @@
 package com.nodes.chatclient.e2ee.handshake;
 
+import com.nodes.chatclient.e2ee.crypto.MessageAuth;
 import com.nodes.chatclient.http.dto.RemoteUserBundle;
-import com.nodes.chatclient.e2ee.utils.CryptoUtils;
 
-public class BundleVerifier {
+public final class BundleVerifier {
 
 
     private BundleVerifier() { }
@@ -14,7 +14,7 @@ public class BundleVerifier {
         }
 
         try {
-            return CryptoUtils.verify(
+            return MessageAuth.verify(
                     bundle.spk(),
                     bundle.spkSignature(),
                     bundle.sk()

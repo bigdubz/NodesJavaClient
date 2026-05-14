@@ -2,7 +2,7 @@ package com.nodes.chatclient.store.model;
 
 import java.util.Map;
 
-public class ConversationUi {
+public final class ConversationUi {
 
     public final String peerId;
     public final Map<String, ChatMessage> messages;

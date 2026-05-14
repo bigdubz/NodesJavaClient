@@ -1,6 +1,8 @@
 package com.nodes.chatclient.e2ee.types;
 
-public class EncryptedMessage {
+import com.nodes.chatclient.e2ee.crypto.MessageAuth;
+
+public final class EncryptedMessage {
     public final String fromUserId;
     public final String fromDeviceId;
     public final String toUserId;
@@ -30,5 +32,9 @@ public class EncryptedMessage {
         this.iv = iv;
         this.cipherText = cipherText;
         this.signature = signature;
+    }
+
+    public void sign(byte[] signingKey) throws Exception {
+        this.signature = MessageAuth.sign(MessageAuth.signatureInput(this), signingKey);
     }
 }

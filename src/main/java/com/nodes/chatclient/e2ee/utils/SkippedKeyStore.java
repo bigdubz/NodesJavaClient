@@ -3,7 +3,7 @@ package com.nodes.chatclient.e2ee.utils;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class SkippedKeyStore extends LinkedHashMap<String, byte[]> {
+public final class SkippedKeyStore extends LinkedHashMap<String, byte[]> {
 
     private final int maxSize;
 

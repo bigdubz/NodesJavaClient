@@ -2,7 +2,7 @@ package com.nodes.chatclient.e2ee.types;
 
 import com.nodes.chatclient.e2ee.protos.ProtoEncryptedPayload.EncryptedPayload;
 
-public class InternalMessage {
+public final class InternalMessage {
     public enum Type { TEXT, REACTION, CONTROL }
     public final Type type;
 

@@ -13,7 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
-public class ContactsApi {
+public final class ContactsApi {
 
     private final ClientConfig config;
     private final HttpClient httpClient;

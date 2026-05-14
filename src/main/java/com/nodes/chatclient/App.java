@@ -19,7 +19,7 @@ import javafx.stage.Stage;
 import java.net.http.HttpClient;
 import java.util.Objects;
 
-public class App extends Application {
+public final class App extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {

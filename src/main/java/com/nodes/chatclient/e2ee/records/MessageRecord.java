@@ -1,6 +1,6 @@
 package com.nodes.chatclient.e2ee.records;
 
-public class MessageRecord {
+public final class MessageRecord {
     public String messageId;
     public String conversationId;
 

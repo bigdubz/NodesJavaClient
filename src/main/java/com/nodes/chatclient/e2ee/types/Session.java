@@ -3,7 +3,7 @@ package com.nodes.chatclient.e2ee.types;
 import com.nodes.chatclient.e2ee.protos.ProtoSession;
 import com.nodes.chatclient.e2ee.utils.SkippedKeyStore;
 
-public class Session {
+public final class Session {
     public ProtoSession.SessionProto.State state;
     public int sessionVersion;
     public byte[] rootKey;

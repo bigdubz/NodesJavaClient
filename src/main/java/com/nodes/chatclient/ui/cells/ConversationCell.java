@@ -8,7 +8,7 @@ import javafx.scene.layout.*;
 
 import java.util.function.Consumer;
 
-public class ConversationCell extends ListCell<ConversationUi> {
+public final class ConversationCell extends ListCell<ConversationUi> {
 
     private final ContextMenu contextMenu = new ContextMenu();
     private final Consumer<ConversationUi> onConversationDeleteRequested;

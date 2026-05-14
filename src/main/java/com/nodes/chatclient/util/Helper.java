@@ -4,7 +4,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 
-public class Helper {
+public final class Helper {
 
     public static TextFlow textWithEmojiTextFlow(String raw, String textClass) {
         TextFlow flow = new TextFlow();

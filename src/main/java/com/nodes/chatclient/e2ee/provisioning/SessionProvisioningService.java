@@ -1,4 +1,4 @@
-package com.nodes.chatclient.e2ee.utils;
+package com.nodes.chatclient.e2ee.provisioning;
 
 import com.nodes.chatclient.e2ee.handshake.X3DHResult;
 import com.nodes.chatclient.e2ee.handshake.X3DHService;

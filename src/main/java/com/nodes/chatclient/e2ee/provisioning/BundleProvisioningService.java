@@ -1,5 +1,7 @@
-package com.nodes.chatclient.e2ee.utils;
+package com.nodes.chatclient.e2ee.provisioning;
 
+import com.nodes.chatclient.e2ee.crypto.KeyMaterial;
+import com.nodes.chatclient.e2ee.crypto.MessageAuth;
 import com.nodes.chatclient.e2ee.records.OneTimePrekeyRecord;
 import com.nodes.chatclient.e2ee.records.SignedPrekeyRecord;
 import com.nodes.chatclient.e2ee.stores.OneTimePrekeyStore;
@@ -17,7 +19,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
-public class BundleProvisioningService {
+public final class BundleProvisioningService {
 
     private static final int DEFAULT_ONE_TIME_PREKEY_TARGET = 100;
     private static final int DEFAULT_MAX_ONE_TIME_PREKEYS_PER_UPLOAD = 100;
@@ -109,8 +111,8 @@ public class BundleProvisioningService {
     }
 
     private GeneratedBundle generateBundle(int oneTimePrekeyCount) throws SQLException {
-        byte[][] signedPrekey = CryptoUtils.generateKeyPair();
-        byte[] signedPrekeySignature = CryptoUtils.sign(signedPrekey[0], localIdentity.signingPrivateKey());
+        byte[][] signedPrekey = KeyMaterial.generateX25519KeyPair();
+        byte[] signedPrekeySignature = MessageAuth.sign(signedPrekey[0], localIdentity.signingPrivateKey());
         SignedPrekeyRecord signedPrekeyRecord = new SignedPrekeyRecord(
                 nextSignedPrekeyId(),
                 signedPrekey[0],
@@ -124,7 +126,7 @@ public class BundleProvisioningService {
         List<OneTimePrekeyRecord> oneTimePrekeyRecords = new ArrayList<>();
 
         for (int i = 0; i < oneTimePrekeyCount; i++) {
-            byte[][] oneTimePrekey = CryptoUtils.generateKeyPair();
+            byte[][] oneTimePrekey = KeyMaterial.generateX25519KeyPair();
             oneTimePrekeys[i] = oneTimePrekey[0];
             oneTimePrekeyRecords.add(new OneTimePrekeyRecord(
                     nextOneTimePrekeyId(),

@@ -24,7 +24,7 @@ import javafx.util.Duration;
 
 import java.util.stream.IntStream;
 
-public class ChatController {
+public final class ChatController {
 
     private Parent root;
     private ChatViewModel vm;

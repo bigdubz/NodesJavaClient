@@ -1,8 +1,8 @@
 package com.nodes.chatclient.e2ee.identity;
 
+import com.nodes.chatclient.e2ee.crypto.KeyMaterial;
 import com.nodes.chatclient.e2ee.stores.LocalIdentityStore;
 import com.nodes.chatclient.e2ee.types.LocalIdentity;
-import com.nodes.chatclient.e2ee.utils.CryptoUtils;
 
 import java.security.SecureRandom;
 import java.sql.Connection;
@@ -49,7 +49,7 @@ public final class LocalIdentityService {
         }
 
         LocalIdentity identity = build(userId, deviceId);
-        store.save(identity);
+        persist(identity);
         return identity;
     }
 
@@ -57,8 +57,8 @@ public final class LocalIdentityService {
         requireText(userId, "userId");
         requireText(deviceId, "deviceId");
 
-        byte[][] identityKeyPair = CryptoUtils.generateKeyPair();
-        byte[][] signingKeyPair = CryptoUtils.generateEd25519KeyPair();
+        byte[][] identityKeyPair = KeyMaterial.generateX25519KeyPair();
+        byte[][] signingKeyPair = KeyMaterial.generateEd25519KeyPair();
 
         return new LocalIdentity(
                 userId,

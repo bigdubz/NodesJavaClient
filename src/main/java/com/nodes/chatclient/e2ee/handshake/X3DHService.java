@@ -1,12 +1,12 @@
 package com.nodes.chatclient.e2ee.handshake;
 
+import com.nodes.chatclient.e2ee.crypto.KeyMaterial;
 import com.nodes.chatclient.e2ee.protos.ProtoSession;
 import com.nodes.chatclient.e2ee.types.LocalIdentity;
 import com.nodes.chatclient.e2ee.types.Session;
 import com.nodes.chatclient.http.dto.RemoteUserBundle;
-import com.nodes.chatclient.e2ee.utils.CryptoUtils;
 
-public class X3DHService {
+public final class X3DHService {
 
     public X3DHResult initiateHandshake(LocalIdentity self, RemoteUserBundle remoteBundle) throws Exception {
         BundleVerifier.requireValid(remoteBundle);
@@ -19,7 +19,7 @@ public class X3DHService {
             usedOneTimePrekey = true;
         }
 
-        byte[][] eph = CryptoUtils.generateKeyPair();
+        byte[][] eph = KeyMaterial.generateX25519KeyPair();
         byte[] ephPublicKey = eph[0];
         byte[] ephPrivateKey = eph[1];
 
@@ -33,19 +33,19 @@ public class X3DHService {
          */
 
         byte[] secret;
-        byte[] dh1 = CryptoUtils.dh(self.identityPrivateKey(), remoteBundle.spk());
-        byte[] dh2 = CryptoUtils.dh(ephPrivateKey, remoteBundle.ik());
-        byte[] dh3 = CryptoUtils.dh(ephPrivateKey, remoteBundle.spk());
+        byte[] dh1 = KeyMaterial.dh(self.identityPrivateKey(), remoteBundle.spk());
+        byte[] dh2 = KeyMaterial.dh(ephPrivateKey, remoteBundle.ik());
+        byte[] dh3 = KeyMaterial.dh(ephPrivateKey, remoteBundle.spk());
 
         if (usedOneTimePrekey) {
-            byte[] dh4 = CryptoUtils.dh(ephPrivateKey, remoteOneTimePrekey);
-            secret = CryptoUtils.concat(CryptoUtils.concat(dh1, dh2), CryptoUtils.concat(dh3, dh4));
+            byte[] dh4 = KeyMaterial.dh(ephPrivateKey, remoteOneTimePrekey);
+            secret = KeyMaterial.concat(KeyMaterial.concat(dh1, dh2), KeyMaterial.concat(dh3, dh4));
 
         } else {
-            secret = CryptoUtils.concat(CryptoUtils.concat(dh1, dh2), dh3);
+            secret = KeyMaterial.concat(KeyMaterial.concat(dh1, dh2), dh3);
         }
 
-        byte[] rootKey = CryptoUtils.hash(secret);
+        byte[] rootKey = KeyMaterial.hash(secret);
 
         Session session = createInitialSession(
                 self,

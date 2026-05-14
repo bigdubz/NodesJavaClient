@@ -3,7 +3,7 @@ package com.nodes.chatclient.e2ee.mappers;
 import com.nodes.chatclient.e2ee.types.InternalMessage;
 import com.nodes.chatclient.e2ee.protos.ProtoEncryptedPayload.EncryptedPayload;
 
-public class PayloadMapper {
+public final class PayloadMapper {
 
     public static byte[] serialize(InternalMessage msg) {
         EncryptedPayload.Builder payload = EncryptedPayload.newBuilder()

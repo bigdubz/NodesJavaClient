@@ -10,7 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
 
-public class SessionStore {
+public final class SessionStore {
 
     private final Connection conn;
 

@@ -18,7 +18,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 
-public class MessageCell extends ListCell<ChatMessageUi> {
+public final class MessageCell extends ListCell<ChatMessageUi> {
     private final String selfId;
     private final ContextMenu contextMenu = new ContextMenu();
     private final Consumer<ChatMessageUi> onReplyRequested;

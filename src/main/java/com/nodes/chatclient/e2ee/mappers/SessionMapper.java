@@ -6,7 +6,7 @@ import com.nodes.chatclient.e2ee.types.Session;
 
 import java.util.Map;
 
-public class SessionMapper {
+public final class SessionMapper {
 
     public static ProtoSession.SessionProto serialize(Session session) {
 

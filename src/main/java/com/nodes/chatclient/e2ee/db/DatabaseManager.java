@@ -7,7 +7,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
 
-public class DatabaseManager {
+public final class DatabaseManager {
 
     private static Connection connection;
 

@@ -1,6 +1,6 @@
 package com.nodes.chatclient.ws.messages;
 
-public class ClientChatMessage implements ClientMessage {
+public final class ClientChatMessage implements ClientMessage {
     public final String type = "CHAT_MESSAGE";
     public final Payload payload;
 

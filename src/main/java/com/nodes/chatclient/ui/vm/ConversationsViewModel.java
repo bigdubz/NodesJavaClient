@@ -36,7 +36,9 @@ public final class ConversationsViewModel implements StoreListener {
     }
 
     public void deleteContact(String peerId) {
-        ctx.contactProvisioningService.deleteContact(peerId);
+        if (!ctx.contactProvisioningService.deleteContact(peerId)) {
+            throw new RuntimeException("Failed to delete contact");
+        }
         store.loadLocalConversations();
     }
 

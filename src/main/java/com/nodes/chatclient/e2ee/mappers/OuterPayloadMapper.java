@@ -5,7 +5,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.nodes.chatclient.e2ee.protos.ProtoOuterPayload;
 import com.nodes.chatclient.e2ee.types.EncryptedMessage;
 
-public class OuterPayloadMapper {
+public final class OuterPayloadMapper {
     public static byte[] serialize(EncryptedMessage msg) {
         ProtoOuterPayload.OuterPayload.Builder payload = ProtoOuterPayload.OuterPayload.newBuilder()
                 .setFromUserId(msg.fromUserId)

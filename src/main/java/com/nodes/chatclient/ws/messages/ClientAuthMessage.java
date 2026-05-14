@@ -1,6 +1,6 @@
 package com.nodes.chatclient.ws.messages;
 
-public class ClientAuthMessage implements ClientMessage {
+public final class ClientAuthMessage implements ClientMessage {
     public final String type = "AUTH";
     public final Payload payload;
 
