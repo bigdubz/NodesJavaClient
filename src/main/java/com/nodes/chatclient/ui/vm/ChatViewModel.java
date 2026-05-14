@@ -116,12 +116,21 @@ public final class ChatViewModel implements StoreListener {
                         return;
                     }
 
-                    ctx.wsService.sendChatMessageAsync(
-                            peerId,
-                            text,
-                            clientId,
-                            replyingTo
-                    );
+                    try {
+                        ctx.messageEncryptionService.encryptTextForUser(
+                                peerId,
+                                clientId,
+                                createdAt,
+                                text,
+                                replyingTo
+                        ).forEach(encrypted -> ctx.wsService.sendEncryptedAsync(
+                                encrypted.toUserId(),
+                                encrypted.toDeviceId(),
+                                encrypted.blob()
+                        ));
+                    } catch (Exception e) {
+                        throw new RuntimeException("Failed to encrypt message for " + peerId + " " + e.getMessage(), e);
+                    }
                 })
                 .exceptionally(err -> {
                     System.err.println("Failed to establish session with " + peerId + ": " + err.getMessage());

@@ -2,7 +2,6 @@ package com.nodes.chatclient.ws;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nodes.chatclient.config.ClientConfig;
-import com.nodes.chatclient.e2ee.types.InternalMessage;
 import com.nodes.chatclient.ws.messages.*;
 
 import java.net.http.HttpClient;
@@ -11,12 +10,9 @@ import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.Queue;
-import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-
-import static com.nodes.chatclient.e2ee.protos.ProtoEncryptedPayload.EncryptedPayload.ControlMessage.Type.*;
 
 public final class WsService {
     public enum State {
@@ -153,29 +149,13 @@ public final class WsService {
         }
     }
 
-    public void sendChatMessageAsync(
+    public void sendEncryptedAsync(
             String toUserId,
-            String text,
-            String clientId,
-            String replyingTo
+            String toDeviceId,
+            String blob
     ) {
         if (webSocket == null) return;
-
-        ClientChatMessage msg = new ClientChatMessage(
-                toUserId,
-                text,
-                clientId,
-                replyingTo
-        );
-
-//        InternalMessage msgi = InternalMessage.text(
-//                UUID.randomUUID().toString(),
-//                System.currentTimeMillis(),
-//                text,
-//                replyingTo
-//        );
-
-        sendAsync(msg);
+        sendAsync(new ClientEncryptedSend(toUserId, toDeviceId, blob));
     }
 
     public void sendReactionAsync(

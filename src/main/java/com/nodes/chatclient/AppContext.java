@@ -5,6 +5,7 @@ import com.nodes.chatclient.e2ee.identity.LocalIdentityService;
 import com.nodes.chatclient.e2ee.types.LocalIdentity;
 import com.nodes.chatclient.e2ee.provisioning.BundleProvisioningService;
 import com.nodes.chatclient.e2ee.provisioning.ContactProvisioningService;
+import com.nodes.chatclient.e2ee.provisioning.MessageEncryptionService;
 import com.nodes.chatclient.e2ee.provisioning.SessionProvisioningService;
 import com.nodes.chatclient.http.api.ContactsApi;
 import com.nodes.chatclient.http.api.LoginApi;
@@ -30,6 +31,7 @@ public final class AppContext {
     public BundleProvisioningService bundleProvisioningService;
     public ContactProvisioningService contactProvisioningService;
     public SessionProvisioningService sessionProvisioningService;
+    public MessageEncryptionService messageEncryptionService;
 
     public AppContext(
             ClientConfig config,

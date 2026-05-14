@@ -9,6 +9,7 @@ import com.nodes.chatclient.e2ee.stores.SessionStore;
 import com.nodes.chatclient.e2ee.stores.SignedPrekeyStore;
 import com.nodes.chatclient.e2ee.provisioning.BundleProvisioningService;
 import com.nodes.chatclient.e2ee.provisioning.ContactProvisioningService;
+import com.nodes.chatclient.e2ee.provisioning.MessageEncryptionService;
 import com.nodes.chatclient.e2ee.provisioning.SessionProvisioningService;
 import com.nodes.chatclient.store.ChatStore;
 import javafx.application.Platform;
@@ -76,6 +77,12 @@ public final class AppRootController {
 
         ctx.sessionProvisioningService = new SessionProvisioningService(
                 ctx.bundlesApi,
+                ctx.localIdentity,
+                new ContactStore(DatabaseManager.get()),
+                new SessionStore(DatabaseManager.get())
+        );
+
+        ctx.messageEncryptionService = new MessageEncryptionService(
                 ctx.localIdentity,
                 new ContactStore(DatabaseManager.get()),
                 new SessionStore(DatabaseManager.get())

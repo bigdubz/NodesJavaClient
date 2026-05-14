@@ -9,7 +9,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.UUID;
 
 public final class DoubleRatchet {
 
@@ -61,6 +60,18 @@ public final class DoubleRatchet {
 
     public static EncryptedMessage encrypt(Session session, String message, String fromUserId, String toUserId)
             throws Exception {
+        InternalMessage internalMessage = InternalMessage.text(
+                java.util.UUID.randomUUID().toString(),
+                System.currentTimeMillis(),
+                message,
+                null
+        );
+
+        return encrypt(session, internalMessage, fromUserId, toUserId);
+    }
+
+    public static EncryptedMessage encrypt(Session session, InternalMessage internalMessage, String fromUserId, String toUserId)
+            throws Exception {
         if (session.signingPrivateKey == null) {
             throw new Exception("Missing signing private key for local session");
         }
@@ -77,14 +88,7 @@ public final class DoubleRatchet {
                 session.dhPublicKey
         );
 
-        InternalMessage protoReady = InternalMessage.text(
-                UUID.randomUUID().toString(),
-                System.currentTimeMillis(),
-                message,
-                null
-        );
-
-        byte[] serialized = PayloadMapper.serialize(protoReady);
+        byte[] serialized = PayloadMapper.serialize(internalMessage);
         byte[] cipherText = AeadCipher.encrypt(messageKey, iv, serialized, associatedData);
 
         EncryptedMessage msg = new EncryptedMessage(

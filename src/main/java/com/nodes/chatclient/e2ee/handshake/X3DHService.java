@@ -1,6 +1,7 @@
 package com.nodes.chatclient.e2ee.handshake;
 
 import com.nodes.chatclient.e2ee.crypto.KeyMaterial;
+import com.nodes.chatclient.e2ee.crypto.KeyDerivation;
 import com.nodes.chatclient.e2ee.protos.ProtoSession;
 import com.nodes.chatclient.e2ee.types.LocalIdentity;
 import com.nodes.chatclient.e2ee.types.Session;
@@ -73,9 +74,14 @@ public final class X3DHService {
                                          byte[] rootKey,
                                          byte[] localDhPrivateKey,
                                          byte[] localDhPublicKey,
-                                         byte[] remoteDhPublicKey) {
-        Session session = Session.createInitial(
+                                         byte[] remoteDhPublicKey) throws Exception {
+        byte[][] initialSendingRatchet = KeyDerivation.kdfRoot(
                 rootKey,
+                KeyMaterial.dh(localDhPrivateKey, remoteDhPublicKey)
+        );
+
+        Session session = Session.createInitial(
+                initialSendingRatchet[0],
                 localDhPrivateKey,
                 localDhPublicKey,
                 remoteDhPublicKey,
@@ -92,7 +98,7 @@ public final class X3DHService {
 
         session.remoteSigningPublicKey = remoteBundle.sk();
 
-        session.sendingChainKey = null;
+        session.sendingChainKey = initialSendingRatchet[1];
         session.receivingChainKey = null;
 
         session.previousRemoteDHPublicKey = null;
