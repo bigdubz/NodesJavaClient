@@ -73,6 +73,7 @@ public final class MessageEncryptionService {
             if (needsPrekeyMetadata) {
                 encrypted.attachPrekeyMetadata(
                         localIdentity.identityPublicKey(),
+                        localIdentity.signingPublicKey(),
                         session.oneTimePrekeyId
                 );
             }

@@ -30,6 +30,9 @@ public final class OuterPayloadMapper {
         if (msg.senderIdentityKey != null) {
             payload.setSenderIdentityKey(ByteString.copyFrom(msg.senderIdentityKey));
         }
+        if (msg.senderSigningKey != null) {
+            payload.setSenderSigningKey(ByteString.copyFrom(msg.senderSigningKey));
+        }
         if (msg.oneTimePrekeyId != null) {
             payload.setOneTimePrekeyId(msg.oneTimePrekeyId);
         }
@@ -88,6 +91,9 @@ public final class OuterPayloadMapper {
             );
             if (!proto.getSenderIdentityKey().isEmpty()) {
                 message.senderIdentityKey = proto.getSenderIdentityKey().toByteArray();
+            }
+            if (!proto.getSenderSigningKey().isEmpty()) {
+                message.senderSigningKey = proto.getSenderSigningKey().toByteArray();
             }
             if (proto.hasOneTimePrekeyId()) {
                 message.oneTimePrekeyId = proto.getOneTimePrekeyId();

@@ -48,16 +48,16 @@ public final class MessageDecryptionService {
                 throw new IllegalArgumentException("Encrypted message was not addressed to this device");
             }
 
-            Optional<ContactRecord> contact = contactStore.get(
+            Optional<ContactRecord> contactRecord = contactStore.get(
                     encryptedMessage.fromUserId,
                     encryptedMessage.fromDeviceId
             );
-            if (contact.isEmpty()) {
-                throw new IllegalArgumentException("Encrypted message sender is not a known contact device");
-            }
+            ContactRecord contact = contactRecord.isPresent()
+                    ? contactRecord.get()
+                    : saveTestingContact(encryptedMessage);
 
             Session session = sessionStore.load(encryptedMessage.fromUserId, encryptedMessage.fromDeviceId)
-                    .orElseGet(() -> initializeResponderSession(encryptedMessage, contact.get()));
+                    .orElseGet(() -> initializeResponderSession(encryptedMessage, contact));
 
             InternalMessage decryptedMessage = DoubleRatchet.decrypt(session, encryptedMessage);
             sessionStore.save(encryptedMessage.fromUserId, encryptedMessage.fromDeviceId, session);
@@ -130,5 +130,26 @@ public final class MessageDecryptionService {
                     e
             );
         }
+    }
+
+    private ContactRecord saveTestingContact(EncryptedMessage encryptedMessage) throws Exception {
+        if (encryptedMessage.senderIdentityKey == null || encryptedMessage.senderSigningKey == null) {
+            throw new IllegalArgumentException(
+                    "Encrypted message sender is not a known contact device and did not include contact keys"
+            );
+        }
+
+        ContactRecord contact = new ContactRecord(
+                encryptedMessage.fromUserId,
+                encryptedMessage.fromDeviceId,
+                encryptedMessage.senderIdentityKey,
+                encryptedMessage.senderSigningKey
+        );
+        contactStore.save(contact);
+        System.err.println(
+                "Auto-added unknown contact for testing: "
+                        + encryptedMessage.fromUserId + ":" + encryptedMessage.fromDeviceId
+        );
+        return contact;
     }
 }

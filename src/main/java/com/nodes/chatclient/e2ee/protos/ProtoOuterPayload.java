@@ -130,6 +130,12 @@ public final class ProtoOuterPayload extends com.google.protobuf.GeneratedFile {
      * @return The oneTimePrekeyId.
      */
     int getOneTimePrekeyId();
+
+    /**
+     * <code>bytes senderSigningKey = 13;</code>
+     * @return The senderSigningKey.
+     */
+    com.google.protobuf.ByteString getSenderSigningKey();
   }
   /**
    * Protobuf type {@code OuterPayload}
@@ -162,6 +168,7 @@ public final class ProtoOuterPayload extends com.google.protobuf.GeneratedFile {
       ciphertext_ = com.google.protobuf.ByteString.EMPTY;
       signature_ = com.google.protobuf.ByteString.EMPTY;
       senderIdentityKey_ = com.google.protobuf.ByteString.EMPTY;
+      senderSigningKey_ = com.google.protobuf.ByteString.EMPTY;
     }
 
     public static final com.google.protobuf.Descriptors.Descriptor
@@ -435,6 +442,17 @@ public final class ProtoOuterPayload extends com.google.protobuf.GeneratedFile {
       return oneTimePrekeyId_;
     }
 
+    public static final int SENDERSIGNINGKEY_FIELD_NUMBER = 13;
+    private com.google.protobuf.ByteString senderSigningKey_ = com.google.protobuf.ByteString.EMPTY;
+    /**
+     * <code>bytes senderSigningKey = 13;</code>
+     * @return The senderSigningKey.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString getSenderSigningKey() {
+      return senderSigningKey_;
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -484,6 +502,9 @@ public final class ProtoOuterPayload extends com.google.protobuf.GeneratedFile {
       }
       if (((bitField0_ & 0x00000001) != 0)) {
         output.writeUInt32(12, oneTimePrekeyId_);
+      }
+      if (!senderSigningKey_.isEmpty()) {
+        output.writeBytes(13, senderSigningKey_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -538,6 +559,10 @@ public final class ProtoOuterPayload extends com.google.protobuf.GeneratedFile {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(12, oneTimePrekeyId_);
       }
+      if (!senderSigningKey_.isEmpty()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(13, senderSigningKey_);
+      }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
@@ -580,6 +605,8 @@ public final class ProtoOuterPayload extends com.google.protobuf.GeneratedFile {
         if (getOneTimePrekeyId()
             != other.getOneTimePrekeyId()) return false;
       }
+      if (!getSenderSigningKey()
+          .equals(other.getSenderSigningKey())) return false;
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
@@ -619,6 +646,8 @@ public final class ProtoOuterPayload extends com.google.protobuf.GeneratedFile {
         hash = (37 * hash) + ONETIMEPREKEYID_FIELD_NUMBER;
         hash = (53 * hash) + getOneTimePrekeyId();
       }
+      hash = (37 * hash) + SENDERSIGNINGKEY_FIELD_NUMBER;
+      hash = (53 * hash) + getSenderSigningKey().hashCode();
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -762,6 +791,7 @@ public final class ProtoOuterPayload extends com.google.protobuf.GeneratedFile {
         signature_ = com.google.protobuf.ByteString.EMPTY;
         senderIdentityKey_ = com.google.protobuf.ByteString.EMPTY;
         oneTimePrekeyId_ = 0;
+        senderSigningKey_ = com.google.protobuf.ByteString.EMPTY;
         return this;
       }
 
@@ -833,6 +863,9 @@ public final class ProtoOuterPayload extends com.google.protobuf.GeneratedFile {
           result.oneTimePrekeyId_ = oneTimePrekeyId_;
           to_bitField0_ |= 0x00000001;
         }
+        if (((from_bitField0_ & 0x00001000) != 0)) {
+          result.senderSigningKey_ = senderSigningKey_;
+        }
         result.bitField0_ |= to_bitField0_;
       }
 
@@ -891,6 +924,9 @@ public final class ProtoOuterPayload extends com.google.protobuf.GeneratedFile {
         }
         if (other.hasOneTimePrekeyId()) {
           setOneTimePrekeyId(other.getOneTimePrekeyId());
+        }
+        if (!other.getSenderSigningKey().isEmpty()) {
+          setSenderSigningKey(other.getSenderSigningKey());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
@@ -978,6 +1014,11 @@ public final class ProtoOuterPayload extends com.google.protobuf.GeneratedFile {
                 bitField0_ |= 0x00000800;
                 break;
               } // case 96
+              case 106: {
+                senderSigningKey_ = input.readBytes();
+                bitField0_ |= 0x00001000;
+                break;
+              } // case 106
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -1547,6 +1588,38 @@ public final class ProtoOuterPayload extends com.google.protobuf.GeneratedFile {
         return this;
       }
 
+      private com.google.protobuf.ByteString senderSigningKey_ = com.google.protobuf.ByteString.EMPTY;
+      /**
+       * <code>bytes senderSigningKey = 13;</code>
+       * @return The senderSigningKey.
+       */
+      @java.lang.Override
+      public com.google.protobuf.ByteString getSenderSigningKey() {
+        return senderSigningKey_;
+      }
+      /**
+       * <code>bytes senderSigningKey = 13;</code>
+       * @param value The senderSigningKey to set.
+       * @return This builder for chaining.
+       */
+      public Builder setSenderSigningKey(com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        senderSigningKey_ = value;
+        bitField0_ |= 0x00001000;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>bytes senderSigningKey = 13;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearSenderSigningKey() {
+        bitField0_ = (bitField0_ & ~0x00001000);
+        senderSigningKey_ = getDefaultInstance().getSenderSigningKey();
+        onChanged();
+        return this;
+      }
+
       // @@protoc_insertion_point(builder_scope:OuterPayload)
     }
 
@@ -1612,16 +1685,17 @@ public final class ProtoOuterPayload extends com.google.protobuf.GeneratedFile {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n!crypto-schema/outer_payload.proto\"\247\002\n\014" +
+      "\n!crypto-schema/outer_payload.proto\"\301\002\n\014" +
       "OuterPayload\022\022\n\nfromUserId\030\001 \001(\t\022\024\n\014from" +
       "DeviceId\030\002 \001(\t\022\020\n\010toUserId\030\003 \001(\t\022\022\n\ntoDe" +
       "viceId\030\004 \001(\t\022\023\n\013dhPublicKey\030\005 \001(\014\022\025\n\rmes" +
       "sageNumber\030\006 \001(\004\022\033\n\023previousChainLength\030" +
       "\007 \001(\004\022\n\n\002iv\030\010 \001(\014\022\022\n\nciphertext\030\t \001(\014\022\021\n" +
       "\tsignature\030\n \001(\014\022\031\n\021senderIdentityKey\030\013 " +
-      "\001(\014\022\034\n\017oneTimePrekeyId\030\014 \001(\rH\000\210\001\001B\022\n\020_on" +
-      "eTimePrekeyIdB5\n com.nodes.chatclient.e2" +
-      "ee.protosB\021ProtoOuterPayloadb\006proto3"
+      "\001(\014\022\034\n\017oneTimePrekeyId\030\014 \001(\rH\000\210\001\001\022\030\n\020sen" +
+      "derSigningKey\030\r \001(\014B\022\n\020_oneTimePrekeyIdB" +
+      "5\n com.nodes.chatclient.e2ee.protosB\021Pro" +
+      "toOuterPayloadb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -1632,7 +1706,7 @@ public final class ProtoOuterPayload extends com.google.protobuf.GeneratedFile {
     internal_static_OuterPayload_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_OuterPayload_descriptor,
-        new java.lang.String[] { "FromUserId", "FromDeviceId", "ToUserId", "ToDeviceId", "DhPublicKey", "MessageNumber", "PreviousChainLength", "Iv", "Ciphertext", "Signature", "SenderIdentityKey", "OneTimePrekeyId", });
+        new java.lang.String[] { "FromUserId", "FromDeviceId", "ToUserId", "ToDeviceId", "DhPublicKey", "MessageNumber", "PreviousChainLength", "Iv", "Ciphertext", "Signature", "SenderIdentityKey", "OneTimePrekeyId", "SenderSigningKey", });
     descriptor.resolveAllFeaturesImmutable();
   }
 

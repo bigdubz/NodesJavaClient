@@ -19,4 +19,5 @@ message OuterPayload {
 
   bytes senderIdentityKey = 11;
   optional uint32 oneTimePrekeyId = 12;
+  bytes senderSigningKey = 13;
 }
