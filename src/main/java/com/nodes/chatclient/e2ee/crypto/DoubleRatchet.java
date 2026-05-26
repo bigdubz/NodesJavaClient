@@ -75,6 +75,15 @@ public final class DoubleRatchet {
         if (session.signingPrivateKey == null) {
             throw new Exception("Missing signing private key for local session");
         }
+        if (session.sendingChainKey == null) {
+            if (session.remoteDHPublicKey == null) {
+                throw new Exception("Missing sending chain and remote ratchet public key for session");
+            }
+            advanceSendingRatchet(session);
+        }
+        if (session.dhPublicKey == null) {
+            throw new Exception("Missing local ratchet public key for session");
+        }
 
         byte[] messageKey = KeyDerivation.deriveMessageKey(session.sendingChainKey);
         byte[] iv = Sodium.INSTANCE.randomBytesBuf(24);
@@ -153,6 +162,8 @@ public final class DoubleRatchet {
         session.receivingChainKey = rk1[1];
         session.remoteDHPublicKey = newRemotePublicKey;
         session.receivingMessageNumber = 0;
+
+        advanceSendingRatchet(session);
     }
 
     private static void advanceSendingRatchet(Session session) throws Exception {
