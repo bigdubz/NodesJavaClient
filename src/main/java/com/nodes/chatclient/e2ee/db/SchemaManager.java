@@ -6,22 +6,18 @@ import java.sql.*;
 
 public final class SchemaManager {
 
-    private static final String SCHEMA_PATH = "schema/schema_v1.sql";
-
     private SchemaManager() {}
 
     public static void applyMigrations(Connection conn) throws Exception {
         ensureSchemaVersionTable(conn);
 
         int currentVersion = getCurrentVersion(conn);
+        int newVersion = 2; // ++ this when schema changes
 
-        if (currentVersion < 1) {
-            applySchema(conn, SCHEMA_PATH);
-            setVersion(conn, 1);
+        if (currentVersion < newVersion) {
+            applySchema(conn, getSchemaPath(newVersion));
+            setVersion(conn, newVersion);
         }
-
-        // for the future
-//        if (currentVersion < 2) { applySchema(conn, "db/schema_v2.sql"); setVersion(conn, 2); }
     }
 
     private static void applySchema(Connection conn, String resourcePath) throws Exception {
@@ -89,9 +85,13 @@ public final class SchemaManager {
 
     private static void setVersion(Connection conn, int version) throws SQLException {
         try (PreparedStatement ps = conn.prepareStatement(
-                "INSERT INTO schema_version (version) VALUES (?)")) {
+                "INSERT OR IGNORE INTO schema_version (version) VALUES (?)")) {
             ps.setInt(1, version);
             ps.executeUpdate();
         }
+    }
+
+    private static String getSchemaPath(int version) {
+        return "schema/schema_v" + version + ".sql";
     }
 }

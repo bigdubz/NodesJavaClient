@@ -1,9 +1,13 @@
 package com.nodes.chatclient.store;
 
+import com.nodes.chatclient.e2ee.provisioning.MessageDecryptionService;
 import com.nodes.chatclient.e2ee.records.ContactRecord;
 import com.nodes.chatclient.e2ee.records.MessageRecord;
 import com.nodes.chatclient.e2ee.db.stores.ContactStore;
 import com.nodes.chatclient.e2ee.db.stores.MessageStore;
+import com.nodes.chatclient.e2ee.mappers.OuterPayloadMapper;
+import com.nodes.chatclient.e2ee.types.EncryptedMessage;
+import com.nodes.chatclient.e2ee.types.InternalMessage;
 import com.nodes.chatclient.store.events.StoreListener;
 import com.nodes.chatclient.util.Pair;
 import com.nodes.chatclient.ws.ServerHandlers;
@@ -26,8 +30,10 @@ public final class ChatStore implements ServerHandlers {
     );
 
     private final String selfUserId;
+    private final String selfDeviceId;
     private final ContactStore contactStore;
     private final MessageStore messageStore;
+    private final MessageDecryptionService decryptionService;
 
     private final Map<String, Conversation> conversations = new HashMap<>();
     private final Map<String, Presence> presence = new HashMap<>();
@@ -35,10 +41,16 @@ public final class ChatStore implements ServerHandlers {
 
     private final List<StoreListener> listeners = new ArrayList<>();
 
-    public ChatStore(String selfUserId, ContactStore contactStore, MessageStore messageStore) {
+    public ChatStore(String selfUserId,
+                     String selfDeviceId,
+                     ContactStore contactStore,
+                     MessageStore messageStore,
+                     MessageDecryptionService decryptionService) {
         this.selfUserId = Objects.requireNonNull(selfUserId, "selfUserId");
+        this.selfDeviceId = Objects.requireNonNull(selfDeviceId, "selfDeviceId");
         this.contactStore = Objects.requireNonNull(contactStore, "contactStore");
         this.messageStore = Objects.requireNonNull(messageStore, "messageStore");
+        this.decryptionService = Objects.requireNonNull(decryptionService, "messageDecryptionService");
     }
 
     public void addListener(StoreListener listener) {
@@ -72,8 +84,9 @@ public final class ChatStore implements ServerHandlers {
     public void loadLocalConversations() {
         storeExecutor.execute(() -> {
             try {
-                conversations.clear();
+                Set<String> contactIds = new HashSet<>();
                 for (ContactRecord contact : contactStore.getAll()) {
+                    contactIds.add(contact.userId());
                     Conversation convo = conversations.computeIfAbsent(
                             contact.userId(),
                             Conversation::new
@@ -81,6 +94,7 @@ public final class ChatStore implements ServerHandlers {
 
                     applyLastMessage(convo);
                 }
+                conversations.keySet().removeIf(peerId -> !contactIds.contains(peerId));
 
                 notifyConversationsUpdated();
             } catch (SQLException e) {
@@ -183,6 +197,7 @@ public final class ChatStore implements ServerHandlers {
             convo.messages.put(msg.messageId, msg);
             convo.lastTimestamp = msg.createdAt;
             convo.lastMessage = msg.text;
+            persistTextMessage(receiver, msg, true, selfDeviceId, 0);
             notifyMessageListUpdated(receiver);
             notifyConversationsUpdated();
         });
@@ -269,6 +284,79 @@ public final class ChatStore implements ServerHandlers {
             notifyMessageListUpdated(receiver);
             notifyConversationsUpdated();
         });
+    }
+
+    @Override
+    public void onEncryptedRelay(ServerEncryptedRelay.Payload payload) {
+        storeExecutor.execute(() -> {
+            EncryptedMessage encryptedMessage = OuterPayloadMapper.deserialize(payload.blob);
+            InternalMessage decryptedMessage = decryptionService.decryptMessage(encryptedMessage);
+            if (decryptedMessage == null) {
+                return;
+            }
+
+            if (decryptedMessage.type == InternalMessage.Type.TEXT) {
+                addIncomingTextMessage(encryptedMessage, decryptedMessage);
+            }
+        });
+    }
+
+    private void addIncomingTextMessage(EncryptedMessage encryptedMessage, InternalMessage decryptedMessage) {
+        String peerId = encryptedMessage.fromUserId;
+        Conversation convo = conversations.computeIfAbsent(peerId, Conversation::new);
+
+        if (convo.messages.containsKey(decryptedMessage.messageId)) {
+            return;
+        }
+
+        ChatMessage msg = ChatMessage.incoming(
+                decryptedMessage.messageId,
+                encryptedMessage.fromUserId,
+                selfUserId,
+                decryptedMessage.body,
+                decryptedMessage.createdAt,
+                decryptedMessage.referencedMessageId
+        );
+
+        convo.messages.put(msg.messageId, msg);
+        convo.lastTimestamp = msg.createdAt;
+        convo.lastMessage = msg.text;
+
+        boolean isActive = peerId.equals(activeConversationPeerId);
+        if (!isActive) {
+            convo.unreadCount++;
+        }
+
+        persistTextMessage(peerId, msg, false, encryptedMessage.fromDeviceId, isActive ? 2 : 1);
+        notifyMessageListUpdated(peerId);
+        notifyConversationsUpdated();
+    }
+
+    private void persistTextMessage(
+            String conversationId,
+            ChatMessage msg,
+            boolean isOutgoing,
+            String senderDeviceId,
+            int deliveryStatus
+    ) {
+        MessageRecord record = new MessageRecord();
+        record.messageId = msg.messageId;
+        record.conversationId = conversationId;
+        record.senderUserId = msg.fromUserId;
+        record.senderDeviceId = senderDeviceId;
+        record.createdAt = msg.createdAt;
+        record.receivedAt = System.currentTimeMillis();
+        record.isOutgoing = isOutgoing;
+        record.type = 0;
+        record.deliveryStatus = deliveryStatus;
+        record.body = msg.text;
+        record.referencedMessageId = msg.replyingTo;
+
+        try {
+            messageStore.insert(record);
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to persist message " + msg.messageId, e);
+        }
     }
 
     @Override

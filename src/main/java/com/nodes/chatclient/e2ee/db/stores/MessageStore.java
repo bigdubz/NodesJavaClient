@@ -37,6 +37,8 @@ public final class MessageStore {
     """;
 
     public void insert(MessageRecord m) throws SQLException {
+        ensureConversation(m.conversationId, m.createdAt);
+
         try (PreparedStatement ps = conn.prepareStatement(INSERT_SQL)) {
             ps.setString(1, m.messageId);
             ps.setString(2, m.conversationId);
@@ -56,6 +58,25 @@ public final class MessageStore {
             setNullableInt(ps, 13, m.reactionIsRemoved);
             ps.setString(14, m.referencedMessageId);
 
+            ps.executeUpdate();
+        }
+    }
+
+    private static final String UPSERT_CONVERSATION_SQL = """
+        INSERT INTO conversations (
+            conversationId,
+            lastMessageId,
+            lastUpdated,
+            unreadCount
+        ) VALUES (?, NULL, ?, 0)
+        ON CONFLICT (conversationId) DO UPDATE SET
+            lastUpdated = MAX(conversations.lastUpdated, excluded.lastUpdated);
+    """;
+
+    private void ensureConversation(String conversationId, long lastUpdated) throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement(UPSERT_CONVERSATION_SQL)) {
+            ps.setString(1, conversationId);
+            ps.setLong(2, lastUpdated);
             ps.executeUpdate();
         }
     }

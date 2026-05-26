@@ -75,6 +75,7 @@ public final class WsMessageRouter {
         onCore("AUTH_ERROR", ServerAuthError.Payload.class, h::onAuthError);
 
         onSession("CHAT_MESSAGE", ServerChatMessage.Payload.class, h::onChatMessage);
+        onSession("ENCRYPTED_RELAY", ServerEncryptedRelay.Payload.class, h::onEncryptedRelay);
 
         onSession("MESSAGE_DELIVERED", ServerMessageDelivered.Payload.class, h::onMessageDelivered);
         onSession("MESSAGE_SEEN", ServerMessageSeen.Payload.class, h::onMessageSeen);

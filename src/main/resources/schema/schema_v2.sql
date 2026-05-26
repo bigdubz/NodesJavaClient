@@ -96,8 +96,7 @@ CREATE TABLE IF NOT EXISTS messages (
 
     CHECK (
         -- TEXT
-        (type = 0 AND body IS NOT NULL AND controlType IS NULL AND reaction IS NULL AND referencedMessageId IS NULL
-            AND reactionIsRemoved IS NULL)
+        (type = 0 AND body IS NOT NULL AND controlType IS NULL AND reaction IS NULL AND reactionIsRemoved IS NULL)
 
             OR -- REACTION
         (type = 1 AND reaction IS NOT NULL AND referencedMessageId IS NOT NULL AND reactionIsRemoved IS NOT NULL

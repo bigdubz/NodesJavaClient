@@ -6,7 +6,6 @@ public final class InternalMessage {
     public enum Type { TEXT, REACTION, CONTROL }
     public final Type type;
 
-    // Common ID field for our Java logic
     public String messageId;
     public String referencedMessageId;
     public long createdAt;
@@ -49,5 +48,19 @@ public final class InternalMessage {
         this.type = type;
         this.messageId = messageId;
         this.createdAt = createdAt;
+    }
+
+    @Override
+    public String toString() {
+        return "InternalMessage{" +
+                "type=" + type +
+                ", messageId='" + messageId + '\'' +
+                ", referencedMessageId='" + referencedMessageId + '\'' +
+                ", createdAt=" + createdAt +
+                ", body='" + body + '\'' +
+                ", reaction='" + reaction + '\'' +
+                ", isRemoved=" + isRemoved +
+                ", controlType=" + controlType +
+                '}';
     }
 }

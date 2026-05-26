@@ -7,6 +7,7 @@ public interface ServerHandlers {
     void onAuthError(ServerAuthError.Payload payload);
 
     void onChatMessage(ServerChatMessage.Payload payload);
+    void onEncryptedRelay(ServerEncryptedRelay.Payload payload);
 
     void onMessageDelivered(ServerMessageDelivered.Payload payload);
     void onMessageSeen(ServerMessageSeen.Payload payload);

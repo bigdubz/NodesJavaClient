@@ -7,10 +7,7 @@ import com.nodes.chatclient.e2ee.db.stores.MessageStore;
 import com.nodes.chatclient.e2ee.db.stores.OneTimePrekeyStore;
 import com.nodes.chatclient.e2ee.db.stores.SessionStore;
 import com.nodes.chatclient.e2ee.db.stores.SignedPrekeyStore;
-import com.nodes.chatclient.e2ee.provisioning.BundleProvisioningService;
-import com.nodes.chatclient.e2ee.provisioning.ContactProvisioningService;
-import com.nodes.chatclient.e2ee.provisioning.MessageEncryptionService;
-import com.nodes.chatclient.e2ee.provisioning.SessionProvisioningService;
+import com.nodes.chatclient.e2ee.provisioning.*;
 import com.nodes.chatclient.store.ChatStore;
 import javafx.application.Platform;
 import javafx.scene.Parent;
@@ -41,10 +38,16 @@ public final class AppRootController {
     }
     
     private void showMain(Stage stage, String userId) {
+        ContactStore contactStore = new ContactStore(DatabaseManager.get());
+        MessageStore messageStore = new MessageStore(DatabaseManager.get());
+        SessionStore sessionStore = new SessionStore(DatabaseManager.get());
+
         ChatStore store = new ChatStore(
                 userId,
-                new ContactStore(DatabaseManager.get()),
-                new MessageStore(DatabaseManager.get())
+                ctx.localIdentity.deviceId(),
+                contactStore,
+                messageStore,
+                new MessageDecryptionService(ctx.localIdentity, contactStore, sessionStore)
         );
         store.loadLocalConversations();
         
@@ -72,20 +75,20 @@ public final class AppRootController {
 
         ctx.contactProvisioningService = new ContactProvisioningService(
                 ctx.contactsApi,
-                new ContactStore(DatabaseManager.get())
+                contactStore
         );
 
         ctx.sessionProvisioningService = new SessionProvisioningService(
                 ctx.bundlesApi,
                 ctx.localIdentity,
-                new ContactStore(DatabaseManager.get()),
-                new SessionStore(DatabaseManager.get())
+                contactStore,
+                sessionStore
         );
 
         ctx.messageEncryptionService = new MessageEncryptionService(
                 ctx.localIdentity,
-                new ContactStore(DatabaseManager.get()),
-                new SessionStore(DatabaseManager.get())
+                contactStore,
+                sessionStore
         );
 
         ctx.wsService.connectThenWaitAuth()
