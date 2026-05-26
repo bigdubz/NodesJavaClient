@@ -203,6 +203,17 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
      */
     com.nodes.chatclient.e2ee.protos.ProtoSession.SessionProto.SkippedKeyOrBuilder getSkippedKeysOrBuilder(
         int index);
+
+    /**
+     * <code>optional uint32 one_time_prekey_id = 18;</code>
+     * @return Whether the oneTimePrekeyId field is set.
+     */
+    boolean hasOneTimePrekeyId();
+    /**
+     * <code>optional uint32 one_time_prekey_id = 18;</code>
+     * @return The oneTimePrekeyId.
+     */
+    int getOneTimePrekeyId();
   }
   /**
    * Protobuf type {@code org.example.SessionProto}
@@ -1876,6 +1887,25 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
       return skippedKeys_.get(index);
     }
 
+    public static final int ONE_TIME_PREKEY_ID_FIELD_NUMBER = 18;
+    private int oneTimePrekeyId_ = 0;
+    /**
+     * <code>optional uint32 one_time_prekey_id = 18;</code>
+     * @return Whether the oneTimePrekeyId field is set.
+     */
+    @java.lang.Override
+    public boolean hasOneTimePrekeyId() {
+      return ((bitField0_ & 0x00000020) != 0);
+    }
+    /**
+     * <code>optional uint32 one_time_prekey_id = 18;</code>
+     * @return The oneTimePrekeyId.
+     */
+    @java.lang.Override
+    public int getOneTimePrekeyId() {
+      return oneTimePrekeyId_;
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -1940,6 +1970,9 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
       }
       for (int i = 0; i < skippedKeys_.size(); i++) {
         output.writeMessage(17, skippedKeys_.get(i));
+      }
+      if (((bitField0_ & 0x00000020) != 0)) {
+        output.writeUInt32(18, oneTimePrekeyId_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -2021,6 +2054,10 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
             }
             size += 2 * count;
           }
+      if (((bitField0_ & 0x00000020) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(18, oneTimePrekeyId_);
+      }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
@@ -2084,6 +2121,11 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
       }
       if (!getSkippedKeysList()
           .equals(other.getSkippedKeysList())) return false;
+      if (hasOneTimePrekeyId() != other.hasOneTimePrekeyId()) return false;
+      if (hasOneTimePrekeyId()) {
+        if (getOneTimePrekeyId()
+            != other.getOneTimePrekeyId()) return false;
+      }
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
@@ -2142,6 +2184,10 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
       if (getSkippedKeysCount() > 0) {
         hash = (37 * hash) + SKIPPED_KEYS_FIELD_NUMBER;
         hash = (53 * hash) + getSkippedKeysList().hashCode();
+      }
+      if (hasOneTimePrekeyId()) {
+        hash = (37 * hash) + ONE_TIME_PREKEY_ID_FIELD_NUMBER;
+        hash = (53 * hash) + getOneTimePrekeyId();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -2313,6 +2359,7 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
           skippedKeysBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00010000);
+        oneTimePrekeyId_ = 0;
         return this;
       }
 
@@ -2417,6 +2464,10 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
               : receivingChainBuilder_.build();
           to_bitField0_ |= 0x00000010;
         }
+        if (((from_bitField0_ & 0x00020000) != 0)) {
+          result.oneTimePrekeyId_ = oneTimePrekeyId_;
+          to_bitField0_ |= 0x00000020;
+        }
         result.bitField0_ |= to_bitField0_;
       }
 
@@ -2509,6 +2560,9 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
               skippedKeysBuilder_.addAllMessages(other.skippedKeys_);
             }
           }
+        }
+        if (other.hasOneTimePrekeyId()) {
+          setOneTimePrekeyId(other.getOneTimePrekeyId());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
@@ -2633,6 +2687,11 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
                 }
                 break;
               } // case 138
+              case 144: {
+                oneTimePrekeyId_ = input.readUInt32();
+                bitField0_ |= 0x00020000;
+                break;
+              } // case 144
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -3716,6 +3775,46 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
         return skippedKeysBuilder_;
       }
 
+      private int oneTimePrekeyId_ ;
+      /**
+       * <code>optional uint32 one_time_prekey_id = 18;</code>
+       * @return Whether the oneTimePrekeyId field is set.
+       */
+      @java.lang.Override
+      public boolean hasOneTimePrekeyId() {
+        return ((bitField0_ & 0x00020000) != 0);
+      }
+      /**
+       * <code>optional uint32 one_time_prekey_id = 18;</code>
+       * @return The oneTimePrekeyId.
+       */
+      @java.lang.Override
+      public int getOneTimePrekeyId() {
+        return oneTimePrekeyId_;
+      }
+      /**
+       * <code>optional uint32 one_time_prekey_id = 18;</code>
+       * @param value The oneTimePrekeyId to set.
+       * @return This builder for chaining.
+       */
+      public Builder setOneTimePrekeyId(int value) {
+
+        oneTimePrekeyId_ = value;
+        bitField0_ |= 0x00020000;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional uint32 one_time_prekey_id = 18;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearOneTimePrekeyId() {
+        bitField0_ = (bitField0_ & ~0x00020000);
+        oneTimePrekeyId_ = 0;
+        onChanged();
+        return this;
+      }
+
       // @@protoc_insertion_point(builder_scope:org.example.SessionProto)
     }
 
@@ -3792,7 +3891,7 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
   static {
     java.lang.String[] descriptorData = {
       "\n\033crypto-schema/session.proto\022\013org.examp" +
-      "le\"\215\007\n\014SessionProto\022\027\n\017session_version\030\001" +
+      "le\"\305\007\n\014SessionProto\022\027\n\017session_version\030\001" +
       " \001(\r\022\027\n\017local_device_id\030\002 \001(\t\022\030\n\020remote_" +
       "device_id\030\003 \001(\t\022\021\n\tinitiator\030\004 \001(\010\022.\n\005st" +
       "ate\030\005 \001(\0162\037.org.example.SessionProto.Sta" +
@@ -3807,16 +3906,17 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
       "SessionProto.ChainStateH\003\210\001\001\022B\n\017receivin" +
       "g_chain\030\020 \001(\0132$.org.example.SessionProto" +
       ".ChainStateH\004\210\001\001\022:\n\014skipped_keys\030\021 \003(\0132$" +
-      ".org.example.SessionProto.SkippedKey\0327\n\n" +
-      "ChainState\022\021\n\tchain_key\030\001 \001(\014\022\026\n\016message" +
-      "_number\030\002 \001(\004\0321\n\nSkippedKey\022\026\n\016ratchet_k" +
-      "ey_id\030\001 \001(\t\022\013\n\003key\030\002 \001(\014\")\n\005State\022\010\n\004INI" +
-      "T\020\000\022\n\n\006ACTIVE\020\001\022\n\n\006BROKEN\020\002B\034\n\032_remote_s" +
-      "igning_public_keyB\027\n\025_remote_dh_public_k" +
-      "eyB \n\036_previous_remote_dh_public_keyB\020\n\016" +
-      "_sending_chainB\022\n\020_receiving_chainB0\n co" +
-      "m.nodes.chatclient.e2ee.protosB\014ProtoSes" +
-      "sionb\006proto3"
+      ".org.example.SessionProto.SkippedKey\022\037\n\022" +
+      "one_time_prekey_id\030\022 \001(\rH\005\210\001\001\0327\n\nChainSt" +
+      "ate\022\021\n\tchain_key\030\001 \001(\014\022\026\n\016message_number" +
+      "\030\002 \001(\004\0321\n\nSkippedKey\022\026\n\016ratchet_key_id\030\001" +
+      " \001(\t\022\013\n\003key\030\002 \001(\014\")\n\005State\022\010\n\004INIT\020\000\022\n\n\006" +
+      "ACTIVE\020\001\022\n\n\006BROKEN\020\002B\034\n\032_remote_signing_" +
+      "public_keyB\027\n\025_remote_dh_public_keyB \n\036_" +
+      "previous_remote_dh_public_keyB\020\n\016_sendin" +
+      "g_chainB\022\n\020_receiving_chainB\025\n\023_one_time" +
+      "_prekey_idB0\n com.nodes.chatclient.e2ee." +
+      "protosB\014ProtoSessionb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -3827,7 +3927,7 @@ public final class ProtoSession extends com.google.protobuf.GeneratedFile {
     internal_static_org_example_SessionProto_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_org_example_SessionProto_descriptor,
-        new java.lang.String[] { "SessionVersion", "LocalDeviceId", "RemoteDeviceId", "Initiator", "State", "RootKey", "DhPrivateKey", "DhPublicKey", "SigningPrivateKey", "SigningPublicKey", "RemoteSigningPublicKey", "RemoteDhPublicKey", "PreviousRemoteDhPublicKey", "PreviousSendingChainLength", "SendingChain", "ReceivingChain", "SkippedKeys", });
+        new java.lang.String[] { "SessionVersion", "LocalDeviceId", "RemoteDeviceId", "Initiator", "State", "RootKey", "DhPrivateKey", "DhPublicKey", "SigningPrivateKey", "SigningPublicKey", "RemoteSigningPublicKey", "RemoteDhPublicKey", "PreviousRemoteDhPublicKey", "PreviousSendingChainLength", "SendingChain", "ReceivingChain", "SkippedKeys", "OneTimePrekeyId", });
     internal_static_org_example_SessionProto_ChainState_descriptor =
       internal_static_org_example_SessionProto_descriptor.getNestedType(0);
     internal_static_org_example_SessionProto_ChainState_fieldAccessorTable = new

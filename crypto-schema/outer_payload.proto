@@ -16,4 +16,7 @@ message OuterPayload {
   bytes iv = 8;
   bytes ciphertext = 9;
   bytes signature = 10;
+
+  bytes senderIdentityKey = 11;
+  optional uint32 oneTimePrekeyId = 12;
 }

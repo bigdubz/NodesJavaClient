@@ -15,6 +15,8 @@ public final class EncryptedMessage {
     public byte[] iv;
     public byte[] cipherText; // encrypted payload
     public byte[] signature;
+    public byte[] senderIdentityKey;
+    public Integer oneTimePrekeyId;
 
     public EncryptedMessage(String fromUserId, String fromDeviceId,
                             String toUserId, String toDeviceId,
@@ -32,6 +34,11 @@ public final class EncryptedMessage {
         this.iv = iv;
         this.cipherText = cipherText;
         this.signature = signature;
+    }
+
+    public void attachPrekeyMetadata(byte[] senderIdentityKey, Integer oneTimePrekeyId) {
+        this.senderIdentityKey = senderIdentityKey;
+        this.oneTimePrekeyId = oneTimePrekeyId;
     }
 
     public void sign(byte[] signingKey) throws Exception {

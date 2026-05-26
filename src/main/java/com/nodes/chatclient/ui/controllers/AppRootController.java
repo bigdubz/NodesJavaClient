@@ -41,13 +41,21 @@ public final class AppRootController {
         ContactStore contactStore = new ContactStore(DatabaseManager.get());
         MessageStore messageStore = new MessageStore(DatabaseManager.get());
         SessionStore sessionStore = new SessionStore(DatabaseManager.get());
+        SignedPrekeyStore signedPrekeyStore = new SignedPrekeyStore(DatabaseManager.get());
+        OneTimePrekeyStore oneTimePrekeyStore = new OneTimePrekeyStore(DatabaseManager.get());
 
         ChatStore store = new ChatStore(
                 userId,
                 ctx.localIdentity.deviceId(),
                 contactStore,
                 messageStore,
-                new MessageDecryptionService(ctx.localIdentity, contactStore, sessionStore)
+                new MessageDecryptionService(
+                        ctx.localIdentity,
+                        contactStore,
+                        sessionStore,
+                        signedPrekeyStore,
+                        oneTimePrekeyStore
+                )
         );
         store.loadLocalConversations();
         
@@ -69,8 +77,8 @@ public final class AppRootController {
         ctx.bundleProvisioningService = new BundleProvisioningService(
                 ctx.bundlesApi,
                 ctx.localIdentity,
-                new SignedPrekeyStore(DatabaseManager.get()),
-                new OneTimePrekeyStore(DatabaseManager.get())
+                signedPrekeyStore,
+                oneTimePrekeyStore
         );
 
         ctx.contactProvisioningService = new ContactProvisioningService(

@@ -51,4 +51,6 @@ message SessionProto {
   }
 
   repeated SkippedKey skipped_keys = 17;
+
+  optional uint32 one_time_prekey_id = 18;
 }

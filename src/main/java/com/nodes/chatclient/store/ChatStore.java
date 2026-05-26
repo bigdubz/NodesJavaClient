@@ -289,14 +289,18 @@ public final class ChatStore implements ServerHandlers {
     @Override
     public void onEncryptedRelay(ServerEncryptedRelay.Payload payload) {
         storeExecutor.execute(() -> {
-            EncryptedMessage encryptedMessage = OuterPayloadMapper.deserialize(payload.blob);
-            InternalMessage decryptedMessage = decryptionService.decryptMessage(encryptedMessage);
-            if (decryptedMessage == null) {
-                return;
-            }
+            try {
+                EncryptedMessage encryptedMessage = OuterPayloadMapper.deserializeBase64(payload.blob);
+                InternalMessage decryptedMessage = decryptionService.decryptMessage(encryptedMessage);
+                if (decryptedMessage == null) {
+                    return;
+                }
 
-            if (decryptedMessage.type == InternalMessage.Type.TEXT) {
-                addIncomingTextMessage(encryptedMessage, decryptedMessage);
+                if (decryptedMessage.type == InternalMessage.Type.TEXT) {
+                    addIncomingTextMessage(encryptedMessage, decryptedMessage);
+                }
+            } catch (Exception e) {
+                System.err.println("Failed to handle encrypted relay: " + e.getMessage());
             }
         });
     }

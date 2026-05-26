@@ -71,6 +71,10 @@ public final class SessionMapper {
             );
         }
 
+        if (session.oneTimePrekeyId != null) {
+            builder.setOneTimePrekeyId(session.oneTimePrekeyId);
+        }
+
         return builder.build();
     }
 

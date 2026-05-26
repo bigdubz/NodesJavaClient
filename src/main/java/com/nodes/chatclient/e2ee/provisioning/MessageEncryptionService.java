@@ -62,6 +62,7 @@ public final class MessageEncryptionService {
                     .orElseThrow(() -> new IllegalStateException(
                             "No session for " + contact.userId() + ":" + contact.deviceId()
                     ));
+            boolean needsPrekeyMetadata = session.receivingChainKey == null;
 
             EncryptedMessage encrypted = DoubleRatchet.encrypt(
                     session,
@@ -69,6 +70,12 @@ public final class MessageEncryptionService {
                     localIdentity.userId(),
                     contact.userId()
             );
+            if (needsPrekeyMetadata) {
+                encrypted.attachPrekeyMetadata(
+                        localIdentity.identityPublicKey(),
+                        session.oneTimePrekeyId
+                );
+            }
 
             sessionStore.save(contact.userId(), contact.deviceId(), session);
 

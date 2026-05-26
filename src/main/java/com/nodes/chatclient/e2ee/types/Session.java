@@ -26,6 +26,7 @@ public final class Session {
     public byte[] remoteDHPublicKey;
     public byte[] previousRemoteDHPublicKey;
     public long previousChainLength;
+    public Integer oneTimePrekeyId;
 
     public boolean initiator;
 
@@ -104,6 +105,9 @@ public final class Session {
         }
 
         session.previousChainLength = proto.getPreviousSendingChainLength();
+        if (proto.hasOneTimePrekeyId()) {
+            session.oneTimePrekeyId = proto.getOneTimePrekeyId();
+        }
 
         // Skipped keys
         for (ProtoSession.SessionProto.SkippedKey k : proto.getSkippedKeysList()) {

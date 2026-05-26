@@ -54,7 +54,8 @@ public final class X3DHService {
                 rootKey,
                 ephPrivateKey,
                 ephPublicKey,
-                remoteBundle.spk()
+                remoteBundle.spk(),
+                usedOneTimePrekey ? remoteBundle.opk().keyId() : null
         );
 
         PrekeyMessage prekeyMessage = new PrekeyMessage(
@@ -74,7 +75,8 @@ public final class X3DHService {
                                          byte[] rootKey,
                                          byte[] localDhPrivateKey,
                                          byte[] localDhPublicKey,
-                                         byte[] remoteDhPublicKey) throws Exception {
+                                         byte[] remoteDhPublicKey,
+                                         Integer oneTimePrekeyId) throws Exception {
         byte[][] initialSendingRatchet = KeyDerivation.kdfRoot(
                 rootKey,
                 KeyMaterial.dh(localDhPrivateKey, remoteDhPublicKey)
@@ -103,6 +105,7 @@ public final class X3DHService {
 
         session.previousRemoteDHPublicKey = null;
         session.previousChainLength = 0;
+        session.oneTimePrekeyId = oneTimePrekeyId;
 
         session.sendingMessageNumber = 0;
         session.receivingMessageNumber = 0;

@@ -7,6 +7,6 @@ public record ServerEncryptedRelay(Payload payload) {
         public String toDeviceId;
         public String fromUserId;
         public String fromDeviceId;
-        public byte[] blob;
+        public String blob;
     }
 }
