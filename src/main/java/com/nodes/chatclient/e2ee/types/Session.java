@@ -19,7 +19,7 @@ public final class Session {
     public String remoteDeviceId;
     public String localDeviceId;
 
-    public SkippedKeyStore skippedKeys = new SkippedKeyStore(1000);
+    public final SkippedKeyStore skippedKeys = new SkippedKeyStore(1000);
 
     public byte[] dhPrivateKey;
     public byte[] dhPublicKey;

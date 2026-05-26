@@ -36,29 +36,29 @@ public final class ConversationCell extends ListCell<ConversationUi> {
         delete.setOnAction(e -> onConversationDeleteRequested.accept(item));
         contextMenu.getItems().addAll(markRead, delete);
 
-        boolean unread = item.unreadCount > 0;
+        boolean unread = item.unreadCount() > 0;
 
-        Label name = new Label(item.peerId);
+        Label name = new Label(item.peerId());
         name.getStyleClass().add("conversation-name");
         if (unread) name.getStyleClass().add("unread");
 
         Region statusDot = new Region();
         statusDot.getStyleClass().addAll(
                 "status-dot",
-                item.isOnline ? "status-online" : "status-offline"
+                item.isOnline() ? "status-online" : "status-offline"
         );
 
         HBox nameRow = new HBox(6, name, statusDot);
         nameRow.setAlignment(Pos.CENTER_LEFT);
 
-        Label preview = new Label(item.lastMessage != null ? item.lastMessage : "");
+        Label preview = new Label(item.lastMessage() != null ? item.lastMessage() : "");
         preview.getStyleClass().add("conversation-preview");
         if (unread) preview.getStyleClass().add("unread");
 
         preview.setTextOverrun(OverrunStyle.ELLIPSIS);
         preview.setWrapText(false);
 
-        Label time = new Label(TimeUtils.longToFormatted(item.lastTimestamp, false));
+        Label time = new Label(TimeUtils.longToFormatted(item.lastTimestamp(), false));
         time.getStyleClass().add("conversation-time");
 
         Region spacer = new Region();
@@ -73,7 +73,7 @@ public final class ConversationCell extends ListCell<ConversationUi> {
         rightBox.setAlignment(Pos.CENTER_RIGHT);
 
         if (unread) {
-            Label unreadLabel = new Label(String.valueOf(item.unreadCount));
+            Label unreadLabel = new Label(String.valueOf(item.unreadCount()));
             unreadLabel.getStyleClass().add("unread-badge");
             rightBox.getChildren().add(unreadLabel);
         }

@@ -40,7 +40,7 @@ public final class ConversationsController {
                 var selected = list.getSelectionModel().getSelectedItem();
 
                 if (selected != null) {
-                    onConversationSelected.accept(selected.peerId);
+                    onConversationSelected.accept(selected.peerId());
                 }
             }
         });
@@ -63,8 +63,8 @@ public final class ConversationsController {
 
     private void onDeleteConversation(ConversationUi conversation) {
         if (conversation != null) {
-            onDeleteConversation.accept(conversation.peerId);
-            vm.deleteContact(conversation.peerId);
+            onDeleteConversation.accept(conversation.peerId());
+            vm.deleteContact(conversation.peerId());
         }
     }
 

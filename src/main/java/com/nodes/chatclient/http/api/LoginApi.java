@@ -5,6 +5,7 @@ import com.nodes.chatclient.config.ClientConfig;
 import com.nodes.chatclient.http.dto.LoginRequest;
 import com.nodes.chatclient.http.dto.LoginResponse;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -55,7 +56,7 @@ public final class LoginApi {
     public LoginResponse login(
             String userId,
             String password
-    ) throws Exception {
+    ) throws IOException, InterruptedException {
         LoginRequest body = new LoginRequest(normalizeUserId(userId), password);
         String json = mapper.writeValueAsString(body);
 

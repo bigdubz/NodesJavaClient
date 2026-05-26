@@ -60,13 +60,13 @@ public final class TimeUtils {
 
     public static boolean getShouldBundle(ChatMessageUi mOld, ChatMessageUi mNew) {
         // if from the same user and within one minute, bundle
-        return mOld.fromUserId.equals(mNew.fromUserId) && mNew.createdAt - mOld.createdAt < 60000;
+        return mOld.fromUserId().equals(mNew.fromUserId()) && mNew.createdAt() - mOld.createdAt() < 60000;
     }
 
     public static boolean getShouldShowDateSeparator(ChatMessageUi mOld, ChatMessageUi mNew) {
         ZoneId zone = ZoneId.systemDefault();
-        Instant instantOld = Instant.ofEpochMilli(mOld.createdAt);
-        Instant instantNew = Instant.ofEpochMilli(mNew.createdAt);
+        Instant instantOld = Instant.ofEpochMilli(mOld.createdAt());
+        Instant instantNew = Instant.ofEpochMilli(mNew.createdAt());
 
         LocalDateTime timeOld = instantOld.atZone(zone).toLocalDateTime();
         LocalDateTime timeNew = instantNew.atZone(zone).toLocalDateTime();

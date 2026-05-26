@@ -6,9 +6,9 @@ public final class InternalMessage {
     public enum Type { TEXT, REACTION, CONTROL }
     public final Type type;
 
-    public String messageId;
+    public final String messageId;
     public String referencedMessageId;
-    public long createdAt;
+    public final long createdAt;
 
     // Text fields
     public String body;

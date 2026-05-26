@@ -8,12 +8,12 @@ public final class EncryptedMessage {
     public final String toUserId;
     public final String toDeviceId;
 
-    public byte[] dhPublicKey;
-    public long messageNumber;
+    public final byte[] dhPublicKey;
+    public final long messageNumber;
     public final long previousChainLength;
 
-    public byte[] iv;
-    public byte[] cipherText; // encrypted payload
+    public final byte[] iv;
+    public final byte[] cipherText; // encrypted payload
     public byte[] signature;
     public byte[] senderIdentityKey;
     public byte[] senderSigningKey;

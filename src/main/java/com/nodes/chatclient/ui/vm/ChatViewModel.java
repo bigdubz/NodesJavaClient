@@ -145,8 +145,8 @@ public final class ChatViewModel implements StoreListener {
     public void markVisibleMessagesAsSeen() {
         List<String> messages =
                 getMessages().stream()
-                        .filter(m -> !m.fromUserId.equals(ctx.userId) && !m.read)
-                        .map(c -> c.messageId)
+                        .filter(m -> !m.fromUserId().equals(ctx.userId) && !m.read())
+                        .map(c -> c.messageId())
                         .toList();
 
         store.bulkMarkMessagesAsSeen(peerId, messages);

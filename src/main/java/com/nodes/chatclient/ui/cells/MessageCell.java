@@ -69,10 +69,10 @@ public final class MessageCell extends ListCell<ChatMessageUi> {
             setContextMenu(contextMenu);
         }
 
-        boolean fromMe = m.fromUserId.equals(selfId);
+        boolean fromMe = m.fromUserId().equals(selfId);
         boolean shouldBundle = false;
         boolean shouldShowDateSeparator = false;
-        boolean hasReactionFromMe = m.reactions.get(selfId) != null;
+        boolean hasReactionFromMe = m.reactions().get(selfId) != null;
 
         if (getIndex() - 1 >= 0) {
             ChatMessageUi mOld = getListView().getItems().get(getIndex() - 1);
@@ -94,7 +94,7 @@ public final class MessageCell extends ListCell<ChatMessageUi> {
         MenuItem copy = new MenuItem("Copy text");
         copy.setOnAction(e -> {
             ClipboardContent cc = new ClipboardContent();
-            cc.putString(m.text);
+            cc.putString(m.text());
             Clipboard.getSystemClipboard().setContent(cc);
         });
 
@@ -104,19 +104,19 @@ public final class MessageCell extends ListCell<ChatMessageUi> {
 
         // message header
         HBox bubbleHeader = new HBox(5);
-        Label username = new Label(m.fromUserId);
+        Label username = new Label(m.fromUserId());
         username.getStyleClass().add("msg-username");
-        Label timestamp = new Label(TimeUtils.longToFormatted(m.createdAt, true));
+        Label timestamp = new Label(TimeUtils.longToFormatted(m.createdAt(), true));
         timestamp.getStyleClass().add("msg-time");
 
         // message content
-        TextFlow flow = Helper.textWithEmojiTextFlow(m.text, "msg-text");
+        TextFlow flow = Helper.textWithEmojiTextFlow(m.text(), "msg-text");
         VBox bubble = new VBox(1);
         bubble.getStyleClass().add("msg-bubble");
         bubble.setMaxWidth(Region.USE_PREF_SIZE);
 
         if (shouldShowDateSeparator) {
-            HBox separator = createDateSeparator(TimeUtils.getDate(m.createdAt));
+            HBox separator = createDateSeparator(TimeUtils.getDate(m.createdAt()));
             row.getChildren().add(separator);
         }
 
@@ -126,16 +126,16 @@ public final class MessageCell extends ListCell<ChatMessageUi> {
 
         // reply box
         ChatMessageUi replied;
-        if (m.replyingTo != null) {
+        if (m.replyingTo() != null) {
             replied = getListView()
                     .getItems()
                     .stream()
-                    .filter(repliedMsg -> repliedMsg.messageId.equals(m.replyingTo))
+                    .filter(repliedMsg -> repliedMsg.messageId().equals(m.replyingTo()))
                     .findFirst()
                     .orElse(null);
             VBox replyBox;
             if (replied != null) {
-                replyBox = createReplyPreview(replied.text, replied.fromUserId, fromMe);
+                replyBox = createReplyPreview(replied.text(), replied.fromUserId(), fromMe);
             } else {
                 replyBox = createReplyPreview("Message not loaded", "Unknown", fromMe);
             }
@@ -144,7 +144,7 @@ public final class MessageCell extends ListCell<ChatMessageUi> {
         bubble.getChildren().add(flow);
 
         // reaction box
-        if (!m.reactions.isEmpty()) {
+        if (!m.reactions().isEmpty()) {
             HBox reactions = createReactions(m);
             bubble.getChildren().add(reactions);
         }
@@ -162,7 +162,7 @@ public final class MessageCell extends ListCell<ChatMessageUi> {
             row.setAlignment(Pos.CENTER_RIGHT);
             bubbleHeader.setAlignment(Pos.CENTER_RIGHT);
             // if is last message, from me, and is read, show read receipt
-            if (getIndex() == getListView().getItems().size() - 1 && m.read) {
+            if (getIndex() == getListView().getItems().size() - 1 && m.read()) {
                 Label seen = new Label("Seen");
                 seen.getStyleClass().add("msg-seen");
                 bubble.getChildren().add(seen);
@@ -199,7 +199,7 @@ public final class MessageCell extends ListCell<ChatMessageUi> {
         HBox row = new HBox(6);
         row.getStyleClass().add("msg-reactions");
 
-        m.reactions.forEach((userId, emoji) -> {
+        m.reactions().forEach((userId, emoji) -> {
             String key = EmojiRegistry.emojiToKey(emoji);
             double size = 13;
             ImageView emojiImage = EmojiRegistry.createEmojiView(key, size);
