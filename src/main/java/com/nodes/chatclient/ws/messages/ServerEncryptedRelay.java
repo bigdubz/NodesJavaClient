@@ -1,5 +1,7 @@
 package com.nodes.chatclient.ws.messages;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 public record ServerEncryptedRelay(Payload payload) {
 
     public static final class Payload {
@@ -7,6 +9,6 @@ public record ServerEncryptedRelay(Payload payload) {
         public String toDeviceId;
         public String fromUserId;
         public String fromDeviceId;
-        public String blob;
+        public JsonNode blob;
     }
 }

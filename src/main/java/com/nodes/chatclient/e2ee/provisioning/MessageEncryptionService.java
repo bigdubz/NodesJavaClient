@@ -80,6 +80,7 @@ public final class MessageEncryptionService {
             sessionStore.save(contact.userId(), contact.deviceId(), session);
 
             byte[] blob = OuterPayloadMapper.serialize(encrypted);
+            OuterPayloadMapper.deserialize(blob);
             result.add(new EncryptedSend(
                     contact.userId(),
                     contact.deviceId(),

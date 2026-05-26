@@ -2,10 +2,14 @@ package com.nodes.chatclient.e2ee.mappers;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.nodes.chatclient.e2ee.protos.ProtoOuterPayload;
 import com.nodes.chatclient.e2ee.types.EncryptedMessage;
 
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 
 public final class OuterPayloadMapper {
     public static byte[] serialize(EncryptedMessage msg) {
@@ -37,8 +41,34 @@ public final class OuterPayloadMapper {
         try {
             return deserialize(Base64.getDecoder().decode(encoded));
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid outer payload base64", e);
+            try {
+                byte[] decoded = Base64.getDecoder().decode(encoded);
+                return deserialize(Base64.getDecoder().decode(new String(decoded, StandardCharsets.US_ASCII)));
+            } catch (IllegalArgumentException ignored) {
+                throw new IllegalArgumentException("Invalid outer payload base64/protobuf: " + describeEncoded(encoded), e);
+            }
         }
+    }
+
+    public static EncryptedMessage deserializeRelayBlob(JsonNode blob) {
+        if (blob == null || blob.isNull()) {
+            throw new IllegalArgumentException("Missing encrypted relay blob");
+        }
+
+        if (blob.isTextual()) {
+            return deserializeBase64(blob.asText());
+        }
+
+        if (blob.isArray()) {
+            return deserialize(jsonByteArray(blob));
+        }
+
+        JsonNode data = blob.get("data");
+        if (data != null && data.isArray()) {
+            return deserialize(jsonByteArray(data));
+        }
+
+        throw new IllegalArgumentException("Unsupported encrypted relay blob shape: " + blob.getNodeType());
     }
 
     public static EncryptedMessage deserialize(byte[] bytes) {
@@ -66,5 +96,28 @@ public final class OuterPayloadMapper {
         } catch (InvalidProtocolBufferException e) {
             throw new IllegalArgumentException("Invalid outer payload bytes", e);
         }
+    }
+
+    private static byte[] jsonByteArray(JsonNode array) {
+        List<Byte> bytes = new ArrayList<>();
+        for (JsonNode node : array) {
+            bytes.add((byte) node.asInt());
+        }
+
+        byte[] result = new byte[bytes.size()];
+        for (int i = 0; i < bytes.size(); i++) {
+            result[i] = bytes.get(i);
+        }
+        return result;
+    }
+
+    private static String describeEncoded(String encoded) {
+        if (encoded == null) {
+            return "null";
+        }
+
+        int length = encoded.length();
+        String prefix = encoded.substring(0, Math.min(24, length));
+        return "length=" + length + ", prefix=" + prefix;
     }
 }

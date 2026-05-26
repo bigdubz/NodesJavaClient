@@ -290,7 +290,7 @@ public final class ChatStore implements ServerHandlers {
     public void onEncryptedRelay(ServerEncryptedRelay.Payload payload) {
         storeExecutor.execute(() -> {
             try {
-                EncryptedMessage encryptedMessage = OuterPayloadMapper.deserializeBase64(payload.blob);
+                EncryptedMessage encryptedMessage = OuterPayloadMapper.deserializeRelayBlob(payload.blob);
                 InternalMessage decryptedMessage = decryptionService.decryptMessage(encryptedMessage);
                 if (decryptedMessage == null) {
                     return;
