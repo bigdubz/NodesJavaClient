@@ -48,6 +48,7 @@ public final class X3DHService {
 
         byte[] rootKey = KeyMaterial.hash(secret);
 
+        Integer oneTimePrekeyId = usedOneTimePrekey ? remoteBundle.opk().keyId() : null;
         Session session = createInitialSession(
                 self,
                 remoteBundle,
@@ -55,7 +56,7 @@ public final class X3DHService {
                 ephPrivateKey,
                 ephPublicKey,
                 remoteBundle.spk(),
-                usedOneTimePrekey ? remoteBundle.opk().keyId() : null
+                oneTimePrekeyId
         );
 
         PrekeyMessage prekeyMessage = new PrekeyMessage(
@@ -64,7 +65,7 @@ public final class X3DHService {
                 self.identityPublicKey(),
                 ephPublicKey,
                 0,
-                usedOneTimePrekey ? remoteBundle.opk().keyId() : null
+                oneTimePrekeyId
         );
 
         return new X3DHResult(session, prekeyMessage, usedOneTimePrekey);

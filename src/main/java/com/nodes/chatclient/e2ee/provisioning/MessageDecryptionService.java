@@ -103,6 +103,10 @@ public final class MessageDecryptionService {
                         .orElseThrow(() -> new IllegalStateException(
                                 "No one-time prekey for id " + encryptedMessage.oneTimePrekeyId
                         ));
+                if (oneTimePrekey.isUsed()) {
+                    throw new IllegalStateException("One-time prekey with id " + oneTimePrekey.keyId() +
+                            " is already used.");
+                }
                 byte[] dh4 = KeyMaterial.dh(oneTimePrekey.privateKey(), encryptedMessage.dhPublicKey);
                 secret = KeyMaterial.concat(secret, dh4);
             }

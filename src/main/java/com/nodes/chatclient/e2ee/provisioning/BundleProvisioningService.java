@@ -6,6 +6,7 @@ import com.nodes.chatclient.e2ee.records.OneTimePrekeyRecord;
 import com.nodes.chatclient.e2ee.records.SignedPrekeyRecord;
 import com.nodes.chatclient.e2ee.db.stores.OneTimePrekeyStore;
 import com.nodes.chatclient.e2ee.db.stores.SignedPrekeyStore;
+import com.nodes.chatclient.e2ee.types.BundleOneTimePrekey;
 import com.nodes.chatclient.e2ee.types.LocalIdentity;
 import com.nodes.chatclient.e2ee.types.LocalUserBundle;
 import com.nodes.chatclient.http.api.BundlesApi;
@@ -15,8 +16,10 @@ import java.security.SecureRandom;
 import java.sql.SQLException;
 import java.time.Clock;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 public final class BundleProvisioningService {
@@ -122,14 +125,19 @@ public final class BundleProvisioningService {
                 true
         );
 
-        byte[][] oneTimePrekeys = new byte[oneTimePrekeyCount][];
+        BundleOneTimePrekey[] oneTimePrekeys = new BundleOneTimePrekey[oneTimePrekeyCount];
         List<OneTimePrekeyRecord> oneTimePrekeyRecords = new ArrayList<>();
+        Set<Integer> generatedOneTimePrekeyIds = new HashSet<>();
 
         for (int i = 0; i < oneTimePrekeyCount; i++) {
             byte[][] oneTimePrekey = KeyMaterial.generateX25519KeyPair();
-            oneTimePrekeys[i] = oneTimePrekey[0];
+            int id = nextOneTimePrekeyId();
+            while (!generatedOneTimePrekeyIds.add(id)) {
+                id = nextOneTimePrekeyId();
+            }
+            oneTimePrekeys[i] = new BundleOneTimePrekey(id, oneTimePrekey[0]);
             oneTimePrekeyRecords.add(new OneTimePrekeyRecord(
-                    nextOneTimePrekeyId(),
+                    id,
                     oneTimePrekey[0],
                     oneTimePrekey[1],
                     false

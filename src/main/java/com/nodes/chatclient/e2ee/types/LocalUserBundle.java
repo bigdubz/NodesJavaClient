@@ -13,7 +13,7 @@ public record LocalUserBundle(
         byte[] ik,
         byte[] spk,
         byte[] spkSignature,
-        byte[][] opks
+        BundleOneTimePrekey[] opks
 ) {
     private int[] bytesToJsonArray(byte[] bytes) {
         int[] out = new int[bytes.length];
@@ -33,9 +33,12 @@ public record LocalUserBundle(
         body.put("spk", bytesToJsonArray(spk));
         body.put("spkSignature", bytesToJsonArray(spkSignature));
 
-        List<int[]> opksArray = new ArrayList<>();
-        for (byte[] opk : opks) {
-            opksArray.add(bytesToJsonArray(opk));
+        List<Map<String, Object>> opksArray = new ArrayList<>();
+        for (BundleOneTimePrekey opk : opks) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("keyId", opk.keyId());
+            map.put("publicKey", bytesToJsonArray(opk.publicKey()));
+            opksArray.add(map);
         }
 
         body.put("opks", opksArray);
