@@ -1,10 +1,11 @@
 package com.nodes.chatclient.ws.messages;
 
-public record ClientAck(Payload payload) implements ClientMessage {
-    public static final String type = "ACK";
+public final class ClientAck implements ClientMessage {
+    public final String type = "ACK";
+    public final Payload payload;
 
     public ClientAck(String payload) {
-        this(new Payload(payload));
+        this.payload = new Payload(payload);
     }
 
     @Override
