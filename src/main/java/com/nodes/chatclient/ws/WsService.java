@@ -149,6 +149,13 @@ public final class WsService {
         }
     }
 
+    public void sendAckAsync(
+            String blobHash
+    ) {
+        if (webSocket == null) return;
+        sendAsync(new ClientAck(blobHash));
+    }
+
     public void sendEncryptedAsync(
             String toUserId,
             String toDeviceId,

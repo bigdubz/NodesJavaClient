@@ -1,5 +1,6 @@
 package com.nodes.chatclient.e2ee.provisioning;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.nodes.chatclient.e2ee.crypto.DoubleRatchet;
 import com.nodes.chatclient.e2ee.crypto.KeyMaterial;
 import com.nodes.chatclient.e2ee.db.stores.ContactStore;
@@ -16,6 +17,7 @@ import com.nodes.chatclient.e2ee.types.LocalIdentity;
 import com.nodes.chatclient.e2ee.types.Session;
 
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -71,6 +73,18 @@ public final class MessageDecryptionService {
             System.err.println("Failed to decrypt message: " + e.getMessage());
             return null;
         }
+    }
+
+    public void sendAckOnDecryptSuccess(JsonNode blobNode) throws Exception {
+        String base64Blob = blobNode.asText();
+
+        byte[] rawBlob = Base64.getDecoder().decode(base64Blob);
+
+        byte[] hash = KeyMaterial.hash(rawBlob);
+
+//        String hashHex = bytesToHex(hash);
+
+        System.out.println(Arrays.toString(hash));
     }
 
     private Session initializeResponderSession(EncryptedMessage encryptedMessage, ContactRecord contact) {

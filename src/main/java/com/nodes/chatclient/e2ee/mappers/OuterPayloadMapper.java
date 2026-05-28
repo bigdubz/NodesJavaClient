@@ -59,15 +59,18 @@ public final class OuterPayloadMapper {
         }
 
         if (blob.isTextual()) {
+            System.out.println("text");
             return deserializeBase64(blob.asText());
         }
 
         if (blob.isArray()) {
+            System.out.println("array");
             return deserialize(jsonByteArray(blob));
         }
 
         JsonNode data = blob.get("data");
         if (data != null && data.isArray()) {
+            System.out.println("data array");
             return deserialize(jsonByteArray(data));
         }
 

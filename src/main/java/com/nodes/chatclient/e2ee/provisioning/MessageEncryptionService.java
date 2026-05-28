@@ -77,10 +77,7 @@ public final class MessageEncryptionService {
                         localIdentity.signingPublicKey(),
                         session.oneTimePrekeyId
                 );
-                encrypted.signature = MessageAuth.sign(
-                        MessageAuth.signatureInput(encrypted),
-                        localIdentity.signingPrivateKey()
-                );
+                encrypted.sign(localIdentity.signingPrivateKey());
             }
 
             sessionStore.save(contact.userId(), contact.deviceId(), session);

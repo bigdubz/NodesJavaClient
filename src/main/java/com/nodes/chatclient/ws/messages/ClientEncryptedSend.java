@@ -1,11 +1,10 @@
 package com.nodes.chatclient.ws.messages;
 
-public final class ClientEncryptedSend implements ClientMessage {
-    public final String type = "ENCRYPTED_SEND";
-    public final Payload payload;
+public record ClientEncryptedSend(Payload payload) implements ClientMessage {
+    public static final String type = "ENCRYPTED_SEND";
 
     public ClientEncryptedSend(String toUserId, String toDeviceId, String blob) {
-        this.payload = new Payload(toUserId, toDeviceId, blob);
+        this(new Payload(toUserId, toDeviceId, blob));
     }
 
     @Override
