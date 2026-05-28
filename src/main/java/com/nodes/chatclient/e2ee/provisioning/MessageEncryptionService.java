@@ -1,6 +1,7 @@
 package com.nodes.chatclient.e2ee.provisioning;
 
 import com.nodes.chatclient.e2ee.crypto.DoubleRatchet;
+import com.nodes.chatclient.e2ee.crypto.MessageAuth;
 import com.nodes.chatclient.e2ee.mappers.OuterPayloadMapper;
 import com.nodes.chatclient.e2ee.records.ContactRecord;
 import com.nodes.chatclient.e2ee.db.stores.ContactStore;
@@ -75,6 +76,10 @@ public final class MessageEncryptionService {
                         localIdentity.identityPublicKey(),
                         localIdentity.signingPublicKey(),
                         session.oneTimePrekeyId
+                );
+                encrypted.signature = MessageAuth.sign(
+                        MessageAuth.signatureInput(encrypted),
+                        localIdentity.signingPrivateKey()
                 );
             }
 

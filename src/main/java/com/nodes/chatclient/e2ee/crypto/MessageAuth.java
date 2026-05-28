@@ -32,11 +32,18 @@ public final class MessageAuth {
         writeField(out, msg.fromDeviceId);
         writeField(out, msg.toUserId);
         writeField(out, msg.toDeviceId);
+
         writeOptionalField(out, msg.dhPublicKey);
         out.writeLong(msg.messageNumber);
         out.writeLong(msg.previousChainLength);
+
         writeField(out, msg.iv);
         writeField(out, msg.cipherText);
+
+
+        writeOptionalField(out, msg.senderIdentityKey);
+        writeOptionalField(out, msg.senderSigningKey);
+        writeOptionalInt(out, msg.oneTimePrekeyId);
         out.flush();
 
         return baos.toByteArray();
@@ -59,6 +66,15 @@ public final class MessageAuth {
         } else {
             out.writeInt(value.length);
             out.write(value);
+        }
+    }
+
+    private static void writeOptionalInt(DataOutputStream out, Integer value) throws Exception {
+        if (value == null) {
+            out.writeBoolean(false);
+        } else {
+            out.writeBoolean(true);
+            out.writeInt(value);
         }
     }
 }
