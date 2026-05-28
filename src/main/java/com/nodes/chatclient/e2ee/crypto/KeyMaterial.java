@@ -33,6 +33,10 @@ public final class KeyMaterial {
         return MessageDigest.getInstance("SHA-256").digest(input);
     }
 
+    public static byte[] hash(String input) throws Exception {
+        return MessageDigest.getInstance("SHA-256").digest(input.getBytes());
+    }
+
     public static byte[] concat(byte[] a, byte[] b) {
         byte[] result = new byte[a.length + b.length];
         System.arraycopy(a, 0, result, 0, a.length);

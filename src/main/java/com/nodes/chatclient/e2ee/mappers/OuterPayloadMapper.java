@@ -59,19 +59,7 @@ public final class OuterPayloadMapper {
         }
 
         if (blob.isTextual()) {
-            System.out.println("text");
             return deserializeBase64(blob.asText());
-        }
-
-        if (blob.isArray()) {
-            System.out.println("array");
-            return deserialize(jsonByteArray(blob));
-        }
-
-        JsonNode data = blob.get("data");
-        if (data != null && data.isArray()) {
-            System.out.println("data array");
-            return deserialize(jsonByteArray(data));
         }
 
         throw new IllegalArgumentException("Unsupported encrypted relay blob shape: " + blob.getNodeType());
@@ -105,19 +93,6 @@ public final class OuterPayloadMapper {
         } catch (InvalidProtocolBufferException e) {
             throw new IllegalArgumentException("Invalid outer payload bytes", e);
         }
-    }
-
-    private static byte[] jsonByteArray(JsonNode array) {
-        List<Byte> bytes = new ArrayList<>();
-        for (JsonNode node : array) {
-            bytes.add((byte) node.asInt());
-        }
-
-        byte[] result = new byte[bytes.size()];
-        for (int i = 0; i < bytes.size(); i++) {
-            result[i] = bytes.get(i);
-        }
-        return result;
     }
 
     private static String describeEncoded(String encoded) {

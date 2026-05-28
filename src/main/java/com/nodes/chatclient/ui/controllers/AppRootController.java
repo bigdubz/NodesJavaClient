@@ -54,7 +54,8 @@ public final class AppRootController {
                         contactStore,
                         sessionStore,
                         signedPrekeyStore,
-                        oneTimePrekeyStore
+                        oneTimePrekeyStore,
+                        ctx.wsService
                 )
         );
         store.loadLocalConversations();

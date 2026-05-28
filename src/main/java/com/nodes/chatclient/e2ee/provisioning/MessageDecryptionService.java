@@ -15,9 +15,9 @@ import com.nodes.chatclient.e2ee.types.EncryptedMessage;
 import com.nodes.chatclient.e2ee.types.InternalMessage;
 import com.nodes.chatclient.e2ee.types.LocalIdentity;
 import com.nodes.chatclient.e2ee.types.Session;
+import com.nodes.chatclient.ws.WsService;
 
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -28,19 +28,22 @@ public final class MessageDecryptionService {
     private final SessionStore sessionStore;
     private final SignedPrekeyStore signedPrekeyStore;
     private final OneTimePrekeyStore oneTimePrekeyStore;
+    private final WsService wsService;
 
     public MessageDecryptionService(
             LocalIdentity localIdentity,
             ContactStore contactStore,
             SessionStore sessionStore,
             SignedPrekeyStore signedPrekeyStore,
-            OneTimePrekeyStore oneTimePrekeyStore
+            OneTimePrekeyStore oneTimePrekeyStore,
+            WsService wsService
     ) {
         this.localIdentity = Objects.requireNonNull(localIdentity, "localIdentity");
         this.contactStore = Objects.requireNonNull(contactStore, "contactStore");
         this.sessionStore = Objects.requireNonNull(sessionStore, "sessionStore");
         this.signedPrekeyStore = signedPrekeyStore;
         this.oneTimePrekeyStore = oneTimePrekeyStore;
+        this.wsService = wsService;
     }
 
     public InternalMessage decryptMessage(EncryptedMessage encryptedMessage) {
@@ -77,14 +80,19 @@ public final class MessageDecryptionService {
 
     public void sendAckOnDecryptSuccess(JsonNode blobNode) throws Exception {
         String base64Blob = blobNode.asText();
+        byte[] hash = KeyMaterial.hash(base64Blob);
+        String hashHex = bytesToHex(hash);
+        wsService.sendAckAsync(hashHex);
+    }
 
-        byte[] rawBlob = Base64.getDecoder().decode(base64Blob);
+    public static String bytesToHex(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
 
-        byte[] hash = KeyMaterial.hash(rawBlob);
+        for (byte b : bytes) {
+            sb.append(String.format("%02x", b));
+        }
 
-//        String hashHex = bytesToHex(hash);
-
-        System.out.println(Arrays.toString(hash));
+        return sb.toString();
     }
 
     private Session initializeResponderSession(EncryptedMessage encryptedMessage, ContactRecord contact) {

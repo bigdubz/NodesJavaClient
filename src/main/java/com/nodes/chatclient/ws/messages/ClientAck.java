@@ -13,6 +13,6 @@ public final class ClientAck implements ClientMessage {
         return type;
     }
 
-    public record Payload(String blobhash) {
+    public record Payload(String blobHash) {
     }
 }

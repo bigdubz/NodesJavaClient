@@ -296,6 +296,7 @@ public final class ChatStore implements ServerHandlers {
                     return;
                 }
 
+                decryptionService.sendAckOnDecryptSuccess(payload.blob);
                 if (decryptedMessage.type == InternalMessage.Type.TEXT) {
                     addIncomingTextMessage(encryptedMessage, decryptedMessage);
                 }
