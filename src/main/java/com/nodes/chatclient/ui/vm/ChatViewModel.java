@@ -85,7 +85,7 @@ public final class ChatViewModel implements StoreListener {
     }
 
     public void sendIsTyping(boolean isTyping) {
-        ctx.wsService.sendIsTypingAsync(peerId, isTyping);
+//        ctx.wsService.sendIsTypingAsync(peerId, isTyping);
     }
 
     public void sendReaction(String messageId, String emoji) {

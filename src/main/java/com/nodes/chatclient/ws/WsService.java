@@ -238,7 +238,6 @@ public final class WsService {
     public void sendAsync(Object message) {
         if (state != State.AUTHENTICATED) return;
         try {
-            System.out.println("SENDING: " + mapper.writeValueAsString(message));
             webSocket.sendText(mapper.writeValueAsString(message), true);
         } catch (Exception ignored) {
         }
