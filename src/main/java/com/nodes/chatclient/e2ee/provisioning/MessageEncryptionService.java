@@ -32,6 +32,25 @@ public final class MessageEncryptionService {
         this.sessionStore = Objects.requireNonNull(sessionStore, "sessionStore");
     }
 
+    public List<EncryptedSend> encryptReactionForUser(
+            String toUserId,
+            String messageId,
+            long createdAt,
+            String referencedMessageId,
+            String emoji,
+            boolean isRemoved
+    ) throws Exception {
+        InternalMessage internalMessage = InternalMessage.reaction(
+                messageId,
+                createdAt,
+                referencedMessageId,
+                emoji,
+                isRemoved
+        );
+
+        return encryptForUser(toUserId, internalMessage);
+    }
+
     public List<EncryptedSend> encryptTextForUser(
             String toUserId,
             String messageId,

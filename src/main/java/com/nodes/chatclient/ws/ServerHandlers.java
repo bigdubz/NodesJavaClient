@@ -11,7 +11,6 @@ public interface ServerHandlers {
 
     void onMessageDelivered(ServerMessageDelivered.Payload payload);
     void onMessageSeen(ServerMessageSeen.Payload payload);
-
     void onUserTyping(ServerUserTyping.Payload payload);
 
     void onUserOnline(ServerUserOnline.Payload payload);

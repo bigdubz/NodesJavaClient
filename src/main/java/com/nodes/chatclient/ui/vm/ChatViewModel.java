@@ -1,6 +1,7 @@
 package com.nodes.chatclient.ui.vm;
 
 import com.nodes.chatclient.AppContext;
+import com.nodes.chatclient.e2ee.provisioning.MessageTransportService;
 import com.nodes.chatclient.store.ChatStore;
 import com.nodes.chatclient.store.model.ChatMessage;
 import com.nodes.chatclient.store.events.StoreListener;
@@ -88,16 +89,26 @@ public final class ChatViewModel implements StoreListener {
 //        ctx.wsService.sendIsTypingAsync(peerId, isTyping);
     }
 
-    public void sendReaction(String messageId, String emoji) {
-        ctx.wsService.sendReactionAsync(messageId, emoji, peerId);
+    public void sendReaction(String referencedMessageId, String emoji) {
+        String messageId = messageIdGenerator();
+        long createdAt = System.currentTimeMillis();
+        store.persistLocalReactionMessage(messageId, peerId, createdAt, referencedMessageId, emoji, false);
+        store.addLocalReaction(referencedMessageId, selfId, emoji);
+
+        MessageTransportService.sendAddReaction(ctx, peerId, messageId, referencedMessageId, emoji, createdAt);
     }
 
-    public void removeReaction(String messageId) {
-        ctx.wsService.sendRemoveReactionAsync(messageId, peerId);
+    public void removeReaction(String referencedMessageId) {
+        String messageId = messageIdGenerator();
+        long createdAt = System.currentTimeMillis();
+        store.persistLocalReactionMessage(messageId, peerId, createdAt, referencedMessageId, "del", true);
+        store.removeLocalReaction(referencedMessageId, selfId);
+
+        MessageTransportService.sendRemoveReaction(ctx, peerId, messageId, referencedMessageId, createdAt);
     }
 
     public void sendMessage(String text, String replyingTo) {
-        String clientId = clientIdGenerator();
+        String clientId = messageIdGenerator();
         long createdAt = System.currentTimeMillis();
         ChatMessage local = ChatMessage.outgoing(
                 clientId,
@@ -109,33 +120,7 @@ public final class ChatViewModel implements StoreListener {
         );
         store.addOutgoingMessage(peerId, local);
 
-        ctx.sessionProvisioningService.ensureSessionsAsync(ctx.jwt, peerId)
-                .thenAccept(ready -> {
-                    if (!ready) {
-                        System.err.println("Unable to establish session with " + peerId);
-                        return;
-                    }
-
-                    try {
-                        ctx.messageEncryptionService.encryptTextForUser(
-                                peerId,
-                                clientId,
-                                createdAt,
-                                text,
-                                replyingTo
-                        ).forEach(encrypted -> ctx.wsService.sendEncryptedAsync(
-                                encrypted.toUserId(),
-                                encrypted.toDeviceId(),
-                                encrypted.blob()
-                        ));
-                    } catch (Exception e) {
-                        throw new RuntimeException("Failed to encrypt message for " + peerId + " " + e.getMessage(), e);
-                    }
-                })
-                .exceptionally(err -> {
-                    System.err.println("Failed to establish session with " + peerId + ": " + err.getMessage());
-                    return null;
-                });
+        MessageTransportService.sendText(ctx, peerId, clientId, text, replyingTo, createdAt);
     }
 
     public void loadOlderHistory() {
@@ -146,7 +131,7 @@ public final class ChatViewModel implements StoreListener {
         List<String> messages =
                 getMessages().stream()
                         .filter(m -> !m.fromUserId().equals(ctx.userId) && !m.read())
-                        .map(c -> c.messageId())
+                        .map(ChatMessageUi::messageId)
                         .toList();
 
         store.bulkMarkMessagesAsSeen(peerId, messages);
@@ -155,8 +140,8 @@ public final class ChatViewModel implements StoreListener {
         }
     }
 
-    private String clientIdGenerator() {
-        return "client-" + System.nanoTime();
+    private String messageIdGenerator() {
+        return "java-" + System.nanoTime();
     }
 
     public boolean isLoadingHistory() {

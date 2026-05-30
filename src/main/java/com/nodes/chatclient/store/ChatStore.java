@@ -113,12 +113,21 @@ public final class ChatStore implements ServerHandlers {
 
                 convo.messages.clear();
                 for (MessageRecord row : messageStore.getConversation(peerId)) {
-                    if (row.type != 0) {
-                        continue;
+                    // text
+                    if (row.type == 0) {
+                        ChatMessage msg = fromMessageRecord(peerId, row);
+                        convo.messages.put(msg.messageId, msg);
+                    // reaction
+                    } else if (row.type == 1) {
+                        ChatMessage msg = getMessage(peerId, row.referencedMessageId);
+                        if (msg != null) {
+                            if (row.reactionIsRemoved == 0) {
+                                msg.reactions.put(row.senderUserId, row.reaction);
+                            } else {
+                                msg.reactions.remove(row.senderUserId);
+                            }
+                        }
                     }
-
-                    ChatMessage msg = fromMessageRecord(peerId, row);
-                    convo.messages.put(msg.messageId, msg);
                 }
 
                 applyLastMessage(convo);
@@ -290,15 +299,23 @@ public final class ChatStore implements ServerHandlers {
     public void onEncryptedRelay(ServerEncryptedRelay.Payload payload) {
         storeExecutor.execute(() -> {
             try {
-                EncryptedMessage encryptedMessage = OuterPayloadMapper.deserializeRelayBlob(payload.blob);
-                InternalMessage decryptedMessage = decryptionService.decryptMessage(encryptedMessage);
-                if (decryptedMessage == null) {
+                EncryptedMessage encrypted = OuterPayloadMapper.deserializeRelayBlob(payload.blob);
+                InternalMessage decrypted = decryptionService.decryptMessage(encrypted);
+                if (decrypted == null) {
                     return;
                 }
 
                 decryptionService.sendAckOnDecryptSuccess(payload.blob);
-                if (decryptedMessage.type == InternalMessage.Type.TEXT) {
-                    addIncomingTextMessage(encryptedMessage, decryptedMessage);
+
+                if (decrypted.type == InternalMessage.Type.TEXT) {
+                    addIncomingTextMessage(encrypted, decrypted);
+                }
+                else if (decrypted.type == InternalMessage.Type.REACTION) {
+                    if (!decrypted.isRemoved) {
+                        addReaction(encrypted, decrypted);
+                    } else {
+                        removeReaction(encrypted, decrypted);
+                    }
                 }
             } catch (Exception e) {
                 System.err.println("Failed to handle encrypted relay: " + e.getMessage());
@@ -316,7 +333,7 @@ public final class ChatStore implements ServerHandlers {
 
         ChatMessage msg = ChatMessage.incoming(
                 decryptedMessage.messageId,
-                encryptedMessage.fromUserId,
+                peerId,
                 selfUserId,
                 decryptedMessage.body,
                 decryptedMessage.createdAt,
@@ -360,10 +377,65 @@ public final class ChatStore implements ServerHandlers {
         try {
             messageStore.insert(record);
         } catch (SQLException e) {
-            throw new RuntimeException("Failed to persist message " + msg.messageId, e);
+            throw new RuntimeException("Failed to persist message " + record.messageId, e);
         }
     }
 
+    private void persistReactionMessage(
+            EncryptedMessage encrypted,
+            InternalMessage decrypted
+    ) {
+        MessageRecord record = new MessageRecord();
+        record.messageId = decrypted.messageId;
+        record.conversationId = encrypted.fromUserId;
+        record.senderUserId = encrypted.fromUserId;
+        record.senderDeviceId = encrypted.fromDeviceId;
+        record.createdAt = decrypted.createdAt;
+        record.receivedAt = System.currentTimeMillis();
+        record.isOutgoing = encrypted.fromUserId.equals(selfUserId);
+        record.type = 1;
+        record.deliveryStatus = encrypted.fromUserId.equals(activeConversationPeerId) ? 2 : 1;
+        record.referencedMessageId = decrypted.referencedMessageId;
+        record.reactionIsRemoved = decrypted.isRemoved ? 1 : 0;
+        record.reaction = decrypted.reaction;
+
+        try {
+            messageStore.insert(record);
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to persist reaction " + record.messageId, e);
+        }
+    }
+
+    public void persistLocalReactionMessage(
+            String messageId,
+            String convoId, // receiver id
+            long createdAt,
+            String referencedMessageId,
+            String reaction,
+            boolean isRemoved
+    ) {
+        MessageRecord record = new MessageRecord();
+        record.messageId = messageId;
+        record.conversationId = convoId;
+        record.senderUserId = selfUserId;
+        record.senderDeviceId = selfDeviceId;
+        record.createdAt = createdAt;
+        record.receivedAt = System.currentTimeMillis();
+        record.isOutgoing = true;
+        record.type = 1;
+        record.deliveryStatus = convoId.equals(activeConversationPeerId) ? 2 : 1;
+        record.referencedMessageId = referencedMessageId;
+        record.reactionIsRemoved = isRemoved ? 1 : 0;
+        record.reaction = reaction;
+
+        try {
+            messageStore.insert(record);
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to persist reaction " + record.messageId, e);
+        }
+    }
+
+    // === control messages ===
     @Override
     public void onMessageDelivered(ServerMessageDelivered.Payload p) {
         storeExecutor.execute(() -> findMessage(p.clientId).ifPresent(msgPair -> {
@@ -410,6 +482,7 @@ public final class ChatStore implements ServerHandlers {
         });
     }
 
+    // === idk what i want to do with these yet ===
     @Override
     public void onUserOnline(ServerUserOnline.Payload p) {
         storeExecutor.execute(() -> {
@@ -442,6 +515,44 @@ public final class ChatStore implements ServerHandlers {
         });
     }
 
+    public void addReaction(EncryptedMessage encrypted, InternalMessage decrypted) {
+        try {
+            persistReactionMessage(encrypted, decrypted);
+            addLocalReaction(decrypted.referencedMessageId, encrypted.fromUserId, decrypted.reaction);
+        } catch (Exception ignored) {
+            System.err.println("Failed to persist add reaction message " + decrypted.messageId);
+        }
+    }
+
+    public void removeReaction(EncryptedMessage encrypted, InternalMessage decrypted) {
+        try {
+            persistReactionMessage(encrypted, decrypted);
+            removeLocalReaction(decrypted.referencedMessageId, encrypted.fromUserId);
+        } catch (Exception ignored) {
+            System.err.println("Failed to persist remove reaction message " + decrypted.messageId);
+        }
+    }
+
+    public void addLocalReaction(String referencedMessageId, String fromUserId, String reaction) {
+        storeExecutor.execute(() -> findMessage(referencedMessageId).ifPresent(msgPair -> {
+            String convoId = msgPair.v1(); // receiver
+            ChatMessage msg = msgPair.v2();
+            msg.reactions.put(fromUserId, reaction);
+            notifyMessageListUpdated(convoId);
+        }));
+    }
+
+    public void removeLocalReaction(String referencedMessageId, String fromUserId) {
+        storeExecutor.execute(() -> findMessage(referencedMessageId).ifPresent(msgPair -> {
+            String convoId = msgPair.v1(); // receiver
+            ChatMessage msg = msgPair.v2();
+            msg.reactions.remove(fromUserId);
+            notifyMessageListUpdated(convoId);
+        }));
+
+    }
+
+    // what i work on next
     @Override
     public void onAddReaction(ServerAddReaction.Payload p) {
         storeExecutor.execute(() -> findMessage(p.messageId).ifPresent(msgPair -> {
@@ -478,5 +589,9 @@ public final class ChatStore implements ServerHandlers {
             if (m != null) return Optional.of(new Pair<>(c.peerId, m));
         }
         return Optional.empty();
+    }
+
+    private ChatMessage getMessage(String convoId, String messageId) {
+        return conversations.get(convoId).messages.get(messageId);
     }
 }
