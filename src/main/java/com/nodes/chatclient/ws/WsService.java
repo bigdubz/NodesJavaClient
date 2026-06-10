@@ -14,7 +14,8 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-public final class WsService {
+public final class WsService implements ServerAuthHandlers {
+
     public enum State {
         DISCONNECTED,
         CONNECTING,
@@ -66,9 +67,6 @@ public final class WsService {
         this.httpClient = Objects.requireNonNull(httpClient, "httpClient");
         this.mapper = Objects.requireNonNull(mapper, "mapper");
         this.router = Objects.requireNonNull(router, "router");
-
-        router.onCore("AUTH_OK", ServerAuthOk.Payload.class, this::handleAuthOk);
-        router.onCore("AUTH_ERROR", ServerAuthError.Payload.class, this::handleAuthError);
     }
 
     public void setAuth(String userId, String deviceId, String bootstrapJwt) {
@@ -82,25 +80,32 @@ public final class WsService {
         return deviceToken;
     }
 
-    private void handleAuthOk(ServerAuthOk.Payload p) {
-        if (p == null) {
+    @Override
+    public void onAuthOk(ServerAuthOk.Payload payload) {
+        if (payload == null) {
             failAuth("Authentication failed: empty AUTH_OK payload.");
             return;
         }
-        if (!Objects.equals(userId, p.userId) || !Objects.equals(deviceId, p.deviceId)) {
+        if (!Objects.equals(userId, payload.userId) || !Objects.equals(deviceId, payload.deviceId)) {
             failAuth("Authentication failed: server identity echo did not match.");
             return;
         }
-        if (isBlank(p.deviceToken)) {
+        if (isBlank(payload.deviceToken)) {
             failAuth("Authentication failed: server did not return a device token.");
             return;
         }
 
-        deviceToken = p.deviceToken;
+        deviceToken = payload.deviceToken;
         state = State.AUTHENTICATED;
         if (authFuture != null && !authFuture.isDone()) {
             authFuture.complete(null);
         }
+
+    }
+
+    @Override
+    public void onAuthError(ServerAuthError.Payload payload) {
+        failAuth("Authentication failed: " + payload.error);
     }
 
     public void enableRoutingAndFlush() {
@@ -115,10 +120,6 @@ public final class WsService {
 
     public void disableRouting() {
         routingEnabled = false;
-    }
-
-    private void handleAuthError(ServerAuthError.Payload p) {
-        failAuth("Authentication failed.");
     }
 
     private void failAuth(String message) {
@@ -163,43 +164,6 @@ public final class WsService {
     ) {
         if (webSocket == null) return;
         sendAsync(new ClientEncryptedSend(toUserId, toDeviceId, blob));
-    }
-
-    public void sendReactionAsync(
-            String messageId,
-            String emoji,
-            String toUserId
-    ) {
-        if (webSocket == null) return;
-        ClientAddReaction msg = new ClientAddReaction(messageId, emoji, toUserId);
-
-//        InternalMessage msgi = InternalMessage.reaction(
-//                UUID.randomUUID().toString(),
-//                System.currentTimeMillis(),
-//                messageId,
-//                emoji,
-//                false
-//        );
-
-        sendAsync(msg);
-    }
-
-    public void sendRemoveReactionAsync(
-            String messageId,
-            String toUserId
-    ) {
-        if (webSocket == null) return;
-        ClientRemoveReaction msg = new ClientRemoveReaction(messageId, toUserId);
-
-//        InternalMessage msgi = InternalMessage.reaction(
-//            UUID.randomUUID().toString(),
-//            System.currentTimeMillis(),
-//            messageId,
-//            null, // seems wrong
-//            true
-//        );
-
-        sendAsync(msg);
     }
 
     public void sendMessageSeenAsync(

@@ -61,7 +61,7 @@ public final class AppRootController {
         store.loadLocalConversations();
         
         ctx.router.clearHandlers();
-        ctx.router.registerServerHandlers(store);
+        ctx.router.registerServerHandlers(store, ctx.wsService);
 
         String deviceId;
         try {

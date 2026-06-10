@@ -10,7 +10,7 @@ import com.nodes.chatclient.e2ee.types.EncryptedMessage;
 import com.nodes.chatclient.e2ee.types.InternalMessage;
 import com.nodes.chatclient.store.events.StoreListener;
 import com.nodes.chatclient.util.Pair;
-import com.nodes.chatclient.ws.ServerHandlers;
+import com.nodes.chatclient.ws.ServerMessageHandlers;
 import com.nodes.chatclient.ws.messages.*;
 import com.nodes.chatclient.store.model.*;
 
@@ -19,7 +19,7 @@ import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-public final class ChatStore implements ServerHandlers {
+public final class ChatStore implements ServerMessageHandlers {
 
     private final Executor storeExecutor = Executors.newSingleThreadExecutor(
             r -> {
@@ -252,12 +252,6 @@ public final class ChatStore implements ServerHandlers {
     }
 
     @Override
-    public void onAuthOk(ServerAuthOk.Payload payload) {}
-
-    @Override
-    public void onAuthError(ServerAuthError.Payload payload) {}
-
-    @Override
     public void onEncryptedRelay(ServerEncryptedRelay.Payload payload) {
         storeExecutor.execute(() -> {
             try {
@@ -343,7 +337,7 @@ public final class ChatStore implements ServerHandlers {
         }
     }
 
-    public void persistLocalReactionMessage(
+    public void persistReactionMessage(
             String messageId,
             String convoId, // receiver id
             String senderUserId,
@@ -362,7 +356,7 @@ public final class ChatStore implements ServerHandlers {
         record.receivedAt = System.currentTimeMillis();
         record.isOutgoing = true;
         record.type = 1;
-        record.deliveryStatus = convoId.equals(activeConversationPeerId) ? 2 : 1;
+        record.deliveryStatus = convoId.equals(activeConversationPeerId) ? 2 : 1; // TODO: should be changed later
         record.referencedMessageId = referencedMessageId;
         record.reactionIsRemoved = isRemoved ? 1 : 0;
         record.reaction = reaction;
@@ -456,7 +450,7 @@ public final class ChatStore implements ServerHandlers {
 
     public void addReaction(EncryptedMessage encrypted, InternalMessage decrypted) {
         try {
-            persistLocalReactionMessage(
+            persistReactionMessage(
                     decrypted.messageId,
                     encrypted.toUserId,
                     encrypted.fromUserId,
@@ -474,7 +468,7 @@ public final class ChatStore implements ServerHandlers {
 
     public void removeReaction(EncryptedMessage encrypted, InternalMessage decrypted) {
         try {
-            persistLocalReactionMessage(
+            persistReactionMessage(
                     decrypted.messageId,
                     encrypted.toUserId,
                     encrypted.fromUserId,

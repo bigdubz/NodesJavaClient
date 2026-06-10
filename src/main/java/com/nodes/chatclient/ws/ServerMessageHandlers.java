@@ -2,10 +2,7 @@ package com.nodes.chatclient.ws;
 
 import com.nodes.chatclient.ws.messages.*;
 
-public interface ServerHandlers {
-    void onAuthOk(ServerAuthOk.Payload payload);
-    void onAuthError(ServerAuthError.Payload payload);
-
+public interface ServerMessageHandlers {
     void onEncryptedRelay(ServerEncryptedRelay.Payload payload);
 
     void onMessageDelivered(ServerMessageDelivered.Payload payload);

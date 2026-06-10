@@ -92,7 +92,7 @@ public final class ChatViewModel implements StoreListener {
     public void sendReaction(String referencedMessageId, String emoji) {
         String messageId = messageIdGenerator();
         long createdAt = System.currentTimeMillis();
-        store.persistLocalReactionMessage(
+        store.persistReactionMessage(
                 messageId,
                 peerId,
                 ctx.userId,
@@ -110,7 +110,7 @@ public final class ChatViewModel implements StoreListener {
     public void removeReaction(String referencedMessageId) {
         String messageId = messageIdGenerator();
         long createdAt = System.currentTimeMillis();
-        store.persistLocalReactionMessage(
+        store.persistReactionMessage(
                 messageId,
                 peerId,
                 ctx.userId,
