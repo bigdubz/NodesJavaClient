@@ -258,44 +258,6 @@ public final class ChatStore implements ServerHandlers {
     public void onAuthError(ServerAuthError.Payload payload) {}
 
     @Override
-    public void onChatMessage(ServerChatMessage.Payload p) {
-        storeExecutor.execute(() -> {
-            String receiver = p.fromUserId;
-
-            Conversation convo = conversations.computeIfAbsent(
-                    receiver, Conversation::new
-            );
-
-
-            if (convo.messages.containsKey(p.messageId)) {
-                return;
-            }
-
-            ChatMessage msg = ChatMessage.incoming(
-                    p.messageId,
-                    p.fromUserId,
-                    selfUserId,
-                    p.text,
-                    p.createdAt,
-                    p.replyingTo
-            );
-
-            convo.messages.put(msg.messageId, msg);
-            convo.lastTimestamp = msg.createdAt;
-            convo.lastMessage = msg.text;
-
-            boolean isActive = receiver.equals(activeConversationPeerId);
-
-            if (!isActive) {
-                convo.unreadCount++;
-            }
-
-            notifyMessageListUpdated(receiver);
-            notifyConversationsUpdated();
-        });
-    }
-
-    @Override
     public void onEncryptedRelay(ServerEncryptedRelay.Payload payload) {
         storeExecutor.execute(() -> {
             try {
@@ -381,34 +343,11 @@ public final class ChatStore implements ServerHandlers {
         }
     }
 
-    private void persistReactionMessage(
-            EncryptedMessage encrypted,
-            InternalMessage decrypted
-    ) {
-        MessageRecord record = new MessageRecord();
-        record.messageId = decrypted.messageId;
-        record.conversationId = encrypted.fromUserId;
-        record.senderUserId = encrypted.fromUserId;
-        record.senderDeviceId = encrypted.fromDeviceId;
-        record.createdAt = decrypted.createdAt;
-        record.receivedAt = System.currentTimeMillis();
-        record.isOutgoing = encrypted.fromUserId.equals(selfUserId);
-        record.type = 1;
-        record.deliveryStatus = encrypted.fromUserId.equals(activeConversationPeerId) ? 2 : 1;
-        record.referencedMessageId = decrypted.referencedMessageId;
-        record.reactionIsRemoved = decrypted.isRemoved ? 1 : 0;
-        record.reaction = decrypted.reaction;
-
-        try {
-            messageStore.insert(record);
-        } catch (SQLException e) {
-            throw new RuntimeException("Failed to persist reaction " + record.messageId, e);
-        }
-    }
-
     public void persistLocalReactionMessage(
             String messageId,
             String convoId, // receiver id
+            String senderUserId,
+            String senderDeviceId,
             long createdAt,
             String referencedMessageId,
             String reaction,
@@ -417,8 +356,8 @@ public final class ChatStore implements ServerHandlers {
         MessageRecord record = new MessageRecord();
         record.messageId = messageId;
         record.conversationId = convoId;
-        record.senderUserId = selfUserId;
-        record.senderDeviceId = selfDeviceId;
+        record.senderUserId = senderUserId;
+        record.senderDeviceId = senderDeviceId;
         record.createdAt = createdAt;
         record.receivedAt = System.currentTimeMillis();
         record.isOutgoing = true;
@@ -435,7 +374,7 @@ public final class ChatStore implements ServerHandlers {
         }
     }
 
-    // === control messages ===
+    // === control messages, should be on a different chain ===
     @Override
     public void onMessageDelivered(ServerMessageDelivered.Payload p) {
         storeExecutor.execute(() -> findMessage(p.clientId).ifPresent(msgPair -> {
@@ -517,7 +456,16 @@ public final class ChatStore implements ServerHandlers {
 
     public void addReaction(EncryptedMessage encrypted, InternalMessage decrypted) {
         try {
-            persistReactionMessage(encrypted, decrypted);
+            persistLocalReactionMessage(
+                    decrypted.messageId,
+                    encrypted.toUserId,
+                    encrypted.fromUserId,
+                    encrypted.fromDeviceId,
+                    decrypted.createdAt,
+                    decrypted.referencedMessageId,
+                    decrypted.reaction,
+                    decrypted.isRemoved
+            );
             addLocalReaction(decrypted.referencedMessageId, encrypted.fromUserId, decrypted.reaction);
         } catch (Exception ignored) {
             System.err.println("Failed to persist add reaction message " + decrypted.messageId);
@@ -526,7 +474,16 @@ public final class ChatStore implements ServerHandlers {
 
     public void removeReaction(EncryptedMessage encrypted, InternalMessage decrypted) {
         try {
-            persistReactionMessage(encrypted, decrypted);
+            persistLocalReactionMessage(
+                    decrypted.messageId,
+                    encrypted.toUserId,
+                    encrypted.fromUserId,
+                    encrypted.fromDeviceId,
+                    decrypted.createdAt,
+                    decrypted.referencedMessageId,
+                    decrypted.reaction,
+                    decrypted.isRemoved
+            );
             removeLocalReaction(decrypted.referencedMessageId, encrypted.fromUserId);
         } catch (Exception ignored) {
             System.err.println("Failed to persist remove reaction message " + decrypted.messageId);
@@ -550,27 +507,6 @@ public final class ChatStore implements ServerHandlers {
             notifyMessageListUpdated(convoId);
         }));
 
-    }
-
-    // what i work on next
-    @Override
-    public void onAddReaction(ServerAddReaction.Payload p) {
-        storeExecutor.execute(() -> findMessage(p.messageId).ifPresent(msgPair -> {
-            String convoId = msgPair.v1(); // receiver
-            ChatMessage msg = msgPair.v2();
-            msg.reactions.put(p.userId, p.reaction);
-            notifyMessageListUpdated(convoId);
-        }));
-    }
-
-    @Override
-    public void onRemoveReaction(ServerRemoveReaction.Payload p) {
-        storeExecutor.execute(() -> findMessage(p.messageId).ifPresent(msgPair -> {
-            String convoId = msgPair.v1(); // receiver
-            ChatMessage msg = msgPair.v2();
-            msg.reactions.remove(p.userId);
-            notifyMessageListUpdated(convoId);
-        }));
     }
 
     /**

@@ -92,7 +92,16 @@ public final class ChatViewModel implements StoreListener {
     public void sendReaction(String referencedMessageId, String emoji) {
         String messageId = messageIdGenerator();
         long createdAt = System.currentTimeMillis();
-        store.persistLocalReactionMessage(messageId, peerId, createdAt, referencedMessageId, emoji, false);
+        store.persistLocalReactionMessage(
+                messageId,
+                peerId,
+                ctx.userId,
+                ctx.deviceId,
+                createdAt,
+                referencedMessageId,
+                emoji,
+                false
+        );
         store.addLocalReaction(referencedMessageId, selfId, emoji);
 
         MessageTransportService.sendAddReaction(ctx, peerId, messageId, referencedMessageId, emoji, createdAt);
@@ -101,7 +110,16 @@ public final class ChatViewModel implements StoreListener {
     public void removeReaction(String referencedMessageId) {
         String messageId = messageIdGenerator();
         long createdAt = System.currentTimeMillis();
-        store.persistLocalReactionMessage(messageId, peerId, createdAt, referencedMessageId, "del", true);
+        store.persistLocalReactionMessage(
+                messageId,
+                peerId,
+                ctx.userId,
+                ctx.deviceId,
+                createdAt,
+                referencedMessageId,
+                "del",
+                true
+        );
         store.removeLocalReaction(referencedMessageId, selfId);
 
         MessageTransportService.sendRemoveReaction(ctx, peerId, messageId, referencedMessageId, createdAt);
