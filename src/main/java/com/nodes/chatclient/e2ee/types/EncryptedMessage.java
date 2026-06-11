@@ -1,6 +1,7 @@
 package com.nodes.chatclient.e2ee.types;
 
 import com.nodes.chatclient.e2ee.crypto.MessageAuth;
+import com.nodes.chatclient.e2ee.protos.ProtoOuterPayload;
 
 public final class EncryptedMessage {
     public final String fromUserId;
@@ -18,11 +19,32 @@ public final class EncryptedMessage {
     public byte[] senderIdentityKey;
     public byte[] senderSigningKey;
     public Integer oneTimePrekeyId;
+    public final ProtoOuterPayload.OuterPayload.Channel channel;
 
     public EncryptedMessage(String fromUserId, String fromDeviceId,
                             String toUserId, String toDeviceId,
                             byte[] dhPublicKey, long messageNumber, long previousChainLength,
                             byte[] iv, byte[] cipherText, byte[] signature) {
+        this(
+                fromUserId,
+                fromDeviceId,
+                toUserId,
+                toDeviceId,
+                dhPublicKey,
+                messageNumber,
+                previousChainLength,
+                iv,
+                cipherText,
+                signature,
+                ProtoOuterPayload.OuterPayload.Channel.CHAT
+        );
+    }
+
+    public EncryptedMessage(String fromUserId, String fromDeviceId,
+                            String toUserId, String toDeviceId,
+                            byte[] dhPublicKey, long messageNumber, long previousChainLength,
+                            byte[] iv, byte[] cipherText, byte[] signature,
+                            ProtoOuterPayload.OuterPayload.Channel channel) {
         this.fromUserId = fromUserId;
         this.fromDeviceId = fromDeviceId;
         this.toUserId = toUserId;
@@ -35,6 +57,9 @@ public final class EncryptedMessage {
         this.iv = iv;
         this.cipherText = cipherText;
         this.signature = signature;
+        this.channel = channel == null || channel == ProtoOuterPayload.OuterPayload.Channel.UNRECOGNIZED
+                ? ProtoOuterPayload.OuterPayload.Channel.CHAT
+                : channel;
     }
 
     public void attachPrekeyMetadata(byte[] senderIdentityKey, byte[] senderSigningKey, Integer oneTimePrekeyId) {

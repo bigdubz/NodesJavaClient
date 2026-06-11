@@ -1,6 +1,7 @@
 package com.nodes.chatclient.e2ee.provisioning;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.nodes.chatclient.e2ee.crypto.ControlChannel;
 import com.nodes.chatclient.e2ee.crypto.DoubleRatchet;
 import com.nodes.chatclient.e2ee.crypto.KeyMaterial;
 import com.nodes.chatclient.e2ee.db.stores.ContactStore;
@@ -64,13 +65,18 @@ public final class MessageDecryptionService {
             Session session = sessionStore.load(encryptedMessage.fromUserId, encryptedMessage.fromDeviceId)
                     .orElseGet(() -> initializeResponderSession(encryptedMessage, contact));
 
-            InternalMessage decryptedMessage = DoubleRatchet.decrypt(session, encryptedMessage);
-            sessionStore.save(encryptedMessage.fromUserId, encryptedMessage.fromDeviceId, session);
-            if (encryptedMessage.oneTimePrekeyId != null && oneTimePrekeyStore != null) {
-                oneTimePrekeyStore.markUsed(encryptedMessage.oneTimePrekeyId);
-            }
-
-            return decryptedMessage;
+            return switch (encryptedMessage.channel) {
+                case CONTROL -> ControlChannel.decrypt(session, encryptedMessage);
+                case CHAT -> {
+                    InternalMessage message = DoubleRatchet.decrypt(session, encryptedMessage);
+                    sessionStore.save(encryptedMessage.fromUserId, encryptedMessage.fromDeviceId, session);
+                    if (encryptedMessage.oneTimePrekeyId != null && oneTimePrekeyStore != null) {
+                        oneTimePrekeyStore.markUsed(encryptedMessage.oneTimePrekeyId);
+                    }
+                    yield message;
+                }
+                default -> throw new IllegalArgumentException("Unsupported encrypted message channel");
+            };
 
         } catch (Exception e) {
             System.err.println("Failed to decrypt message: " + e.getMessage());

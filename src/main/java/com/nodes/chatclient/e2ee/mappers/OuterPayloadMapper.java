@@ -7,9 +7,7 @@ import com.nodes.chatclient.e2ee.protos.ProtoOuterPayload;
 import com.nodes.chatclient.e2ee.types.EncryptedMessage;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Base64;
-import java.util.List;
 
 public final class OuterPayloadMapper {
     public static byte[] serialize(EncryptedMessage msg) {
@@ -22,7 +20,8 @@ public final class OuterPayloadMapper {
                 .setPreviousChainLength(msg.previousChainLength)
                 .setIv(ByteString.copyFrom(msg.iv))
                 .setCiphertext(ByteString.copyFrom(msg.cipherText))
-                .setSignature(ByteString.copyFrom(msg.signature));
+                .setSignature(ByteString.copyFrom(msg.signature))
+                .setChannel(msg.channel);
 
         if (msg.dhPublicKey != null) {
             payload.setDhPublicKey(ByteString.copyFrom(msg.dhPublicKey));
@@ -78,7 +77,8 @@ public final class OuterPayloadMapper {
                     proto.getPreviousChainLength(),
                     proto.getIv().toByteArray(),
                     proto.getCiphertext().toByteArray(),
-                    proto.getSignature().toByteArray()
+                    proto.getSignature().toByteArray(),
+                    proto.getChannel()
             );
             if (!proto.getSenderIdentityKey().isEmpty()) {
                 message.senderIdentityKey = proto.getSenderIdentityKey().toByteArray();

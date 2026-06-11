@@ -76,11 +76,6 @@ public final class WsMessageRouter {
 
         onSession("ENCRYPTED_RELAY", ServerEncryptedRelay.Payload.class, h::onEncryptedRelay);
 
-        onSession("MESSAGE_DELIVERED", ServerMessageDelivered.Payload.class, h::onMessageDelivered);
-        onSession("MESSAGE_SEEN", ServerMessageSeen.Payload.class, h::onMessageSeen);
-
-        onSession("USER_TYPING", ServerUserTyping.Payload.class, h::onUserTyping);
-
         onSession("USER_ONLINE", ServerUserOnline.Payload.class, h::onUserOnline);
         onSession("USER_OFFLINE", ServerUserOffline.Payload.class, h::onUserOffline);
     }

@@ -47,6 +47,7 @@ public final class AppRootController {
         ChatStore store = new ChatStore(
                 userId,
                 ctx.localIdentity.deviceId(),
+                ctx,
                 contactStore,
                 messageStore,
                 new MessageDecryptionService(

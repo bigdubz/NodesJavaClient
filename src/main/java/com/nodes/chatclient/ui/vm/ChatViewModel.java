@@ -86,7 +86,9 @@ public final class ChatViewModel implements StoreListener {
     }
 
     public void sendIsTyping(boolean isTyping) {
-//        ctx.wsService.sendIsTypingAsync(peerId, isTyping);
+        if (isTyping) {
+            MessageTransportService.sendTyping(ctx, peerId, messageIdGenerator(), System.currentTimeMillis());
+        }
     }
 
     public void sendReaction(String referencedMessageId, String emoji) {
@@ -154,7 +156,7 @@ public final class ChatViewModel implements StoreListener {
 
         store.bulkMarkMessagesAsSeen(peerId, messages);
         for (String m : messages) {
-            ctx.wsService.sendMessageSeenAsync(m);
+            MessageTransportService.sendReadReceipt(ctx, peerId, messageIdGenerator(), m, System.currentTimeMillis());
         }
     }
 

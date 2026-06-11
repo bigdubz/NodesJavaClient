@@ -1,6 +1,8 @@
 package com.nodes.chatclient.store;
 
+import com.nodes.chatclient.AppContext;
 import com.nodes.chatclient.e2ee.provisioning.MessageDecryptionService;
+import com.nodes.chatclient.e2ee.provisioning.MessageTransportService;
 import com.nodes.chatclient.e2ee.records.ContactRecord;
 import com.nodes.chatclient.e2ee.records.MessageRecord;
 import com.nodes.chatclient.e2ee.db.stores.ContactStore;
@@ -31,6 +33,7 @@ public final class ChatStore implements ServerMessageHandlers {
 
     private final String selfUserId;
     private final String selfDeviceId;
+    private final AppContext ctx;
     private final ContactStore contactStore;
     private final MessageStore messageStore;
     private final MessageDecryptionService decryptionService;
@@ -43,11 +46,13 @@ public final class ChatStore implements ServerMessageHandlers {
 
     public ChatStore(String selfUserId,
                      String selfDeviceId,
+                     AppContext ctx,
                      ContactStore contactStore,
                      MessageStore messageStore,
                      MessageDecryptionService decryptionService) {
         this.selfUserId = Objects.requireNonNull(selfUserId, "selfUserId");
         this.selfDeviceId = Objects.requireNonNull(selfDeviceId, "selfDeviceId");
+        this.ctx = Objects.requireNonNull(ctx, "ctx");
         this.contactStore = Objects.requireNonNull(contactStore, "contactStore");
         this.messageStore = Objects.requireNonNull(messageStore, "messageStore");
         this.decryptionService = Objects.requireNonNull(decryptionService, "messageDecryptionService");
@@ -273,6 +278,9 @@ public final class ChatStore implements ServerMessageHandlers {
                         removeReaction(encrypted, decrypted);
                     }
                 }
+                else if (decrypted.type == InternalMessage.Type.CONTROL) {
+                    handleControlMessage(encrypted, decrypted);
+                }
             } catch (Exception e) {
                 System.err.println("Failed to handle encrypted relay: " + e.getMessage());
             }
@@ -308,6 +316,13 @@ public final class ChatStore implements ServerMessageHandlers {
         persistTextMessage(peerId, msg, false, encryptedMessage.fromDeviceId, isActive ? 2 : 1);
         notifyMessageListUpdated(peerId);
         notifyConversationsUpdated();
+        MessageTransportService.sendDeliveredReceipt(
+                ctx,
+                peerId,
+                controlMessageId(),
+                decryptedMessage.messageId,
+                System.currentTimeMillis()
+        );
     }
 
     private void persistTextMessage(
@@ -369,28 +384,28 @@ public final class ChatStore implements ServerMessageHandlers {
     }
 
     // === control messages, should be on a different chain ===
-    @Override
-    public void onMessageDelivered(ServerMessageDelivered.Payload p) {
-        storeExecutor.execute(() -> findMessage(p.clientId).ifPresent(msgPair -> {
-            String convoId = msgPair.v1();
-            ChatMessage msg = msgPair.v2();
-            boolean changedId = !msg.messageId.equals(p.messageId);
-
-            Conversation convo = conversations.get(convoId);
-            if (convo != null && changedId) {
-                convo.messages.remove(msg.messageId);
-                msg.messageId = p.messageId;
-                convo.messages.put(msg.messageId, msg);
+    private void handleControlMessage(EncryptedMessage encrypted, InternalMessage decrypted) {
+        switch (decrypted.controlType) {
+            case ACK -> markMessageDelivered(decrypted.referencedMessageId);
+            case READ_RECEIPT -> markMessageRead(decrypted.referencedMessageId);
+            case TYPING -> setTyping(encrypted.fromUserId, true);
+            default -> {
             }
+        }
+    }
 
+    private void markMessageDelivered(String messageId) {
+        if (messageId == null) return;
+        storeExecutor.execute(() -> findMessage(messageId).ifPresent(msgPair -> {
+            ChatMessage msg = msgPair.v2();
             msg.delivered = true;
             notifyMessageListUpdated(msg.toUserId);
         }));
     }
 
-    @Override
-    public void onMessageSeen(ServerMessageSeen.Payload p) {
-        storeExecutor.execute(() -> findMessage(p.messageId).ifPresent(msgPair -> {
+    private void markMessageRead(String messageId) {
+        if (messageId == null) return;
+        storeExecutor.execute(() -> findMessage(messageId).ifPresent(msgPair -> {
             ChatMessage msg = msgPair.v2();
             if (!msg.read) {
                 msg.read = true;
@@ -399,18 +414,17 @@ public final class ChatStore implements ServerMessageHandlers {
         }));
     }
 
-    @Override
-    public void onUserTyping(ServerUserTyping.Payload p) {
+    private void setTyping(String peerId, boolean isTyping) {
         storeExecutor.execute(() -> {
             Presence pr = presence.computeIfAbsent(
-                    p.fromUserId, Presence::new
+                    peerId, Presence::new
             );
-            pr.isTyping = p.isTyping;
-            conversations.computeIfPresent(p.fromUserId, (k, v) -> {
-                v.isTyping = p.isTyping;
+            pr.isTyping = isTyping;
+            conversations.computeIfPresent(peerId, (k, v) -> {
+                v.isTyping = isTyping;
                 return v;
             });
-            notifyTypingStatusUpdated(p.fromUserId);
+            notifyTypingStatusUpdated(peerId);
             notifyConversationsUpdated();
         });
     }
@@ -523,5 +537,9 @@ public final class ChatStore implements ServerMessageHandlers {
 
     private ChatMessage getMessage(String convoId, String messageId) {
         return conversations.get(convoId).messages.get(messageId);
+    }
+
+    private String controlMessageId() {
+        return "java-control-" + System.nanoTime();
     }
 }

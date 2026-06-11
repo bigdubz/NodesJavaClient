@@ -1,7 +1,9 @@
 package com.nodes.chatclient.e2ee.provisioning;
 
+import com.nodes.chatclient.e2ee.crypto.ControlChannel;
 import com.nodes.chatclient.e2ee.crypto.DoubleRatchet;
 import com.nodes.chatclient.e2ee.mappers.OuterPayloadMapper;
+import com.nodes.chatclient.e2ee.protos.ProtoEncryptedPayload.EncryptedPayload;
 import com.nodes.chatclient.e2ee.records.ContactRecord;
 import com.nodes.chatclient.e2ee.db.stores.ContactStore;
 import com.nodes.chatclient.e2ee.db.stores.SessionStore;
@@ -68,6 +70,23 @@ public final class MessageEncryptionService {
         return encryptForUser(toUserId, internalMessage);
     }
 
+    public List<EncryptedSend> encryptControlForUser(
+            String toUserId,
+            String messageId,
+            long createdAt,
+            EncryptedPayload.ControlMessage.Type controlType,
+            String referencedMessageId
+    ) throws Exception {
+        InternalMessage internalMessage = InternalMessage.control(
+                messageId,
+                createdAt,
+                controlType,
+                referencedMessageId
+        );
+
+        return encryptControlForUser(toUserId, internalMessage);
+    }
+
     private List<EncryptedSend> encryptForUser(String toUserId, InternalMessage internalMessage) throws Exception {
         List<ContactRecord> contacts = contactStore.getForUser(toUserId);
         if (contacts.isEmpty()) {
@@ -101,7 +120,38 @@ public final class MessageEncryptionService {
             sessionStore.save(contact.userId(), contact.deviceId(), session);
 
             byte[] blob = OuterPayloadMapper.serialize(encrypted);
-            OuterPayloadMapper.deserialize(blob);
+            result.add(new EncryptedSend(
+                    contact.userId(),
+                    contact.deviceId(),
+                    Base64.getEncoder().encodeToString(blob)
+            ));
+        }
+
+        return result;
+    }
+
+    private List<EncryptedSend> encryptControlForUser(String toUserId, InternalMessage internalMessage) throws Exception {
+        List<ContactRecord> contacts = contactStore.getForUser(toUserId);
+        if (contacts.isEmpty()) {
+            throw new SQLException("No local contact devices for " + toUserId);
+        }
+
+        List<EncryptedSend> result = new ArrayList<>();
+
+        for (ContactRecord contact : contacts) {
+            Session session = sessionStore.load(contact.userId(), contact.deviceId())
+                    .orElseThrow(() -> new IllegalStateException(
+                            "No session for " + contact.userId() + ":" + contact.deviceId()
+                    ));
+
+            EncryptedMessage encrypted = ControlChannel.encrypt(
+                    session,
+                    internalMessage,
+                    localIdentity.userId(),
+                    contact.userId()
+            );
+
+            byte[] blob = OuterPayloadMapper.serialize(encrypted);
             result.add(new EncryptedSend(
                     contact.userId(),
                     contact.deviceId(),

@@ -4,6 +4,11 @@ option java_package = "com.nodes.chatclient.e2ee.protos";
 option java_outer_classname = "ProtoOuterPayload";
 
 message OuterPayload {
+  enum Channel {
+    CHAT = 0;
+    CONTROL = 1;
+  }
+
   string fromUserId = 1;
   string fromDeviceId = 2;
   string toUserId = 3;
@@ -20,4 +25,5 @@ message OuterPayload {
   bytes senderIdentityKey = 11;
   optional uint32 oneTimePrekeyId = 12;
   bytes senderSigningKey = 13;
+  Channel channel = 14;
 }

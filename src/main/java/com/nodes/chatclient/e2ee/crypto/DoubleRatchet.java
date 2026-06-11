@@ -1,6 +1,7 @@
 package com.nodes.chatclient.e2ee.crypto;
 
 import com.nodes.chatclient.e2ee.mappers.PayloadMapper;
+import com.nodes.chatclient.e2ee.protos.ProtoOuterPayload;
 import com.nodes.chatclient.e2ee.types.EncryptedMessage;
 import com.nodes.chatclient.e2ee.types.InternalMessage;
 import com.nodes.chatclient.e2ee.types.Session;
@@ -58,20 +59,12 @@ public final class DoubleRatchet {
         return plain;
     }
 
-    public static EncryptedMessage encrypt(Session session, String message, String fromUserId, String toUserId)
-            throws Exception {
-        InternalMessage internalMessage = InternalMessage.text(
-                java.util.UUID.randomUUID().toString(),
-                System.currentTimeMillis(),
-                message,
-                null
-        );
-
-        return encrypt(session, internalMessage, fromUserId, toUserId);
-    }
-
-    public static EncryptedMessage encrypt(Session session, InternalMessage internalMessage, String fromUserId, String toUserId)
-            throws Exception {
+    public static EncryptedMessage encrypt(
+            Session session,
+            InternalMessage internalMessage,
+            String fromUserId,
+            String toUserId
+    ) throws Exception {
         if (session.signingPrivateKey == null) {
             throw new Exception("Missing signing private key for local session");
         }
@@ -110,7 +103,8 @@ public final class DoubleRatchet {
                 session.previousChainLength,
                 iv,
                 cipherText,
-                null
+                null,
+                ProtoOuterPayload.OuterPayload.Channel.CHAT
         );
 
         msg.sign(session.signingPrivateKey);
@@ -193,8 +187,10 @@ public final class DoubleRatchet {
         byte[] senderDeviceBytes = senderDeviceId.getBytes(StandardCharsets.UTF_8);
         byte[] receiverBytes = receiverId.getBytes(StandardCharsets.UTF_8);
         byte[] receiverDeviceBytes = receiverDeviceId.getBytes(StandardCharsets.UTF_8);
+        byte[] channelBytes = ProtoOuterPayload.OuterPayload.Channel.CHAT.name().getBytes(StandardCharsets.UTF_8);
 
         ByteBuffer buffer = ByteBuffer.allocate(
+                4 + channelBytes.length +
                 4 + senderBytes.length +
                 4 + senderDeviceBytes.length +
                 4 + receiverBytes.length +
@@ -203,6 +199,8 @@ public final class DoubleRatchet {
         );
         buffer.order(ByteOrder.BIG_ENDIAN);
 
+        buffer.putInt(channelBytes.length);
+        buffer.put(channelBytes);
         buffer.putInt(senderBytes.length);
         buffer.put(senderBytes);
         buffer.putInt(senderDeviceBytes.length);

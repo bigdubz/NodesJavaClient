@@ -1,6 +1,7 @@
 package com.nodes.chatclient.e2ee.provisioning;
 
 import com.nodes.chatclient.AppContext;
+import com.nodes.chatclient.e2ee.protos.ProtoEncryptedPayload.EncryptedPayload;
 import com.nodes.chatclient.e2ee.utils.ThrowingRunnable;
 
 import java.util.List;
@@ -64,6 +65,49 @@ public final class MessageTransportService {
                                 createdAt,
                                 text,
                                 replyingTo
+                        )
+                )
+        );
+    }
+
+    public static void sendDeliveredReceipt(AppContext ctx,
+                                            String peerId,
+                                            String messageId,
+                                            String referencedMessageId,
+                                            long createdAt) {
+        sendControl(ctx, peerId, messageId, createdAt, EncryptedPayload.ControlMessage.Type.ACK, referencedMessageId);
+    }
+
+    public static void sendReadReceipt(AppContext ctx,
+                                       String peerId,
+                                       String messageId,
+                                       String referencedMessageId,
+                                       long createdAt) {
+        sendControl(ctx, peerId, messageId, createdAt, EncryptedPayload.ControlMessage.Type.READ_RECEIPT, referencedMessageId);
+    }
+
+    public static void sendTyping(AppContext ctx,
+                                  String peerId,
+                                  String messageId,
+                                  long createdAt) {
+        sendControl(ctx, peerId, messageId, createdAt, EncryptedPayload.ControlMessage.Type.TYPING, null);
+    }
+
+    private static void sendControl(AppContext ctx,
+                                    String peerId,
+                                    String messageId,
+                                    long createdAt,
+                                    EncryptedPayload.ControlMessage.Type controlType,
+                                    String referencedMessageId) {
+        withProvisionedSession(ctx, peerId, () ->
+                sendEncrypted(
+                        ctx,
+                        ctx.messageEncryptionService.encryptControlForUser(
+                                peerId,
+                                messageId,
+                                createdAt,
+                                controlType,
+                                referencedMessageId
                         )
                 )
         );

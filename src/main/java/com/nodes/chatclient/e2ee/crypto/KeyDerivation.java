@@ -58,6 +58,10 @@ public final class KeyDerivation {
         return hkdfExpand(chainKey, "MessageKey", 32);
     }
 
+    public static byte[] deriveControlMessageKey(byte[] rootKey) throws Exception {
+        return hkdfExpand(rootKey, "ControlMessageKey", 32);
+    }
+
     public static byte[] advanceChainKey(byte[] chainKey) throws Exception {
         return hkdfExpand(chainKey, "ChainStep", 32);
     }

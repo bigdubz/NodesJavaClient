@@ -44,6 +44,7 @@ public final class MessageAuth {
         writeOptionalField(out, msg.senderIdentityKey);
         writeOptionalField(out, msg.senderSigningKey);
         writeOptionalInt(out, msg.oneTimePrekeyId);
+        out.writeInt(msg.channel.getNumber());
         out.flush();
 
         return baos.toByteArray();
