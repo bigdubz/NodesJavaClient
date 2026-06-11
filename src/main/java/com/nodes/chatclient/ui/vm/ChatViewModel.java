@@ -87,10 +87,10 @@ public final class ChatViewModel implements StoreListener {
     }
 
     public void sendIsTyping() {
-        MessageTransportService.sendTyping(ctx,
-                peerId,
-                Helper.controlMessageId(),
-                System.currentTimeMillis());
+//        MessageTransportService.sendTyping(ctx,
+//                peerId,
+//                Helper.controlMessageId(),
+//                System.currentTimeMillis());
     }
 
     public void sendReaction(String referencedMessageId, String emoji) {
@@ -158,11 +158,11 @@ public final class ChatViewModel implements StoreListener {
 
         store.bulkMarkMessagesAsSeen(peerId, messages);
         for (String m : messages) {
-            MessageTransportService.sendReadReceipt(ctx,
-                    peerId,
-                    Helper.controlMessageId(),
-                    m,
-                    System.currentTimeMillis());
+//            MessageTransportService.sendReadReceipt(ctx,
+//                    peerId,
+//                    Helper.controlMessageId(),
+//                    m,
+//                    System.currentTimeMillis());
         }
     }
 

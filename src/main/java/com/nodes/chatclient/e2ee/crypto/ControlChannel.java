@@ -97,7 +97,7 @@ public final class ControlChannel {
             String receiverDeviceId,
             byte[] publicKey
     ) {
-        byte[] labelBytes = CONTROL_AD_LABEL.getBytes(StandardCharsets.UTF_8);
+//        byte[] labelBytes = CONTROL_AD_LABEL.getBytes(StandardCharsets.UTF_8);
         byte[] channelBytes = ProtoOuterPayload.OuterPayload.Channel.CONTROL.name().getBytes(StandardCharsets.UTF_8);
         byte[] senderBytes = senderId.getBytes(StandardCharsets.UTF_8);
         byte[] senderDeviceBytes = senderDeviceId.getBytes(StandardCharsets.UTF_8);
@@ -105,7 +105,7 @@ public final class ControlChannel {
         byte[] receiverDeviceBytes = receiverDeviceId.getBytes(StandardCharsets.UTF_8);
 
         ByteBuffer buffer = ByteBuffer.allocate(
-                4 + labelBytes.length +
+//                4 + labelBytes.length +
                 4 + channelBytes.length +
                 4 + senderBytes.length +
                 4 + senderDeviceBytes.length +
@@ -115,8 +115,8 @@ public final class ControlChannel {
         );
         buffer.order(ByteOrder.BIG_ENDIAN);
 
-        buffer.putInt(labelBytes.length);
-        buffer.put(labelBytes);
+//        buffer.putInt(labelBytes.length);
+//        buffer.put(labelBytes);
 
         buffer.putInt(channelBytes.length);
         buffer.put(channelBytes);
