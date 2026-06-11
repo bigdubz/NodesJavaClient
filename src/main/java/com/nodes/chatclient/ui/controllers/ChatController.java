@@ -77,7 +77,7 @@ public final class ChatController {
                     }
                 });
             }
-//            vm.markVisibleMessagesAsSeen();
+            vm.markVisibleMessagesAsSeen();
         };
 
         vm.getMessages().addListener(messageListener);
@@ -90,22 +90,27 @@ public final class ChatController {
         inputContainer.getChildren().addFirst(createReplyBar());
         inputContainer.getChildren().add(input);
         typingPause.setOnFinished(e -> {
-            vm.sendIsTyping(false);
-            localTyping = false;
+            if (localTyping) {
+                vm.sendIsTyping();   // toggle OFF (assumed)
+                localTyping = false;
+            }
         });
 
         input.textProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal.isBlank()) {
-                vm.sendIsTyping(false);
-                localTyping = false;
+            boolean empty = newVal.isBlank();
+            if (empty) {
                 typingPause.stop();
-            } else {
-                if (!localTyping) {
-                    vm.sendIsTyping(true);
-                    localTyping = true;
+                if (localTyping) {
+                    vm.sendIsTyping();   // toggle OFF (assumed)
+                    localTyping = false;
                 }
-                typingPause.playFromStart();
+                return;
             }
+            if (!localTyping) {
+                vm.sendIsTyping();   // toggle ON (assumed)
+                localTyping = true;
+            }
+            typingPause.playFromStart();
         });
 
         Button send = new Button("Send");

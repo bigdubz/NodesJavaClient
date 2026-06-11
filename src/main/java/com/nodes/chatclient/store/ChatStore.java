@@ -11,6 +11,7 @@ import com.nodes.chatclient.e2ee.mappers.OuterPayloadMapper;
 import com.nodes.chatclient.e2ee.types.EncryptedMessage;
 import com.nodes.chatclient.e2ee.types.InternalMessage;
 import com.nodes.chatclient.store.events.StoreListener;
+import com.nodes.chatclient.util.Helper;
 import com.nodes.chatclient.util.Pair;
 import com.nodes.chatclient.ws.ServerMessageHandlers;
 import com.nodes.chatclient.ws.messages.*;
@@ -319,7 +320,7 @@ public final class ChatStore implements ServerMessageHandlers {
         MessageTransportService.sendDeliveredReceipt(
                 ctx,
                 peerId,
-                controlMessageId(),
+                Helper.controlMessageId(),
                 decryptedMessage.messageId,
                 System.currentTimeMillis()
         );
@@ -388,7 +389,7 @@ public final class ChatStore implements ServerMessageHandlers {
         switch (decrypted.controlType) {
             case ACK -> markMessageDelivered(decrypted.referencedMessageId);
             case READ_RECEIPT -> markMessageRead(decrypted.referencedMessageId);
-            case TYPING -> setTyping(encrypted.fromUserId, true);
+            case TYPING -> toggleTyping(encrypted.fromUserId);
             default -> {
             }
         }
@@ -414,14 +415,14 @@ public final class ChatStore implements ServerMessageHandlers {
         }));
     }
 
-    private void setTyping(String peerId, boolean isTyping) {
+    private void toggleTyping(String peerId) {
         storeExecutor.execute(() -> {
             Presence pr = presence.computeIfAbsent(
                     peerId, Presence::new
             );
-            pr.isTyping = isTyping;
+            pr.isTyping = !pr.isTyping;
             conversations.computeIfPresent(peerId, (k, v) -> {
-                v.isTyping = isTyping;
+                v.isTyping = !v.isTyping;
                 return v;
             });
             notifyTypingStatusUpdated(peerId);
@@ -537,9 +538,5 @@ public final class ChatStore implements ServerMessageHandlers {
 
     private ChatMessage getMessage(String convoId, String messageId) {
         return conversations.get(convoId).messages.get(messageId);
-    }
-
-    private String controlMessageId() {
-        return "java-control-" + System.nanoTime();
     }
 }

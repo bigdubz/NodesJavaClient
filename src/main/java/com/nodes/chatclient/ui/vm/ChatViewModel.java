@@ -7,6 +7,7 @@ import com.nodes.chatclient.store.model.ChatMessage;
 import com.nodes.chatclient.store.events.StoreListener;
 
 import com.nodes.chatclient.store.model.ChatMessageUi;
+import com.nodes.chatclient.util.Helper;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -85,14 +86,15 @@ public final class ChatViewModel implements StoreListener {
         }
     }
 
-    public void sendIsTyping(boolean isTyping) {
-        if (isTyping) {
-            MessageTransportService.sendTyping(ctx, peerId, messageIdGenerator(), System.currentTimeMillis());
-        }
+    public void sendIsTyping() {
+        MessageTransportService.sendTyping(ctx,
+                peerId,
+                Helper.controlMessageId(),
+                System.currentTimeMillis());
     }
 
     public void sendReaction(String referencedMessageId, String emoji) {
-        String messageId = messageIdGenerator();
+        String messageId = Helper.mainMessageId();
         long createdAt = System.currentTimeMillis();
         store.persistReactionMessage(
                 messageId,
@@ -110,7 +112,7 @@ public final class ChatViewModel implements StoreListener {
     }
 
     public void removeReaction(String referencedMessageId) {
-        String messageId = messageIdGenerator();
+        String messageId = Helper.mainMessageId();
         long createdAt = System.currentTimeMillis();
         store.persistReactionMessage(
                 messageId,
@@ -128,7 +130,7 @@ public final class ChatViewModel implements StoreListener {
     }
 
     public void sendMessage(String text, String replyingTo) {
-        String clientId = messageIdGenerator();
+        String clientId = Helper.mainMessageId();
         long createdAt = System.currentTimeMillis();
         ChatMessage local = ChatMessage.outgoing(
                 clientId,
@@ -156,12 +158,12 @@ public final class ChatViewModel implements StoreListener {
 
         store.bulkMarkMessagesAsSeen(peerId, messages);
         for (String m : messages) {
-            MessageTransportService.sendReadReceipt(ctx, peerId, messageIdGenerator(), m, System.currentTimeMillis());
+            MessageTransportService.sendReadReceipt(ctx,
+                    peerId,
+                    Helper.controlMessageId(),
+                    m,
+                    System.currentTimeMillis());
         }
-    }
-
-    private String messageIdGenerator() {
-        return "java-" + System.nanoTime();
     }
 
     public boolean isLoadingHistory() {

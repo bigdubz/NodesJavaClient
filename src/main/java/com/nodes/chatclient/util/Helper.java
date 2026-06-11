@@ -36,4 +36,12 @@ public final class Helper {
         }
         return flow;
     }
+
+    public static String controlMessageId() {
+        return "java-control-" + System.nanoTime();
+    }
+
+    public static String mainMessageId() {
+        return "java-main-" + System.nanoTime();
+    }
 }

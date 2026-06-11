@@ -100,7 +100,6 @@ public final class WsService implements ServerAuthHandlers {
         if (authFuture != null && !authFuture.isDone()) {
             authFuture.complete(null);
         }
-
     }
 
     @Override
@@ -164,39 +163,6 @@ public final class WsService implements ServerAuthHandlers {
     ) {
         if (webSocket == null) return;
         sendAsync(new ClientEncryptedSend(toUserId, toDeviceId, blob));
-    }
-
-    public void sendMessageSeenAsync(
-            String messageId
-    ) {
-        if (webSocket == null) return;
-        ClientMessageSeen msg = new ClientMessageSeen(messageId);
-
-//        InternalMessage msgi = InternalMessage.control(
-//                UUID.randomUUID().toString(),
-//                System.currentTimeMillis(),
-//                READ_RECEIPT,
-//                messageId
-//        );
-
-        sendAsync(msg);
-    }
-
-    public void sendIsTypingAsync(
-            String toUserId,
-            boolean isTyping
-    ) {
-        if (webSocket == null) return;
-        ClientTypingMessage msg = new ClientTypingMessage(toUserId, isTyping);
-
-//        InternalMessage msgi = InternalMessage.control(
-//                UUID.randomUUID().toString(),
-//                System.currentTimeMillis(),
-//                TYPING,
-//                null
-//        );
-
-        sendAsync(msg);
     }
 
     public void sendAsync(Object message) {
