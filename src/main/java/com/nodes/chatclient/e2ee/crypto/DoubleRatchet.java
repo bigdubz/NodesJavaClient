@@ -185,7 +185,7 @@ public final class DoubleRatchet {
             long messageNumber,
             byte[] publicKey
     ) {
-        byte[] labelBytes = MAIN_AD_LABEL.getBytes(StandardCharsets.UTF_8);
+//        byte[] labelBytes = MAIN_AD_LABEL.getBytes(StandardCharsets.UTF_8);
         byte[] senderBytes = senderId.getBytes(StandardCharsets.UTF_8);
         byte[] senderDeviceBytes = senderDeviceId.getBytes(StandardCharsets.UTF_8);
         byte[] receiverBytes = receiverId.getBytes(StandardCharsets.UTF_8);
@@ -193,7 +193,7 @@ public final class DoubleRatchet {
         byte[] channelBytes = ProtoOuterPayload.OuterPayload.Channel.CHAT.name().getBytes(StandardCharsets.UTF_8);
 
         ByteBuffer buffer = ByteBuffer.allocate(
-                4 + labelBytes.length +
+//                4 + labelBytes.length +
                 4 + channelBytes.length +
                 4 + senderBytes.length +
                 4 + senderDeviceBytes.length +
@@ -203,8 +203,8 @@ public final class DoubleRatchet {
         );
         buffer.order(ByteOrder.BIG_ENDIAN);
 
-        buffer.putInt(labelBytes.length);
-        buffer.put(labelBytes);
+//        buffer.putInt(labelBytes.length);
+//        buffer.put(labelBytes);
 
         buffer.putInt(channelBytes.length);
         buffer.put(channelBytes);
