@@ -15,11 +15,7 @@ import com.nodes.chatclient.http.dto.BundleStatusResponse;
 import java.security.SecureRandom;
 import java.sql.SQLException;
 import java.time.Clock;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 public final class BundleProvisioningService {
@@ -104,7 +100,7 @@ public final class BundleProvisioningService {
         GeneratedBundle generatedBundle;
 
         try {
-            generatedBundle = generateBundle(oneTimePrekeysToUpload(status));
+            generatedBundle = generateBundle(oneTimePrekeysToUpload(status), status.signedPrekeyStale());
         } catch (SQLException e) {
             return CompletableFuture.failedFuture(e);
         }
@@ -113,17 +109,31 @@ public final class BundleProvisioningService {
                 .thenRun(() -> persistGeneratedBundle(generatedBundle));
     }
 
-    private GeneratedBundle generateBundle(int oneTimePrekeyCount) throws SQLException {
-        byte[][] signedPrekey = KeyMaterial.generateX25519KeyPair();
-        byte[] signedPrekeySignature = MessageAuth.sign(signedPrekey[0], localIdentity.signingPrivateKey());
-        SignedPrekeyRecord signedPrekeyRecord = new SignedPrekeyRecord(
-                nextSignedPrekeyId(),
-                signedPrekey[0],
-                signedPrekey[1],
-                signedPrekeySignature,
-                clock.millis(),
-                true
-        );
+    private GeneratedBundle generateBundle(int oneTimePrekeyCount, boolean spkStale) throws SQLException {
+        SignedPrekeyRecord signedPrekeyRecord;
+        if (spkStale) {
+            byte[][] signedPrekey = KeyMaterial.generateX25519KeyPair();
+            byte[] signedPrekeySignature = MessageAuth.sign(signedPrekey[0], localIdentity.signingPrivateKey());
+            signedPrekeyRecord = new SignedPrekeyRecord(
+                    nextSignedPrekeyId(),
+                    signedPrekey[0],
+                    signedPrekey[1],
+                    signedPrekeySignature,
+                    clock.millis(),
+                    true
+            );
+        } else {
+            if (signedPrekeyStore != null) {
+                Optional<SignedPrekeyRecord> active = signedPrekeyStore.getActive();
+                if (active.isPresent()) {
+                    signedPrekeyRecord = active.get();
+                } else {
+                    return generateBundle(oneTimePrekeyCount, true);
+                }
+            } else {
+                throw new IllegalStateException("No signed prekey store available");
+            }
+        }
 
         BundleOneTimePrekey[] oneTimePrekeys = new BundleOneTimePrekey[oneTimePrekeyCount];
         List<OneTimePrekeyRecord> oneTimePrekeyRecords = new ArrayList<>();
