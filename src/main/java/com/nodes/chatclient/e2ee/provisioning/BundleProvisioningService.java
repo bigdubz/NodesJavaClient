@@ -100,7 +100,7 @@ public final class BundleProvisioningService {
         GeneratedBundle generatedBundle;
 
         try {
-            generatedBundle = generateBundle(oneTimePrekeysToUpload(status), status.signedPrekeyStale());
+            generatedBundle = generateBundlePerStatus(status);
         } catch (SQLException e) {
             return CompletableFuture.failedFuture(e);
         }
@@ -109,9 +109,9 @@ public final class BundleProvisioningService {
                 .thenRun(() -> persistGeneratedBundle(generatedBundle));
     }
 
-    private GeneratedBundle generateBundle(int oneTimePrekeyCount, boolean spkStale) throws SQLException {
+    private GeneratedBundle generateBundlePerStatus(BundleStatusResponse status) throws SQLException {
         SignedPrekeyRecord signedPrekeyRecord;
-        if (spkStale) {
+        if (status.signedPrekeyStale()) {
             byte[][] signedPrekey = KeyMaterial.generateX25519KeyPair();
             byte[] signedPrekeySignature = MessageAuth.sign(signedPrekey[0], localIdentity.signingPrivateKey());
             signedPrekeyRecord = new SignedPrekeyRecord(
@@ -128,13 +128,14 @@ public final class BundleProvisioningService {
                 if (active.isPresent()) {
                     signedPrekeyRecord = active.get();
                 } else {
-                    return generateBundle(oneTimePrekeyCount, true);
+                    throw new IllegalStateException("No active SPK available");
                 }
             } else {
                 throw new IllegalStateException("No signed prekey store available");
             }
         }
 
+        int oneTimePrekeyCount = oneTimePrekeysToUpload(status);
         BundleOneTimePrekey[] oneTimePrekeys = new BundleOneTimePrekey[oneTimePrekeyCount];
         List<OneTimePrekeyRecord> oneTimePrekeyRecords = new ArrayList<>();
         Set<Integer> generatedOneTimePrekeyIds = new HashSet<>();
