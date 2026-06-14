@@ -4,7 +4,7 @@ import com.nodes.chatclient.e2ee.crypto.ControlChannel;
 import com.nodes.chatclient.e2ee.crypto.DoubleRatchet;
 import com.nodes.chatclient.e2ee.mappers.OuterPayloadMapper;
 import com.nodes.chatclient.e2ee.protos.ProtoEncryptedPayload.EncryptedPayload;
-import com.nodes.chatclient.e2ee.records.ContactRecord;
+import com.nodes.chatclient.e2ee.db.records.ContactRecord;
 import com.nodes.chatclient.e2ee.db.stores.ContactStore;
 import com.nodes.chatclient.e2ee.db.stores.SessionStore;
 import com.nodes.chatclient.e2ee.types.EncryptedMessage;

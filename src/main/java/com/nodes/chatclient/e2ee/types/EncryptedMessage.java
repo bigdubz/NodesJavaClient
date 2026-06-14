@@ -24,25 +24,6 @@ public final class EncryptedMessage {
     public EncryptedMessage(String fromUserId, String fromDeviceId,
                             String toUserId, String toDeviceId,
                             byte[] dhPublicKey, long messageNumber, long previousChainLength,
-                            byte[] iv, byte[] cipherText, byte[] signature) {
-        this(
-                fromUserId,
-                fromDeviceId,
-                toUserId,
-                toDeviceId,
-                dhPublicKey,
-                messageNumber,
-                previousChainLength,
-                iv,
-                cipherText,
-                signature,
-                ProtoOuterPayload.OuterPayload.Channel.CHAT
-        );
-    }
-
-    public EncryptedMessage(String fromUserId, String fromDeviceId,
-                            String toUserId, String toDeviceId,
-                            byte[] dhPublicKey, long messageNumber, long previousChainLength,
                             byte[] iv, byte[] cipherText, byte[] signature,
                             ProtoOuterPayload.OuterPayload.Channel channel) {
         this.fromUserId = fromUserId;

@@ -1,4 +1,4 @@
-package com.nodes.chatclient.e2ee.records;
+package com.nodes.chatclient.e2ee.db.records;
 
 import com.nodes.chatclient.http.dto.Contact;
 

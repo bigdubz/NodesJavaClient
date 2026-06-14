@@ -2,16 +2,14 @@ package com.nodes.chatclient.store;
 
 import com.nodes.chatclient.AppContext;
 import com.nodes.chatclient.e2ee.provisioning.MessageDecryptionService;
-import com.nodes.chatclient.e2ee.provisioning.MessageTransportService;
-import com.nodes.chatclient.e2ee.records.ContactRecord;
-import com.nodes.chatclient.e2ee.records.MessageRecord;
+import com.nodes.chatclient.e2ee.db.records.ContactRecord;
+import com.nodes.chatclient.e2ee.db.records.MessageRecord;
 import com.nodes.chatclient.e2ee.db.stores.ContactStore;
 import com.nodes.chatclient.e2ee.db.stores.MessageStore;
 import com.nodes.chatclient.e2ee.mappers.OuterPayloadMapper;
 import com.nodes.chatclient.e2ee.types.EncryptedMessage;
 import com.nodes.chatclient.e2ee.types.InternalMessage;
 import com.nodes.chatclient.store.events.StoreListener;
-import com.nodes.chatclient.util.Helper;
 import com.nodes.chatclient.util.Pair;
 import com.nodes.chatclient.ws.ServerMessageHandlers;
 import com.nodes.chatclient.ws.messages.*;

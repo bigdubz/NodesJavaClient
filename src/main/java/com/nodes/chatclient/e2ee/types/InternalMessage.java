@@ -17,7 +17,7 @@ public final class InternalMessage {
     public String reaction;
     public boolean isRemoved;
 
-    // Control fields
+    // Control field
     public EncryptedPayload.ControlMessage.Type controlType;
 
     public static InternalMessage text(String messageId, long createdAt, String body, String referencedMessageId) {

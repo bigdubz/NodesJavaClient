@@ -1,6 +1,6 @@
 package com.nodes.chatclient.e2ee.db.stores;
 
-import com.nodes.chatclient.e2ee.records.OneTimePrekeyRecord;
+import com.nodes.chatclient.e2ee.db.records.OneTimePrekeyRecord;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

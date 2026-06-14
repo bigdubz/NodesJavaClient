@@ -2,7 +2,7 @@ package com.nodes.chatclient.e2ee.provisioning;
 
 import com.nodes.chatclient.e2ee.handshake.X3DHResult;
 import com.nodes.chatclient.e2ee.handshake.X3DHService;
-import com.nodes.chatclient.e2ee.records.ContactRecord;
+import com.nodes.chatclient.e2ee.db.records.ContactRecord;
 import com.nodes.chatclient.e2ee.db.stores.ContactStore;
 import com.nodes.chatclient.e2ee.db.stores.SessionStore;
 import com.nodes.chatclient.e2ee.types.LocalIdentity;

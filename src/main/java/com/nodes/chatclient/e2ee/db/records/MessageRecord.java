@@ -1,4 +1,4 @@
-package com.nodes.chatclient.e2ee.records;
+package com.nodes.chatclient.e2ee.db.records;
 
 public final class MessageRecord {
     public String messageId;

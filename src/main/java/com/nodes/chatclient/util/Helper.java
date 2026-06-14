@@ -4,6 +4,9 @@ import javafx.scene.image.ImageView;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
 public final class Helper {
 
     public static TextFlow textWithEmojiTextFlow(String raw, String textClass) {
@@ -43,5 +46,33 @@ public final class Helper {
 
     public static String mainMessageId() {
         return "java-main-" + System.nanoTime();
+    }
+
+    public static void loadToBuffer(ByteBuffer buffer,
+                             byte[] labelBytes,
+                             byte[] channelBytes,
+                             byte[] senderBytes,
+                             byte[] senderDeviceBytes,
+                             byte[] receiverBytes,
+                             byte[] receiverDeviceBytes) {
+        buffer.order(ByteOrder.BIG_ENDIAN);
+
+        buffer.putInt(labelBytes.length);
+        buffer.put(labelBytes);
+
+        buffer.putInt(channelBytes.length);
+        buffer.put(channelBytes);
+
+        buffer.putInt(senderBytes.length);
+        buffer.put(senderBytes);
+
+        buffer.putInt(senderDeviceBytes.length);
+        buffer.put(senderDeviceBytes);
+
+        buffer.putInt(receiverBytes.length);
+        buffer.put(receiverBytes);
+
+        buffer.putInt(receiverDeviceBytes.length);
+        buffer.put(receiverDeviceBytes);
     }
 }

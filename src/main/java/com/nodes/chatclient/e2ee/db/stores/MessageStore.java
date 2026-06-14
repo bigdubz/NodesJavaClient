@@ -1,6 +1,6 @@
 package com.nodes.chatclient.e2ee.db.stores;
 
-import com.nodes.chatclient.e2ee.records.MessageRecord;
+import com.nodes.chatclient.e2ee.db.records.MessageRecord;
 
 import java.sql.*;
 import java.util.ArrayList;

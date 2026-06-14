@@ -150,20 +150,20 @@ public final class ChatViewModel implements StoreListener {
     }
 
     public void markVisibleMessagesAsSeen() {
-        List<String> messages =
-                getMessages().stream()
-                        .filter(m -> !m.fromUserId().equals(ctx.userId) && !m.read())
-                        .map(ChatMessageUi::messageId)
-                        .toList();
+//        List<String> messages =
+//                getMessages().stream()
+//                        .filter(m -> !m.fromUserId().equals(ctx.userId) && !m.read())
+//                        .map(ChatMessageUi::messageId)
+//                        .toList();
 
-        store.bulkMarkMessagesAsSeen(peerId, messages);
-        for (String m : messages) {
+//        store.bulkMarkMessagesAsSeen(peerId, messages);
+//        for (String m : messages) {
 //            MessageTransportService.sendReadReceipt(ctx,
 //                    peerId,
 //                    Helper.controlMessageId(),
 //                    m,
 //                    System.currentTimeMillis());
-        }
+//        }
     }
 
     public boolean isLoadingHistory() {

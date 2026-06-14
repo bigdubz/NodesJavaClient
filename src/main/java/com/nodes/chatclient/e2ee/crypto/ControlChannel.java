@@ -5,9 +5,9 @@ import com.nodes.chatclient.e2ee.protos.ProtoOuterPayload;
 import com.nodes.chatclient.e2ee.types.EncryptedMessage;
 import com.nodes.chatclient.e2ee.types.InternalMessage;
 import com.nodes.chatclient.e2ee.types.Session;
+import com.nodes.chatclient.util.Helper;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 
 public final class ControlChannel {
@@ -113,25 +113,13 @@ public final class ControlChannel {
                 4 + receiverDeviceBytes.length +
                 4 + publicKey.length
         );
-        buffer.order(ByteOrder.BIG_ENDIAN);
-
-        buffer.putInt(labelBytes.length);
-        buffer.put(labelBytes);
-
-        buffer.putInt(channelBytes.length);
-        buffer.put(channelBytes);
-
-        buffer.putInt(senderBytes.length);
-        buffer.put(senderBytes);
-
-        buffer.putInt(senderDeviceBytes.length);
-        buffer.put(senderDeviceBytes);
-
-        buffer.putInt(receiverBytes.length);
-        buffer.put(receiverBytes);
-
-        buffer.putInt(receiverDeviceBytes.length);
-        buffer.put(receiverDeviceBytes);
+        Helper.loadToBuffer(buffer,
+                labelBytes,
+                channelBytes,
+                senderBytes,
+                senderDeviceBytes,
+                receiverBytes,
+                receiverDeviceBytes);
 
         buffer.putInt(publicKey.length);
         buffer.put(publicKey);

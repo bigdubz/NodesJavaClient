@@ -2,8 +2,8 @@ package com.nodes.chatclient.e2ee.provisioning;
 
 import com.nodes.chatclient.e2ee.crypto.KeyMaterial;
 import com.nodes.chatclient.e2ee.crypto.MessageAuth;
-import com.nodes.chatclient.e2ee.records.OneTimePrekeyRecord;
-import com.nodes.chatclient.e2ee.records.SignedPrekeyRecord;
+import com.nodes.chatclient.e2ee.db.records.OneTimePrekeyRecord;
+import com.nodes.chatclient.e2ee.db.records.SignedPrekeyRecord;
 import com.nodes.chatclient.e2ee.db.stores.OneTimePrekeyStore;
 import com.nodes.chatclient.e2ee.db.stores.SignedPrekeyStore;
 import com.nodes.chatclient.e2ee.types.BundleOneTimePrekey;
