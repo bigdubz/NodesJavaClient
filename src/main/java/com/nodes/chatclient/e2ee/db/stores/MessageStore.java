@@ -81,6 +81,22 @@ public final class MessageStore {
         }
     }
 
+    private static final String GET_STATUS_SQL = """
+        SELECT deliveryStatus
+        FROM messages
+        WHERE messageId = ?;
+    """;
+
+    public int getDeliveryStatus(String messageId) throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement(GET_STATUS_SQL)) {
+            ps.setString(1, messageId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) return -1;
+                return rs.getInt("deliveryStatus");
+            }
+        }
+    }
+
     // update delivery status
     private static final String UPDATE_STATUS_SQL = """
         UPDATE messages

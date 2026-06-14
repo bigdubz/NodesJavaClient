@@ -372,7 +372,7 @@ public final class ChatStore implements ServerMessageHandlers {
         record.receivedAt = System.currentTimeMillis();
         record.isOutgoing = true;
         record.type = 1;
-        record.deliveryStatus = convoId.equals(activeConversationPeerId) ? 2 : 1; // TODO: should be changed later
+        record.deliveryStatus = 0;
         record.referencedMessageId = referencedMessageId;
         record.reactionIsRemoved = isRemoved ? 1 : 0;
         record.reaction = reaction;
@@ -395,17 +395,22 @@ public final class ChatStore implements ServerMessageHandlers {
         }
     }
 
-    // todo: update database
     private void markMessageDelivered(String messageId) {
         if (messageId == null) return;
         storeExecutor.execute(() -> findMessage(messageId).ifPresent(msgPair -> {
             ChatMessage msg = msgPair.v2();
             msg.delivered = true;
             notifyMessageListUpdated(msg.toUserId);
+            try {
+                if (messageStore.getDeliveryStatus(messageId) < 1) {
+                    messageStore.updateDeliveryStatus(messageId, 2);
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException("Failed to mark message as delivered for message " + messageId, e);
+            }
         }));
     }
 
-    // todo: update database
     private void markMessageRead(String messageId) {
         if (messageId == null) return;
         storeExecutor.execute(() -> findMessage(messageId).ifPresent(msgPair -> {
@@ -414,6 +419,11 @@ public final class ChatStore implements ServerMessageHandlers {
                 msg.read = true;
             }
             notifyMessageListUpdated(msg.toUserId);
+            try {
+                messageStore.updateDeliveryStatus(messageId, 2);
+            } catch (SQLException e) {
+                throw new RuntimeException("Failed to update delivery status for message " + messageId, e);
+            }
         }));
     }
 
