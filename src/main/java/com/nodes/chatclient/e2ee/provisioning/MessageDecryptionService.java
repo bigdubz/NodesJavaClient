@@ -158,6 +158,7 @@ public final class MessageDecryptionService {
             session.signingPrivateKey = localIdentity.signingPrivateKey();
             session.signingPublicKey = localIdentity.signingPublicKey();
             session.remoteSigningPublicKey = contact.signingKey();
+            session.remoteDHPublicKey = encryptedMessage.dhPublicKey;
 
             return session;
         } catch (Exception e) {
