@@ -79,6 +79,8 @@ CREATE TABLE IF NOT EXISTS messages (
     createdAt INTEGER NOT NULL,
     receivedAt INTEGER NOT NULL,
     isOutgoing INTEGER NOT NULL CHECK (isOutgoing IN (0,1)),
+
+    -- todo: control messages will not be stored so `2` will have to be removed
     type INTEGER NOT NULL CHECK (type IN (0,1,2)),  -- TEXT=0, REACTION=1, CONTROL=2
     deliveryStatus INTEGER NOT NULL CHECK (deliveryStatus IN (0,1,2)), -- SENT=0, DELIVERED=1, READ=2
 

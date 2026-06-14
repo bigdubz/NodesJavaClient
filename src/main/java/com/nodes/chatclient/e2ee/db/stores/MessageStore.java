@@ -112,6 +112,20 @@ public final class MessageStore {
         }
     }
 
+    public void bulkUpdateDeliveryStatus(List<String> messages, int status) throws SQLException {
+        if (messages.isEmpty()) return;
+        if (status < 0 || status > 2)
+            throw new IllegalArgumentException("Invalid delivery status: " + status);
+        try (PreparedStatement ps = conn.prepareStatement(UPDATE_STATUS_SQL)) {
+            for (String message : messages) {
+                ps.setInt(1, status);
+                ps.setString(2, message);
+                ps.addBatch();
+            }
+            ps.executeBatch();
+        }
+    }
+
     // fetch conversation
     private static final String GET_CONVO_SQL = """
         SELECT messageId,

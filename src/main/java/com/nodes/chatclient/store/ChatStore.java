@@ -147,23 +147,31 @@ public final class ChatStore implements ServerMessageHandlers {
 
     public void bulkMarkMessagesAsSeen(String receiver, List<String> messages) {
         if (messages.isEmpty()) return;
-        Optional<Conversation> conv = getConversation(receiver);
-        if (conv.isPresent()) {
-            Conversation convo = conv.get();
-            int count = 0;
-            for (String messageId : messages) {
-                ChatMessage msg = convo.messages.get(messageId);
-                if (msg != null) {
-                    msg.read = true;
-                    count++;
+
+        storeExecutor.execute(() -> {
+            Optional<Conversation> conv = getConversation(receiver);
+            if (conv.isPresent()) {
+                Conversation convo = conv.get();
+                int count = 0;
+                for (String messageId : messages) {
+                    ChatMessage msg = convo.messages.get(messageId);
+                    if (msg != null) {
+                        msg.read = true;
+                        count++;
+                    }
+                }
+                try {
+                    messageStore.bulkUpdateDeliveryStatus(messages, 2);
+                } catch (SQLException e) {
+                    throw new RuntimeException("Failed to bulk-mark messages as seen", e);
+                }
+                if (count > 0) {
+                    convo.unreadCount = Math.max(convo.unreadCount - count, 0);
+                    notifyMessageListUpdated(receiver);
+                    notifyConversationsUpdated();
                 }
             }
-            if (count > 0) {
-                convo.unreadCount = Math.max(convo.unreadCount - count, 0);
-                notifyMessageListUpdated(receiver);
-                notifyConversationsUpdated();
-            }
-        }
+        });
     }
 
     public List<ConversationUi> getConversationsSnapshot() {
@@ -385,7 +393,6 @@ public final class ChatStore implements ServerMessageHandlers {
         }
     }
 
-    // === control messages, should be on a different chain ===
     private void handleControlMessage(EncryptedMessage encrypted, InternalMessage decrypted) {
         switch (decrypted.controlType) {
             case ACK -> markMessageDelivered(decrypted.referencedMessageId);
@@ -401,7 +408,6 @@ public final class ChatStore implements ServerMessageHandlers {
         storeExecutor.execute(() -> findMessage(messageId).ifPresent(msgPair -> {
             ChatMessage msg = msgPair.v2();
             msg.delivered = true;
-            notifyMessageListUpdated(msg.toUserId);
             try {
                 if (messageStore.getDeliveryStatus(messageId) < 1) {
                     messageStore.updateDeliveryStatus(messageId, 2);
@@ -409,6 +415,7 @@ public final class ChatStore implements ServerMessageHandlers {
             } catch (SQLException e) {
                 throw new RuntimeException("Failed to mark message as delivered for message " + messageId, e);
             }
+            notifyMessageListUpdated(msg.toUserId);
         }));
     }
 
@@ -419,12 +426,12 @@ public final class ChatStore implements ServerMessageHandlers {
             if (!msg.read) {
                 msg.read = true;
             }
-            notifyMessageListUpdated(msg.toUserId);
             try {
                 messageStore.updateDeliveryStatus(messageId, 2);
             } catch (SQLException e) {
-                throw new RuntimeException("Failed to update delivery status for message " + messageId, e);
+                throw new RuntimeException("Failed to mark message as seen for message " + messageId, e);
             }
+            notifyMessageListUpdated(msg.toUserId);
         }));
     }
 
