@@ -266,6 +266,7 @@ public final class ChatStore implements ServerMessageHandlers {
                 if (decrypted == null) {
                     return;
                 }
+                System.out.println("Decrypted: " + decrypted);
 
                 decryptionService.sendAckOnDecryptSuccess(payload.blob);
 

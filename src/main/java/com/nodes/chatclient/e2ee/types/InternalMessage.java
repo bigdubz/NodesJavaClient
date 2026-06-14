@@ -52,15 +52,30 @@ public final class InternalMessage {
 
     @Override
     public String toString() {
-        return "InternalMessage{" +
-                "type=" + type +
-                ", messageId='" + messageId + '\'' +
-                ", referencedMessageId='" + referencedMessageId + '\'' +
-                ", createdAt=" + createdAt +
-                ", body='" + body + '\'' +
-                ", reaction='" + reaction + '\'' +
-                ", isRemoved=" + isRemoved +
-                ", controlType=" + controlType +
-                '}';
+        StringBuilder sb = new StringBuilder("InternalMessage {\n")
+                .append("  type=").append(type).append('\n')
+                .append("  messageId='").append(messageId).append('\'').append('\n')
+                .append("  createdAt=").append(createdAt).append('\n');
+
+        switch (type) {
+            case TEXT -> {
+                sb.append("  body='").append(body).append('\'').append('\n');
+                if (referencedMessageId != null) {
+                    sb.append("  referencedMessageId='").append(referencedMessageId).append('\'').append('\n');
+                }
+            }
+            case REACTION -> sb
+                    .append("  referencedMessageId='").append(referencedMessageId).append('\'').append('\n')
+                    .append("  reaction='").append(reaction).append('\'').append('\n')
+                    .append("  isRemoved=").append(isRemoved).append('\n');
+            case CONTROL -> {
+                sb.append("  controlType=").append(controlType).append('\n');
+                if (referencedMessageId != null) {
+                    sb.append("  referencedMessageId='").append(referencedMessageId).append('\'').append('\n');
+                }
+            }
+        }
+
+        return sb.append('}').toString();
     }
 }

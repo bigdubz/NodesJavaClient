@@ -156,6 +156,8 @@ public final class ChatViewModel implements StoreListener {
                         .map(ChatMessageUi::messageId)
                         .toList();
 
+        System.out.println("Marking messages as seen: " + messages);
+
         store.bulkMarkMessagesAsSeen(peerId, messages);
         for (String m : messages) {
             MessageTransportService.sendReadReceipt(ctx,
