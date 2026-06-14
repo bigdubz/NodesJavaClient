@@ -7,10 +7,9 @@ import com.nodes.chatclient.e2ee.types.InternalMessage;
 import com.nodes.chatclient.e2ee.types.Session;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-
-import static com.nodes.chatclient.util.Helper.loadToBuffer;
 
 public final class DoubleRatchet {
 
@@ -33,8 +32,10 @@ public final class DoubleRatchet {
         byte[] messageKey;
         String id = KeyDerivation.ratchetId(msg.dhPublicKey, msg.messageNumber);
         if (session.skippedKeys.containsKey(id)) {
-            messageKey = session.skippedKeys.remove(id);
-            return decryptWithKey(messageKey, msg);
+            messageKey = session.skippedKeys.get(id);
+            InternalMessage plain = decryptWithKey(messageKey, msg);
+            session.skippedKeys.remove(id);
+            return plain;
         }
 
         if (session.remoteDHPublicKey == null ||
@@ -119,6 +120,10 @@ public final class DoubleRatchet {
     }
 
     private static void skipKeys(Session session, byte[] ratchetPublicKey, long until) throws Exception {
+        if (ratchetPublicKey == null) {
+            return;
+        }
+
         if (until - session.receivingMessageNumber > 100) {
             throw new Exception("Too many messages");
         }
@@ -202,18 +207,29 @@ public final class DoubleRatchet {
                 4 + receiverDeviceBytes.length +
                 8 + publicKey.length
         );
-        loadToBuffer(buffer,
-                labelBytes,
-                channelBytes,
-                senderBytes,
-                senderDeviceBytes,
-                receiverBytes,
-                receiverDeviceBytes);
+        buffer.order(ByteOrder.BIG_ENDIAN);
+
+        buffer.putInt(labelBytes.length);
+        buffer.put(labelBytes);
+
+        buffer.putInt(channelBytes.length);
+        buffer.put(channelBytes);
+
+        buffer.putInt(senderBytes.length);
+        buffer.put(senderBytes);
+
+        buffer.putInt(senderDeviceBytes.length);
+        buffer.put(senderDeviceBytes);
+
+        buffer.putInt(receiverBytes.length);
+        buffer.put(receiverBytes);
+
+        buffer.putInt(receiverDeviceBytes.length);
+        buffer.put(receiverDeviceBytes);
 
         buffer.putLong(messageNumber);
         buffer.put(publicKey);
 
         return buffer.array();
     }
-
 }

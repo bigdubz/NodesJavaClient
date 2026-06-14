@@ -1,8 +1,8 @@
 package com.nodes.chatclient.e2ee.provisioning;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.nodes.chatclient.e2ee.crypto.ControlChannel;
 import com.nodes.chatclient.e2ee.crypto.DoubleRatchet;
+import com.nodes.chatclient.e2ee.crypto.KeyDerivation;
 import com.nodes.chatclient.e2ee.crypto.KeyMaterial;
 import com.nodes.chatclient.e2ee.db.stores.ContactStore;
 import com.nodes.chatclient.e2ee.db.stores.OneTimePrekeyStore;
@@ -66,8 +66,7 @@ public final class MessageDecryptionService {
                     .orElseGet(() -> initializeResponderSession(encryptedMessage, contact));
 
             return switch (encryptedMessage.channel) {
-                case CONTROL -> ControlChannel.decrypt(session, encryptedMessage);
-                case CHAT -> {
+                case CHAT, CONTROL -> {
                     InternalMessage message = DoubleRatchet.decrypt(session, encryptedMessage);
                     sessionStore.save(encryptedMessage.fromUserId, encryptedMessage.fromDeviceId, session);
                     if (encryptedMessage.oneTimePrekeyId != null && oneTimePrekeyStore != null) {
@@ -121,7 +120,9 @@ public final class MessageDecryptionService {
             byte[] dh1 = KeyMaterial.dh(signedPrekey.privateKey(), senderIdentityKey);
             byte[] dh2 = KeyMaterial.dh(localIdentity.identityPrivateKey(), encryptedMessage.dhPublicKey);
             byte[] dh3 = KeyMaterial.dh(signedPrekey.privateKey(), encryptedMessage.dhPublicKey);
-            byte[] secret = KeyMaterial.concat(KeyMaterial.concat(dh1, dh2), dh3);
+
+            byte[] prefix = new byte[] { (byte) 0xFF };
+            byte[] secret = KeyMaterial.concat(prefix, KeyMaterial.concat(KeyMaterial.concat(dh1, dh2), dh3));
 
             if (encryptedMessage.oneTimePrekeyId != null) {
                 if (oneTimePrekeyStore == null) {
@@ -139,8 +140,11 @@ public final class MessageDecryptionService {
                 secret = KeyMaterial.concat(secret, dh4);
             }
 
+            byte[] extracted = KeyDerivation.hkdfExtract(new byte[32], secret);
+            byte[] initialRootKey = KeyDerivation.hkdfExpand(extracted, "initial-root", 32);
+
             Session session = Session.createInitial(
-                    KeyMaterial.hash(secret),
+                    initialRootKey,
                     signedPrekey.privateKey(),
                     signedPrekey.publicKey(),
                     null,
@@ -148,8 +152,9 @@ public final class MessageDecryptionService {
                     encryptedMessage.fromDeviceId,
                     false
             );
-            session.state = ProtoSession.SessionProto.State.ACTIVE;
+
             session.sessionVersion = 1;
+            session.state = ProtoSession.SessionProto.State.ACTIVE;
             session.signingPrivateKey = localIdentity.signingPrivateKey();
             session.signingPublicKey = localIdentity.signingPublicKey();
             session.remoteSigningPublicKey = contact.signingKey();

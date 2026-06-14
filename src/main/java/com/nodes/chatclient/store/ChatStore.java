@@ -7,9 +7,11 @@ import com.nodes.chatclient.e2ee.db.records.MessageRecord;
 import com.nodes.chatclient.e2ee.db.stores.ContactStore;
 import com.nodes.chatclient.e2ee.db.stores.MessageStore;
 import com.nodes.chatclient.e2ee.mappers.OuterPayloadMapper;
+import com.nodes.chatclient.e2ee.provisioning.MessageTransportService;
 import com.nodes.chatclient.e2ee.types.EncryptedMessage;
 import com.nodes.chatclient.e2ee.types.InternalMessage;
 import com.nodes.chatclient.store.events.StoreListener;
+import com.nodes.chatclient.util.Helper;
 import com.nodes.chatclient.util.Pair;
 import com.nodes.chatclient.ws.ServerMessageHandlers;
 import com.nodes.chatclient.ws.messages.*;
@@ -315,13 +317,13 @@ public final class ChatStore implements ServerMessageHandlers {
         persistTextMessage(peerId, msg, false, encryptedMessage.fromDeviceId, isActive ? 2 : 1);
         notifyMessageListUpdated(peerId);
         notifyConversationsUpdated();
-//        MessageTransportService.sendDeliveredReceipt(
-//                ctx,
-//                peerId,
-//                Helper.controlMessageId(),
-//                decryptedMessage.messageId,
-//                System.currentTimeMillis()
-//        );
+        MessageTransportService.sendDeliveredReceipt(
+                ctx,
+                peerId,
+                Helper.controlMessageId(),
+                decryptedMessage.messageId,
+                System.currentTimeMillis()
+        );
     }
 
     private void persistTextMessage(
@@ -393,6 +395,7 @@ public final class ChatStore implements ServerMessageHandlers {
         }
     }
 
+    // todo: update database
     private void markMessageDelivered(String messageId) {
         if (messageId == null) return;
         storeExecutor.execute(() -> findMessage(messageId).ifPresent(msgPair -> {
@@ -402,6 +405,7 @@ public final class ChatStore implements ServerMessageHandlers {
         }));
     }
 
+    // todo: update database
     private void markMessageRead(String messageId) {
         if (messageId == null) return;
         storeExecutor.execute(() -> findMessage(messageId).ifPresent(msgPair -> {

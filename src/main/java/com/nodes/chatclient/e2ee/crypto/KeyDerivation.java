@@ -2,6 +2,7 @@ package com.nodes.chatclient.e2ee.crypto;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HexFormat;
 
@@ -31,7 +32,7 @@ public final class KeyDerivation {
 
         while (generatedBytes < length) {
             mac.update(t);
-            mac.update(info.getBytes());
+            mac.update(info.getBytes(StandardCharsets.UTF_8));
             mac.update(counter);
             t = mac.doFinal();
 

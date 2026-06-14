@@ -7,6 +7,8 @@ import com.nodes.chatclient.e2ee.types.LocalIdentity;
 import com.nodes.chatclient.e2ee.types.Session;
 import com.nodes.chatclient.http.dto.RemoteUserBundle;
 
+import java.util.Arrays;
+
 public final class X3DHService {
 
     public X3DHResult initiateHandshake(LocalIdentity self, RemoteUserBundle remoteBundle) throws Exception {
@@ -38,26 +40,49 @@ public final class X3DHService {
         byte[] dh2 = KeyMaterial.dh(ephPrivateKey, remoteBundle.ik());
         byte[] dh3 = KeyMaterial.dh(ephPrivateKey, remoteBundle.spk());
 
+        byte[] prefix = new byte[] { (byte) 0xFF };
+
         if (usedOneTimePrekey) {
             byte[] dh4 = KeyMaterial.dh(ephPrivateKey, remoteOneTimePrekey);
-            secret = KeyMaterial.concat(KeyMaterial.concat(dh1, dh2), KeyMaterial.concat(dh3, dh4));
-
+            secret = KeyMaterial.concat(prefix,
+                    KeyMaterial.concat(KeyMaterial.concat(dh1, dh2), KeyMaterial.concat(dh3, dh4)));
         } else {
-            secret = KeyMaterial.concat(KeyMaterial.concat(dh1, dh2), dh3);
+            secret = KeyMaterial.concat(prefix, KeyMaterial.concat(KeyMaterial.concat(dh1, dh2), dh3));
         }
 
-        byte[] rootKey = KeyMaterial.hash(secret);
+        byte[] extracted = KeyDerivation.hkdfExtract(new byte[32], secret);
+        byte[] initialRootKey = KeyDerivation.hkdfExpand(extracted, "initial-root", 32);
+
+        byte[][] initialRatchetKeyPair = KeyMaterial.generateX25519KeyPair();
+        byte[] initialRatchetPublicKey = initialRatchetKeyPair[0];
+        byte[] initialRatchetPrivateKey = initialRatchetKeyPair[1];
+
+        byte[] initialDh = KeyMaterial.dh(initialRatchetPrivateKey, remoteBundle.spk());
+        byte[][] initialRatchet = KeyDerivation.kdfRoot(initialRootKey, initialDh);
 
         Integer oneTimePrekeyId = usedOneTimePrekey ? remoteBundle.opk().keyId() : null;
-        Session session = createInitialSession(
-                self,
-                remoteBundle,
-                rootKey,
-                ephPrivateKey,
-                ephPublicKey,
+
+        Session session = Session.createInitial(
+                initialRatchet[0],
+                initialRatchetPrivateKey,
+                initialRatchetPublicKey,
                 remoteBundle.spk(),
-                oneTimePrekeyId
+                self.deviceId(),
+                remoteBundle.deviceId(),
+                true
         );
+
+        session.state = ProtoSession.SessionProto.State.ACTIVE;
+        session.sessionVersion = 1;
+        session.signingPrivateKey = self.signingPrivateKey();
+        session.signingPublicKey = self.signingPublicKey();
+        session.remoteSigningPublicKey = remoteBundle.sk();
+
+        session.sendingChainKey = initialRatchet[1];
+        session.receivingChainKey = null;
+        session.previousRemoteDHPublicKey = null;
+        session.previousChainLength = 0;
+        session.oneTimePrekeyId = oneTimePrekeyId;
 
         PrekeyMessage prekeyMessage = new PrekeyMessage(
                 self.userId(),
@@ -78,13 +103,18 @@ public final class X3DHService {
                                          byte[] localDhPublicKey,
                                          byte[] remoteDhPublicKey,
                                          Integer oneTimePrekeyId) throws Exception {
-        byte[][] initialSendingRatchet = KeyDerivation.kdfRoot(
-                rootKey,
-                KeyMaterial.dh(localDhPrivateKey, remoteDhPublicKey)
-        );
+
+        byte[] expanded = KeyDerivation.hkdfExpand(rootKey, "session-init", 64);
+        byte[] messageChainRoot = Arrays.copyOfRange(expanded, 0, 32);
+        byte[] controlChainRoot = Arrays.copyOfRange(expanded, 32, 64);
+
+//        byte[][] initialSendingRatchet = KeyDerivation.kdfRoot(
+//                rootKey,
+//                KeyMaterial.dh(localDhPrivateKey, remoteDhPublicKey)
+//        );
 
         Session session = Session.createInitial(
-                initialSendingRatchet[0],
+                rootKey,
                 localDhPrivateKey,
                 localDhPublicKey,
                 remoteDhPublicKey,
@@ -101,7 +131,7 @@ public final class X3DHService {
 
         session.remoteSigningPublicKey = remoteBundle.sk();
 
-        session.sendingChainKey = initialSendingRatchet[1];
+        session.sendingChainKey = messageChainRoot;
         session.receivingChainKey = null;
 
         session.previousRemoteDHPublicKey = null;
