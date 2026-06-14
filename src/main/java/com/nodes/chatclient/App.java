@@ -2,8 +2,11 @@ package com.nodes.chatclient;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nodes.chatclient.config.ClientConfig;
-import com.nodes.chatclient.http.AuthApi;
-import com.nodes.chatclient.http.ChatApi;
+import com.nodes.chatclient.e2ee.db.DatabaseManager;
+import com.nodes.chatclient.e2ee.identity.LocalIdentityService;
+import com.nodes.chatclient.http.api.ContactsApi;
+import com.nodes.chatclient.http.api.LoginApi;
+import com.nodes.chatclient.http.api.BundlesApi;
 import com.nodes.chatclient.http.HttpClientFactory;
 import com.nodes.chatclient.ui.controllers.AppRootController;
 import com.nodes.chatclient.ws.WsMessageRouter;
@@ -16,10 +19,12 @@ import javafx.stage.Stage;
 import java.net.http.HttpClient;
 import java.util.Objects;
 
-public class App extends Application {
+public final class App extends Application {
 
     @Override
-    public void start(Stage stage) {
+    public void start(Stage stage) throws Exception {
+        DatabaseManager.init();
+
         ClientConfig config = ClientConfig.localDev();
         AppContext ctx = getAppContext(config);
 
@@ -53,8 +58,10 @@ public class App extends Application {
         HttpClientFactory httpFactory = new HttpClientFactory(config);
         HttpClient httpClient = httpFactory.create();
 
-        AuthApi authApi = new AuthApi(config, httpClient, mapper);
-        ChatApi chatApi = new ChatApi(config, httpClient, mapper);
+        LoginApi loginApi = new LoginApi(config, httpClient, mapper);
+        BundlesApi bundlesApi = new BundlesApi(config, httpClient, mapper);
+        ContactsApi contactsApi = new ContactsApi(config, httpClient, mapper);
+        LocalIdentityService localIdentityService = LocalIdentityService.from(DatabaseManager.get());
 
         WsMessageRouter router = new WsMessageRouter(mapper);
         WsService wsService = new WsService(config, httpClient, mapper, router);
@@ -62,8 +69,10 @@ public class App extends Application {
         return new AppContext(
                 config,
                 httpFactory,
-                authApi,
-                chatApi,
+                loginApi,
+                bundlesApi,
+                contactsApi,
+                localIdentityService,
                 wsService,
                 router
         );

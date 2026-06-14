@@ -10,9 +10,9 @@ import java.io.InputStreamReader;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class EmojiRegistry {
+public final class EmojiRegistry {
 
-    public static Set<String> EMOJI_SEQUENCES = new HashSet<>();
+    public static final Set<String> EMOJI_SEQUENCES = new HashSet<>();
     private static final Map<String, Image> EMOJI_CACHE = new HashMap<>();
 
     static {

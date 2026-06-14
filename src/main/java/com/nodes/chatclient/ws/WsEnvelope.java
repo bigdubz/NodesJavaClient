@@ -8,15 +8,6 @@ public final class WsEnvelope {
     public String type;
     public JsonNode payload;
 
-    public WsEnvelope() {
-
-    }
-
-    public WsEnvelope(String type, JsonNode payload) {
-        this.type = type;
-        this.payload = payload;
-    }
-
     @Override
     public String toString() {
         return "WsEnvelope{" +

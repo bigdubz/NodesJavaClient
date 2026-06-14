@@ -10,5 +10,7 @@ public record ServerAuthOk(Payload payload) implements ServerMessage {
 
     public static final class Payload {
         public String userId;
+        public String deviceId;
+        public String deviceToken;
     }
 }

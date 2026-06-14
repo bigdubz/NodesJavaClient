@@ -1,6 +1,7 @@
 package com.nodes.chatclient.ui.controllers;
 
 import com.nodes.chatclient.AppContext;
+import com.nodes.chatclient.e2ee.types.LocalIdentity;
 import com.nodes.chatclient.ui.vm.LoginViewModel;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -73,10 +74,18 @@ public final class LoginController {
     private void loginAsync(AppContext ctx, Consumer<String> onSuccess) {
         vm.loginAsync().thenAccept(res -> {
             if (res != null) {
-                ctx.userId = res.userId;
-                ctx.jwt = res.token;
+                try {
+                    LocalIdentity identity = ctx.localIdentityService.getOrCreate(res.userId());
 
-                Platform.runLater(() -> onSuccess.accept(res.userId));
+                    ctx.userId = res.userId();
+                    ctx.deviceId = identity.deviceId();
+                    ctx.jwt = res.token();
+                    ctx.localIdentity = identity;
+
+                    Platform.runLater(() -> onSuccess.accept(res.userId()));
+                } catch (Exception e) {
+                    Platform.runLater(() -> vm.errorMessageProperty().set(e.getMessage()));
+                }
             }
         });
     }

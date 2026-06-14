@@ -1,5 +1,6 @@
 package com.nodes.chatclient.ui.vm;
 
+import com.nodes.chatclient.AppContext;
 import com.nodes.chatclient.store.ChatStore;
 import com.nodes.chatclient.store.events.StoreListener;
 import com.nodes.chatclient.store.model.ConversationUi;
@@ -12,18 +13,17 @@ import java.util.List;
 public final class ConversationsViewModel implements StoreListener {
 
     private final ChatStore store;
+    private final AppContext ctx;
 
     private final ObservableList<ConversationUi> conversations =
             FXCollections.observableArrayList();
 
-    public ConversationsViewModel(ChatStore store) {
+    public ConversationsViewModel(AppContext ctx, ChatStore store) {
         this.store = store;
+        this.ctx = ctx;
 
-        // bootstrap
-        updateFromStore();
-
-        // register listener
         store.addListener(this);
+        updateFromStore();
     }
 
     public ObservableList<ConversationUi> getConversations() {
@@ -33,6 +33,13 @@ public final class ConversationsViewModel implements StoreListener {
     private void updateFromStore() {
         List<ConversationUi> snapshot = store.getConversationsSnapshot();
         Platform.runLater(() -> conversations.setAll(snapshot));
+    }
+
+    public void deleteContact(String peerId) {
+        if (!ctx.contactProvisioningService.deleteContact(peerId)) {
+            throw new RuntimeException("Failed to delete contact");
+        }
+        store.loadLocalConversations();
     }
 
     @Override

@@ -1,11 +1,11 @@
 package com.nodes.chatclient.ws.messages;
 
-public class ClientAuthMessage implements ClientMessage {
+public final class ClientAuthMessage implements ClientMessage {
     public final String type = "AUTH";
     public final Payload payload;
 
-    public ClientAuthMessage(String userId, String token) {
-        this.payload = new Payload(userId, token);
+    public ClientAuthMessage(String userId, String deviceId, String token) {
+        this.payload = new Payload(userId, deviceId, token);
     }
 
     @Override
@@ -13,5 +13,5 @@ public class ClientAuthMessage implements ClientMessage {
         return "";
     }
 
-    public record Payload(String userId, String token) {}
+    public record Payload(String userId, String deviceId, String token) {}
 }

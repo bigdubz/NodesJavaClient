@@ -68,24 +68,16 @@ public final class WsMessageRouter {
         }
     }
 
-    public void registerServerHandlers(ServerHandlers h)  {
+    public void registerServerHandlers(ServerMessageHandlers h, ServerAuthHandlers ha)  {
         Objects.requireNonNull(h, "handlers");
 
-        onCore("AUTH_OK", ServerAuthOk.Payload.class, h::onAuthOk);
-        onCore("AUTH_ERROR", ServerAuthError.Payload.class, h::onAuthError);
+        onCore("AUTH_OK", ServerAuthOk.Payload.class, ha::onAuthOk);
+        onCore("AUTH_ERROR", ServerAuthError.Payload.class, ha::onAuthError);
 
-        onSession("CHAT_MESSAGE", ServerChatMessage.Payload.class, h::onChatMessage);
-
-        onSession("MESSAGE_DELIVERED", ServerMessageDelivered.Payload.class, h::onMessageDelivered);
-        onSession("MESSAGE_SEEN", ServerMessageSeen.Payload.class, h::onMessageSeen);
-
-        onSession("USER_TYPING", ServerUserTyping.Payload.class, h::onUserTyping);
+        onSession("ENCRYPTED_RELAY", ServerEncryptedRelay.Payload.class, h::onEncryptedRelay);
 
         onSession("USER_ONLINE", ServerUserOnline.Payload.class, h::onUserOnline);
         onSession("USER_OFFLINE", ServerUserOffline.Payload.class, h::onUserOffline);
-
-        onSession("ADD_REACTION", ServerAddReaction.Payload.class, h::onAddReaction);
-        onSession("REMOVE_REACTION", ServerRemoveReaction.Payload.class, h::onRemoveReaction);
     }
 
     public void clearHandlers() {

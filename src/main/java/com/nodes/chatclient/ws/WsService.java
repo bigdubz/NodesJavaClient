@@ -14,7 +14,8 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-public final class WsService {
+public final class WsService implements ServerAuthHandlers {
+
     public enum State {
         DISCONNECTED,
         CONNECTING,
@@ -38,8 +39,10 @@ public final class WsService {
     private volatile WebSocket webSocket;
     private volatile State state = State.DISCONNECTED;
 
-    private volatile String jwt;
+    private volatile String bootstrapJwt;
+    private volatile String deviceToken;
     private volatile String userId;
+    private volatile String deviceId;
 
     private final AtomicInteger reconnectAttempts = new AtomicInteger(0);
     private final AtomicLong generation = new AtomicLong(0);
@@ -64,22 +67,44 @@ public final class WsService {
         this.httpClient = Objects.requireNonNull(httpClient, "httpClient");
         this.mapper = Objects.requireNonNull(mapper, "mapper");
         this.router = Objects.requireNonNull(router, "router");
-
-        router.onCore("AUTH_OK", ServerAuthOk.Payload.class, this::handleAuthOk);
-        router.onCore("AUTH_ERROR", ServerAuthError.Payload.class, this::handleAuthError);
     }
 
-    public void setAuth(String userId, String jwt) {
+    public void setAuth(String userId, String deviceId, String bootstrapJwt) {
         this.userId = userId;
-        this.jwt = jwt;
+        this.deviceId = deviceId;
+        this.bootstrapJwt = bootstrapJwt;
+        this.deviceToken = null;
     }
 
-    private void handleAuthOk(ServerAuthOk.Payload p) {
-        state = State.AUTHENTICATED;
+    public String deviceToken() {
+        return deviceToken;
+    }
 
+    @Override
+    public void onAuthOk(ServerAuthOk.Payload payload) {
+        if (payload == null) {
+            failAuth("Authentication failed: empty AUTH_OK payload.");
+            return;
+        }
+        if (!Objects.equals(userId, payload.userId) || !Objects.equals(deviceId, payload.deviceId)) {
+            failAuth("Authentication failed: server identity echo did not match.");
+            return;
+        }
+        if (isBlank(payload.deviceToken)) {
+            failAuth("Authentication failed: server did not return a device token.");
+            return;
+        }
+
+        deviceToken = payload.deviceToken;
+        state = State.AUTHENTICATED;
         if (authFuture != null && !authFuture.isDone()) {
             authFuture.complete(null);
         }
+    }
+
+    @Override
+    public void onAuthError(ServerAuthError.Payload payload) {
+        failAuth("Authentication failed: " + payload.error);
     }
 
     public void enableRoutingAndFlush() {
@@ -96,11 +121,10 @@ public final class WsService {
         routingEnabled = false;
     }
 
-    private void handleAuthError(ServerAuthError.Payload p) {
+    private void failAuth(String message) {
+        state = State.CONNECTED;
         if (authFuture != null && !authFuture.isDone()) {
-            authFuture.completeExceptionally(
-                    new RuntimeException("Authentication failed.")
-            );
+            authFuture.completeExceptionally(new RuntimeException(message));
         }
     }
 
@@ -125,58 +149,20 @@ public final class WsService {
         }
     }
 
-    public void sendChatMessageAsync(
+    public void sendAckAsync(
+            String blobHash
+    ) {
+        if (webSocket == null) return;
+        sendAsync(new ClientAck(blobHash));
+    }
+
+    public void sendEncryptedAsync(
             String toUserId,
-            String text,
-            String clientId,
-            String replyingTo
+            String toDeviceId,
+            String blob
     ) {
         if (webSocket == null) return;
-
-        ClientChatMessage msg = new ClientChatMessage(
-                toUserId,
-                text,
-                clientId,
-                replyingTo
-        );
-
-        sendAsync(msg);
-    }
-
-    public void sendReactionAsync(
-            String messageId,
-            String emoji,
-            String toUserId
-    ) {
-        if (webSocket == null) return;
-        ClientAddReaction msg = new ClientAddReaction(messageId, emoji, toUserId);
-        sendAsync(msg);
-    }
-
-    public void sendRemoveReactionAsync(
-            String messageId,
-            String toUserId
-    ) {
-        if (webSocket == null) return;
-        ClientRemoveReaction msg = new ClientRemoveReaction(messageId, toUserId);
-        sendAsync(msg);
-    }
-
-    public void sendMessageSeenAsync(
-            String messageId
-    ) {
-        if (webSocket == null) return;
-        ClientMessageSeen msg = new ClientMessageSeen(messageId);
-        sendAsync(msg);
-    }
-
-    public void sendIsTypingAsync(
-            String toUserId,
-            boolean isTyping
-    ) {
-        if (webSocket == null) return;
-        ClientTypingMessage msg = new ClientTypingMessage(toUserId, isTyping);
-        sendAsync(msg);
+        sendAsync(new ClientEncryptedSend(toUserId, toDeviceId, blob));
     }
 
     public void sendAsync(Object message) {
@@ -231,12 +217,20 @@ public final class WsService {
     }
 
     private void sendAuth() {
-        if (jwt == null || userId == null) return;
+        if (bootstrapJwt == null || userId == null || deviceId == null) return;
 
         try {
-            ClientAuthMessage msg = new ClientAuthMessage(userId, jwt);
+            ClientAuthMessage msg = new ClientAuthMessage(userId, deviceId, bootstrapJwt);
             webSocket.sendText(mapper.writeValueAsString(msg), true).join();
         } catch (Exception ignored) {}
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
+    }
+
+    private boolean isAuthResponse(WsEnvelope env) {
+        return ServerAuthOk.type.equals(env.type) || ServerAuthError.type.equals(env.type);
     }
 
     private void startHeartbeat(long gen) {
@@ -268,7 +262,6 @@ public final class WsService {
         pongWatchdog = null;
     }
 
-
     private final class Listener implements WebSocket.Listener {
         private final long gen;
         private final StringBuilder buffer = new StringBuilder();
@@ -286,7 +279,7 @@ public final class WsService {
                 try {
                     WsEnvelope env = mapper.readValue(buffer.toString(), WsEnvelope.class);
                     buffer.setLength(0);
-                    if (!env.type.equals(ServerAuthOk.type) && (state != State.AUTHENTICATED || !routingEnabled)) {
+                    if (!isAuthResponse(env) && (state != State.AUTHENTICATED || !routingEnabled)) {
                         System.out.println("QUEUED: " + data);
                         messageQueue.add(env);
                     } else {

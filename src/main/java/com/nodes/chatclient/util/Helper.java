@@ -4,7 +4,10 @@ import javafx.scene.image.ImageView;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 
-public class Helper {
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
+public final class Helper {
 
     public static TextFlow textWithEmojiTextFlow(String raw, String textClass) {
         TextFlow flow = new TextFlow();
@@ -35,5 +38,13 @@ public class Helper {
             buffer.setLength(0);
         }
         return flow;
+    }
+
+    public static String controlMessageId() {
+        return "java-control-" + System.nanoTime();
+    }
+
+    public static String mainMessageId() {
+        return "java-main-" + System.nanoTime();
     }
 }

@@ -1,11 +1,13 @@
 package com.nodes.chatclient.ui.vm;
 
 import com.nodes.chatclient.AppContext;
+import com.nodes.chatclient.e2ee.provisioning.MessageTransportService;
 import com.nodes.chatclient.store.ChatStore;
 import com.nodes.chatclient.store.model.ChatMessage;
 import com.nodes.chatclient.store.events.StoreListener;
 
 import com.nodes.chatclient.store.model.ChatMessageUi;
+import com.nodes.chatclient.util.Helper;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -13,7 +15,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 import java.util.List;
-import java.util.OptionalLong;
 
 public final class ChatViewModel implements StoreListener {
 
@@ -85,71 +86,84 @@ public final class ChatViewModel implements StoreListener {
         }
     }
 
-    public void sendIsTyping(boolean isTyping) {
-        ctx.wsService.sendIsTypingAsync(peerId, isTyping);
+    public void sendIsTyping() {
+        MessageTransportService.sendTyping(ctx,
+                peerId,
+                Helper.controlMessageId(),
+                System.currentTimeMillis());
     }
 
-    public void sendReaction(String messageId, String emoji) {
-        ctx.wsService.sendReactionAsync(messageId, emoji, peerId);
+    public void sendReaction(String referencedMessageId, String emoji) {
+        String messageId = Helper.mainMessageId();
+        long createdAt = System.currentTimeMillis();
+        store.persistReactionMessage(
+                messageId,
+                peerId,
+                ctx.userId,
+                ctx.deviceId,
+                createdAt,
+                referencedMessageId,
+                emoji,
+                false
+        );
+        store.addLocalReaction(referencedMessageId, selfId, emoji);
+
+        MessageTransportService.sendAddReaction(ctx, peerId, messageId, referencedMessageId, emoji, createdAt);
     }
 
-    public void removeReaction(String messageId) {
-        ctx.wsService.sendRemoveReactionAsync(messageId, peerId);
+    public void removeReaction(String referencedMessageId) {
+        String messageId = Helper.mainMessageId();
+        long createdAt = System.currentTimeMillis();
+        store.persistReactionMessage(
+                messageId,
+                peerId,
+                ctx.userId,
+                ctx.deviceId,
+                createdAt,
+                referencedMessageId,
+                "del",
+                true
+        );
+        store.removeLocalReaction(referencedMessageId, selfId);
+
+        MessageTransportService.sendRemoveReaction(ctx, peerId, messageId, referencedMessageId, createdAt);
     }
 
     public void sendMessage(String text, String replyingTo) {
-        String clientId = clientIdGenerator();
+        String clientId = Helper.mainMessageId();
+        long createdAt = System.currentTimeMillis();
         ChatMessage local = ChatMessage.outgoing(
                 clientId,
                 ctx.userId,
                 peerId,
                 text,
-                System.currentTimeMillis(),
+                createdAt,
                 replyingTo
         );
         store.addOutgoingMessage(peerId, local);
-        ctx.wsService.sendChatMessageAsync(
-                peerId,
-                text,
-                clientId,
-                replyingTo
-        );
+
+        MessageTransportService.sendText(ctx, peerId, clientId, text, replyingTo, createdAt);
     }
 
     public void loadOlderHistory() {
-        if (loadingHistory || !hasMoreHistory) return;
-
-        loadingHistory = true;
-
-        OptionalLong cursorOpt = store.getOldestMessageTimestamp(peerId);
-        long cursor = cursorOpt.orElse(Long.MAX_VALUE);
-
-        ctx.chatApi
-                .getHistoryAsync(ctx.jwt, peerId, cursor, 50)
-                .thenAccept(rows -> {
-                    if (rows.isEmpty()) {
-                        hasMoreHistory = false;
-                    } else {
-                        store.mergeHistory(peerId, rows);
-                    }
-                });
+        hasMoreHistory = false;
     }
 
     public void markVisibleMessagesAsSeen() {
         List<String> messages =
                 getMessages().stream()
-                        .filter(m -> !m.fromUserId.equals(ctx.userId) && !m.read)
-                        .map(c -> c.messageId)
+                        .filter(m -> !m.fromUserId().equals(ctx.userId) && !m.read())
+                        .map(ChatMessageUi::messageId)
                         .toList();
 
         store.bulkMarkMessagesAsSeen(peerId, messages);
         for (String m : messages) {
-            ctx.wsService.sendMessageSeenAsync(m);
+            MessageTransportService.sendReadReceipt(ctx,
+                    peerId,
+                    Helper.controlMessageId(),
+                    m,
+                    System.currentTimeMillis());
         }
-    }
-
-    private String clientIdGenerator() {
-        return "client-" + System.nanoTime();
     }
 
     public boolean isLoadingHistory() {

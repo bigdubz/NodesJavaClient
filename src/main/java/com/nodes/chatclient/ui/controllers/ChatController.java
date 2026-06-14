@@ -24,7 +24,7 @@ import javafx.util.Duration;
 
 import java.util.stream.IntStream;
 
-public class ChatController {
+public final class ChatController {
 
     private Parent root;
     private ChatViewModel vm;
@@ -90,22 +90,27 @@ public class ChatController {
         inputContainer.getChildren().addFirst(createReplyBar());
         inputContainer.getChildren().add(input);
         typingPause.setOnFinished(e -> {
-            vm.sendIsTyping(false);
-            localTyping = false;
+            if (localTyping) {
+                vm.sendIsTyping();   // toggle OFF (assumed)
+                localTyping = false;
+            }
         });
 
         input.textProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal.isBlank()) {
-                vm.sendIsTyping(false);
-                localTyping = false;
+            boolean empty = newVal.isBlank();
+            if (empty) {
                 typingPause.stop();
-            } else {
-                if (!localTyping) {
-                    vm.sendIsTyping(true);
-                    localTyping = true;
+                if (localTyping) {
+                    vm.sendIsTyping();   // toggle OFF (assumed)
+                    localTyping = false;
                 }
-                typingPause.playFromStart();
+                return;
             }
+            if (!localTyping) {
+                vm.sendIsTyping();   // toggle ON (assumed)
+                localTyping = true;
+            }
+            typingPause.playFromStart();
         });
 
         Button send = new Button("Send");
@@ -168,9 +173,9 @@ public class ChatController {
     private void onReplyRequested(ChatMessageUi message) {
         replyingTo = message;
 
-        replyUser.setText(message.fromUserId);
+        replyUser.setText(message.fromUserId());
         replyText.getChildren().clear();
-        replyText.getChildren().setAll(Helper.textWithEmojiTextFlow(message.text, "reply-bar-text").getChildren());
+        replyText.getChildren().setAll(Helper.textWithEmojiTextFlow(message.text(), "reply-bar-text").getChildren());
 
         replyBar.setVisible(true);
         replyBar.setManaged(true);
@@ -178,13 +183,13 @@ public class ChatController {
 
     private void onReactionRequested(ChatMessageUi message, String reaction) {
         if (message != null) {
-            vm.sendReaction(message.messageId, reaction);
+            vm.sendReaction(message.messageId(), reaction);
         }
     }
 
     private void onRemoveReactionRequested(ChatMessageUi message) {
         if (message != null) {
-            vm.removeReaction(message.messageId);
+            vm.removeReaction(message.messageId());
         }
     }
 
@@ -203,7 +208,7 @@ public class ChatController {
             if (cell != null && cell.isVisible()) {
                 ChatMessageUi msg = (ChatMessageUi) cell.getItem();
                 double offset = cell.getLayoutY();
-                return new ScrollAnchor(msg.messageId, offset);
+                return new ScrollAnchor(msg.messageId(), offset);
             }
         }
 
@@ -217,9 +222,9 @@ public class ChatController {
         int index = IntStream.range(0,
                 messages.getItems().size())
                 .filter(i -> messages
-                                .getItems()
-                                .get(i)
-                                .messageId.equals(anchor.message))
+                        .getItems()
+                        .get(i)
+                        .messageId().equals(anchor.message))
                 .findFirst().orElse(-1);
 
         if (index < 0) return;
@@ -260,7 +265,7 @@ public class ChatController {
     private void sendMessage(TextField input) {
         String text = input.getText().trim();
         if (!text.isEmpty()) {
-            String reply = replyingTo == null ? null : replyingTo.messageId;
+            String reply = replyingTo == null ? null : replyingTo.messageId();
             vm.sendMessage(text, reply);
             input.clear();
             clearReply();
