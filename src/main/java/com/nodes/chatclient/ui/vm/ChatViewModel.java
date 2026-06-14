@@ -87,10 +87,10 @@ public final class ChatViewModel implements StoreListener {
     }
 
     public void sendIsTyping() {
-//        MessageTransportService.sendTyping(ctx,
-//                peerId,
-//                Helper.controlMessageId(),
-//                System.currentTimeMillis());
+        MessageTransportService.sendTyping(ctx,
+                peerId,
+                Helper.controlMessageId(),
+                System.currentTimeMillis());
     }
 
     public void sendReaction(String referencedMessageId, String emoji) {
