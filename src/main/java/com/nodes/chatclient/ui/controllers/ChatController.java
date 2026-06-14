@@ -77,7 +77,7 @@ public final class ChatController {
                     }
                 });
             }
-            vm.markVisibleMessagesAsSeen();
+//            vm.markVisibleMessagesAsSeen();
         };
 
         vm.getMessages().addListener(messageListener);

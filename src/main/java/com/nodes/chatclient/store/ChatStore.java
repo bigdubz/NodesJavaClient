@@ -317,13 +317,13 @@ public final class ChatStore implements ServerMessageHandlers {
         persistTextMessage(peerId, msg, false, encryptedMessage.fromDeviceId, isActive ? 2 : 1);
         notifyMessageListUpdated(peerId);
         notifyConversationsUpdated();
-        MessageTransportService.sendDeliveredReceipt(
-                ctx,
-                peerId,
-                Helper.controlMessageId(),
-                decryptedMessage.messageId,
-                System.currentTimeMillis()
-        );
+//        MessageTransportService.sendDeliveredReceipt(
+//                ctx,
+//                peerId,
+//                Helper.controlMessageId(),
+//                decryptedMessage.messageId,
+//                System.currentTimeMillis()
+//        );
     }
 
     private void persistTextMessage(

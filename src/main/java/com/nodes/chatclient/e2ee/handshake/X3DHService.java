@@ -53,19 +53,15 @@ public final class X3DHService {
         byte[] extracted = KeyDerivation.hkdfExtract(new byte[32], secret);
         byte[] initialRootKey = KeyDerivation.hkdfExpand(extracted, "initial-root", 32);
 
-        byte[][] initialRatchetKeyPair = KeyMaterial.generateX25519KeyPair();
-        byte[] initialRatchetPublicKey = initialRatchetKeyPair[0];
-        byte[] initialRatchetPrivateKey = initialRatchetKeyPair[1];
-
-        byte[] initialDh = KeyMaterial.dh(initialRatchetPrivateKey, remoteBundle.spk());
+        byte[] initialDh = KeyMaterial.dh(ephPrivateKey, remoteBundle.spk());
         byte[][] initialRatchet = KeyDerivation.kdfRoot(initialRootKey, initialDh);
 
         Integer oneTimePrekeyId = usedOneTimePrekey ? remoteBundle.opk().keyId() : null;
 
         Session session = Session.createInitial(
                 initialRatchet[0],
-                initialRatchetPrivateKey,
-                initialRatchetPublicKey,
+                ephPrivateKey,
+                ephPublicKey,
                 remoteBundle.spk(),
                 self.deviceId(),
                 remoteBundle.deviceId(),
